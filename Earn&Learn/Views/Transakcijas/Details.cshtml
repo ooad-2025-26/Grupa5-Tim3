@@ -1,0 +1,54 @@
+﻿@model Earn_Learn.Models.Transakcija
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Transakcija</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.idStudenta)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.idStudenta)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.idTutora)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.idTutora)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.iznos)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.iznos)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.datumUplate)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.datumUplate)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.nacinPlacanja)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.nacinPlacanja)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.statusPlacanja)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.statusPlacanja)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
