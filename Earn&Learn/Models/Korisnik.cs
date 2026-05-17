@@ -1,21 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
 using Earn_Learn.Enums;
+
 namespace Earn_Learn.Models
 {
-    public class Korisnik
+    public class Korisnik : IdentityUser
     {
-        [Key]
-        public int id { get; set; }
-        public Uloga uloga { get; set; }
-        public string ime { get; set; }
-        public string prezime { get; set; }
-        public string email { get; set; }
-        public string lozinka { get; set; }
-        public DateTime datumRegistracije { get; set; }
-        public int? brojIndeksa { get; set; }
-        public double? cijenaPoSatu { get; set; }
-        public double? prosjecnaOcjena { get; set; }
-        public int? brojOdrzanihCasova { get; set; }
-        public double stanjeRacuna { get; set; }
+        public Uloga Uloga { get; set; }
+        public string Ime { get; set; } = string.Empty;
+        public string Prezime { get; set; } = string.Empty;
+        public DateTime DatumRegistracije { get; set; } = DateTime.UtcNow;
+        public int? BrojIndeksa { get; set; }
+        public double? CijenaPoSatu { get; set; }
+        public double? ProsjecnaOcjena { get; set; }
+        public int? BrojOdrzanihCasova { get; set; }
+        public double StanjeRacuna { get; set; } = 0.0;
     }
 }
