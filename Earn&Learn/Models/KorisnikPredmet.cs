@@ -2,7 +2,7 @@
 {
     public class KorisnikPredmet
     {
-        public int idKorisnika { get; set; }
+        public string idKorisnika { get; set; } = string.Empty;
         public int idPredmeta { get; set; }
     }
 }
