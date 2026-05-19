@@ -1,48 +1,190 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="bs">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Earn_Learn</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Earn&amp;Learn</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Earn_Learn.styles.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+            * {
+                font-family: 'Nunito', sans-serif;
+            }
+
+            /* ── NAVBAR ── */
+            .el-navbar {
+                background: #fff;
+                padding: 8px 40px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid #eee;
+                position: sticky;
+                top: 0;
+                z-index: 999;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            }
+
+                .el-navbar .brand img {
+                    height: 100px;
+                    width: auto;
+                    /* logo has black bg — multiply blends it away on white navbar */
+                    mix-blend-mode: multiply;
+                }
+
+            .el-nav-links {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
+                .el-nav-links a.nav-text {
+                    color: #333;
+                    text-decoration: none;
+                    font-weight: 600;
+                    padding: 6px 14px;
+                    border-radius: 20px;
+                    transition: background .2s;
+                }
+
+                    .el-nav-links a.nav-text:hover {
+                        background: #f0f0f0;
+                    }
+
+            .btn-prijava {
+                background: #0d2d45;
+                color: #fff !important;
+                border-radius: 20px;
+                padding: 7px 20px;
+                font-weight: 700;
+                text-decoration: none;
+                transition: opacity .2s;
+            }
+
+                .btn-prijava:hover {
+                    opacity: .85;
+                }
+
+            .btn-registracija {
+                background: #5bc400;
+                color: #fff !important;
+                border-radius: 20px;
+                padding: 7px 20px;
+                font-weight: 700;
+                text-decoration: none;
+                transition: opacity .2s;
+            }
+
+                .btn-registracija:hover {
+                    opacity: .85;
+                }
+
+            /* ── FOOTER ── */
+            .el-footer {
+                background: #fff;
+                border-top: 1px solid #eee;
+                padding: 50px 60px 30px;
+                margin-top: 0;
+            }
+
+                .el-footer .footer-inner {
+                    display: flex;
+                    justify-content: flex-end;
+                    gap: 80px;
+                    align-items: flex-start;
+                }
+
+                .el-footer .footer-logo-side {
+                    margin-right: auto;
+                }
+
+                    .el-footer .footer-logo-side img {
+                        height: 140px;
+                        width: auto;
+                        mix-blend-mode: multiply;
+                    }
+
+                .el-footer .footer-col h6 {
+                    font-weight: 800;
+                    color: #0d2d45;
+                    margin-bottom: 10px;
+                    font-size: .95rem;
+                }
+
+                .el-footer .footer-col a {
+                    display: block;
+                    color: #666;
+                    text-decoration: none;
+                    font-size: .9rem;
+                    margin-bottom: 5px;
+                    transition: color .2s;
+                }
+
+                    .el-footer .footer-col a:hover {
+                        color: #5bc400;
+                    }
+
+                .el-footer .footer-bottom {
+                    text-align: center;
+                    color: #aaa;
+                    font-size: .82rem;
+                    margin-top: 30px;
+                    border-top: 1px solid #f0f0f0;
+                    padding-top: 18px;
+                }
+
+            body {
+                margin: 0;
+                padding: 0;
+                background: #fff;
+            }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Earn_Learn</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Earn_Learn - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- NAVBAR -->
+    <nav class="el-navbar">
+        <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
+            <img src="~/images/Logo.png" alt="Earn&Learn logo" />
+        </a>
+        <div class="el-nav-links">
+            <a class="nav-text" asp-area="" asp-controller="Home" asp-action="About">O nama</a>
+            <a class="nav-text" asp-area="" asp-controller="Home" asp-action="Contact">Kontakt</a>
+            <a class="btn-prijava" asp-area="Identity" asp-page="/Account/Login">Prijava</a>
+            <a class="btn-registracija" asp-area="Identity" asp-page="/Account/Register">Registracija</a>
+        </div>
+    </nav>
+
+    <!-- PAGE CONTENT -->
+    @RenderBody()
+
+    <!-- FOOTER -->
+    <footer class="el-footer">
+        <div class="footer-inner">
+            <div class="footer-logo-side">
+                <img src="~/images/Logo.png" alt="Earn&Learn logo" />
+            </div>
+            <div class="footer-col">
+                <h6>Brzi linkovi</h6>
+                <a asp-area="" asp-controller="Home" asp-action="About">O nama</a>
+                <a asp-area="" asp-controller="Home" asp-action="Contact">Kontakt</a>
+                <a asp-area="" asp-controller="Home" asp-action="Faq">FAQ</a>
+            </div>
+            <div class="footer-col">
+                <h6>Prava i sigurnost</h6>
+                <a asp-area="" asp-controller="Home" asp-action="Terms">Uvjeti korištenja</a>
+                <a asp-area="" asp-controller="Home" asp-action="Privacy">Privatnost</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 Earn&amp;Learn. Sva prava zadržana.
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
