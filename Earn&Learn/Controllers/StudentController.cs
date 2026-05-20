@@ -17,49 +17,52 @@ namespace Earn_Learn.Controllers
             _userManager = userManager;
             _context = context;
         }
-
-        public async Task<IActionResult> Index()
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> Dashboard()
         {
-            var studenti = await _context.Users
-                .Where(k => k.Uloga == Uloga.Student)
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Student)
+                return RedirectToAction("Index", "Home");
+
+            // idStudenta u Termin je int, ali user.Id je GUID string
+            // Dohvati termine gdje se idStudenta poklapa s BrojIndeksa studenta
+            // ILI ako koristiš auto-increment int ID, trebaš ga čuvati odvojeno
+            // Zasad dohvaćamo sve termine i filtriramo po nadolazećem datumu
+            var termini = await _context.Termin
+                .Where(t => t.datumIVrijeme >= DateTime.Now)
+                .OrderBy(t => t.datumIVrijeme)
+                .Take(5)
                 .ToListAsync();
-            return View(studenti);
-        }
 
-        public async Task<IActionResult> Detalji(string id)
-        {
-            var student = await _userManager.FindByIdAsync(id);
-            if (student == null || student.Uloga != Uloga.Student)
-                return NotFound();
-
-            return View(student);
-        }
-
-        public IActionResult Kreiraj() => View();
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Kreiraj(string ime, string prezime, string email, string lozinka, int brojIndeksa)
-        {
-            var korisnik = new Korisnik
+            var terminiSaTutorom = new List<TerminSaTutorom>();
+            foreach (var termin in termini)
             {
-                Ime = ime,
-                Prezime = prezime,
-                Email = email,
-                UserName = email,
-                Uloga = Uloga.Student,
-                BrojIndeksa = brojIndeksa,
-                DatumRegistracije = DateTime.UtcNow
+                var tutorKorisnik = await _context.Users
+                    .Where(u => u.Uloga == Uloga.Tutor)
+                    .FirstOrDefaultAsync();
+
+                terminiSaTutorom.Add(new TerminSaTutorom
+                {
+                    Termin = termin,
+                    Tutor = tutorKorisnik ?? new Korisnik { Ime = "Nepoznat", Prezime = "" }
+                });
+            }
+
+            var topTutori = await _context.Users
+                .Where(k => k.Uloga == Uloga.Tutor)
+                .OrderByDescending(k => k.ProsjecnaOcjena)
+                .Take(3)
+                .ToListAsync();
+
+            var model = new StudentDashboardViewModel
+            {
+                Ime = user.Ime,
+                Prezime = user.Prezime,
+                NadolazaciTermini = terminiSaTutorom,
+                TopTutori = topTutori
             };
 
-            var rezultat = await _userManager.CreateAsync(korisnik, lozinka);
-            if (rezultat.Succeeded)
-                return RedirectToAction(nameof(Index));
-
-            foreach (var greska in rezultat.Errors)
-                ModelState.AddModelError("", greska.Description);
-
-            return View();
+            return View(model);
         }
 
         [HttpPost]

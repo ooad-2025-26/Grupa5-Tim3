@@ -7,8 +7,8 @@ namespace Earn_Learn.Models
     {
         [Key]
         public int id { get; set; }
-        public int idStudenta { get; set; }
-        public int idTutora { get; set; }
+        public string idStudenta { get; set; }
+        public string idTutora { get; set; }
         public DateTime datumIVrijeme { get; set; }
         public TipInstrukcija tipInstrukcija { get; set; }
         public StatusTermina status { get; set; }

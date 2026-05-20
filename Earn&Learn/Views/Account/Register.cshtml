@@ -1,0 +1,65 @@
+﻿@{
+    ViewData["Title"] = "Registracija";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div style="padding: 60px 20px; max-width: 450px; margin: 0 auto;">
+    <h2>Registracija</h2>
+
+    @if (TempData["RegError"] != null)
+    {
+        <div style="background:#fef2f2; border:1px solid #fee2e2; border-radius:8px;
+            padding:12px; margin-bottom:20px; color:#dc2626;">
+            @TempData["RegError"]
+        </div>
+    }
+
+    <form method="post" asp-controller="Account" asp-action="Register">
+        @Html.AntiForgeryToken()
+
+        <div style="margin-bottom:16px;">
+            <label>Ime</label><br />
+            <input type="text" name="ime" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+        </div>
+        <div style="margin-bottom:16px;">
+            <label>Prezime</label><br />
+            <input type="text" name="prezime" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+        </div>
+        <div style="margin-bottom:16px;">
+            <label>Email</label><br />
+            <input type="email" name="email" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+        </div>
+        <div style="margin-bottom:16px;">
+            <label>Šifra</label><br />
+            <input type="password" name="password" required style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+        </div>
+        <div style="margin-bottom:16px;">
+            <label>Uloga</label><br />
+            <select name="uloga" id="uloga-select" onchange="toggleIndeks(this)"
+                    style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;">
+                <option value="2">Student</option>
+                <option value="1">Tutor</option>
+                <option value="0">System Manager</option>
+            </select>
+        </div>
+        <div style="margin-bottom:16px;" id="indeks-field">
+            <label>Broj indeksa</label><br />
+            <input type="number" name="brojIndeksa"
+                   style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+        </div>
+
+        <button type="submit"
+                style="width:100%; padding:12px; background:#2bb601; color:#fff;
+            border:none; border-radius:10px; font-weight:700; cursor:pointer;">
+            Registruj se
+        </button>
+    </form>
+</div>
+
+<script>
+    function toggleIndeks(select) {
+        document.getElementById('indeks-field').style.display =
+            select.value === '2' ? 'block' : 'none';
+    }
+    window.onload = () => toggleIndeks(document.getElementById('uloga-select'));
+</script>

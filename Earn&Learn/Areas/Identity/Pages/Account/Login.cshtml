@@ -1,4 +1,6 @@
 ﻿@page
+@using Earn_Learn.Enums;
+@using Earn_Learn.Models;
 @using Earn_Learn.Areas.Identity.Pages.Account
 @model LoginModel
 @{
@@ -196,7 +198,8 @@
     <div class="login-card">
         <h2>Podaci za prijavu</h2>
 
-        <form id="loginForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+        <form id="loginForm" asp-controller="Account" asp-action="Login"
+              asp-route-returnUrl="@Model.ReturnUrl" method="post">
             <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
             <div class="login-field">

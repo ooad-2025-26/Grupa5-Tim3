@@ -1,0 +1,121 @@
+﻿@model Earn_Learn.Models.TutorDashboardViewModel
+@{
+    ViewData["Title"] = "Tutor Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .tdash-wrapper { color: #fff; padding-bottom: 60px; }
+
+    .tdash-hero {
+        background: #0d2d45;
+        padding: 70px 20px 80px;
+        text-align: center;
+    }
+    .tdash-hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
+    .tdash-hero h2 { font-size: 1.6rem; font-weight: 700; color: #a0b8c8; }
+    .tdash-hero h2 span { color: #5bc400; }
+
+    .tdash-stats {
+        background: #0d2d45;
+        display: flex;
+        justify-content: center;
+        gap: 80px;
+        padding: 40px 20px 60px;
+        flex-wrap: wrap;
+    }
+    .tdash-stat { text-align: center; }
+    .tdash-stat .broj { font-size: 3rem; font-weight: 800; color: #fff; }
+    .tdash-stat .label { font-size: .95rem; color: #a0b8c8; margin-top: 4px; }
+
+    .tdash-termini {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    .tdash-termini-header {
+        background: #e8f5e0;
+        color: #0d2d45;
+        padding: 16px 24px;
+        border-radius: 10px 10px 0 0;
+        font-size: 1.2rem;
+        font-weight: 800;
+    }
+    .tdash-termin-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        border-bottom: 1px solid #eee;
+        color: #0d2d45;
+        background: #fff;
+    }
+    .tdash-termin-row:last-child { border-radius: 0 0 10px 10px; }
+    .tdash-termin-row .naziv { font-size: .95rem; font-weight: 600; color: #333; }
+    .tdash-termin-row .datum { font-size: .88rem; color: #888; }
+    .btn-otkai {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: .82rem;
+        font-weight: 600;
+        cursor: pointer;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: background .2s;
+    }
+    .btn-otkai:hover { background: #ffe0e0; border-color: #f88; color: #c00; }
+    .no-termini { color: #888; padding: 20px 24px; background: #fff; border-radius: 0 0 10px 10px; }
+</style>
+
+<div class="tdash-wrapper">
+
+    <!-- HERO -->
+    <div class="tdash-hero">
+        <h1>Zdravo, @Model.Ime!</h1>
+        <h2>Tvoja zarada ovog mjeseca: <span>@Model.Balans.ToString("0") KM</span></h2>
+    </div>
+
+    <!-- STATISTIKE -->
+    <div class="tdash-stats">
+        <div class="tdash-stat">
+            <div class="broj">@Model.BrojCasova</div>
+            <div class="label">Ukupno časova</div>
+        </div>
+        <div class="tdash-stat">
+            <div class="broj">@Model.ProsjecnaOcjena.ToString("0.0")★</div>
+            <div class="label">Prosječna ocjena</div>
+        </div>
+        <div class="tdash-stat">
+            <div class="broj">@Model.Balans.ToString("0") KM</div>
+            <div class="label">Dostupan balans</div>
+        </div>
+    </div>
+
+    <!-- NADOLAZEĆI TERMINI -->
+    <div class="tdash-termini" style="margin-top: 40px;">
+        <div class="tdash-termini-header">Nadolazeći časovi</div>
+
+        @if (Model.NadolazaciTermini.Any())
+        {
+            @foreach (var t in Model.NadolazaciTermini)
+            {
+                <div class="tdash-termin-row">
+                    <span class="naziv">Termin #@t.id</span>
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <span class="datum">@t.datumIVrijeme.ToString("d.M.yyyy.")</span>
+                        <button class="btn-otkai">🗑 otkaži</button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-termini">Nemaš nadolazećih časova.</div>
+        }
+    </div>
+
+</div>

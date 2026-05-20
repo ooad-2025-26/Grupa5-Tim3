@@ -1,0 +1,215 @@
+﻿@model Earn_Learn.Models.StudentDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .dash-wrapper {
+        background: #0d2d45;
+        min-height: 100vh;
+        color: #fff;
+        padding-bottom: 80px;
+        margin: -20px;
+    }
+
+    /* ── HERO / SEARCH ── */
+    .dash-hero {
+        background: #0d2d45;
+        padding: 70px 20px 50px;
+        text-align: center;
+    }
+
+        .dash-hero h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 28px;
+        }
+
+    .dash-search {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border-radius: 30px;
+        padding: 13px 24px;
+        max-width: 560px;
+        margin: 0 auto;
+        gap: 12px;
+    }
+
+        .dash-search i {
+            color: #0d2d45;
+            font-size: 1.15rem;
+        }
+
+        .dash-search input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 1rem;
+            color: #555;
+            background: transparent;
+        }
+
+    /* ── SESIJE ── */
+    .dash-sessions {
+        max-width: 780px;
+        margin: 50px auto 0;
+        padding: 0 24px;
+    }
+
+        .dash-sessions h2 {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #a0b8c8;
+            margin-bottom: 16px;
+            text-transform: none;
+        }
+
+    .termin-card {
+        background: #1a3a55;
+        border-radius: 10px;
+        padding: 18px 26px;
+        margin-bottom: 12px;
+        font-weight: 700;
+        font-size: .9rem;
+        letter-spacing: .4px;
+        color: #fff;
+        text-transform: uppercase;
+    }
+
+    .no-termini {
+        color: #a0b8c8;
+        font-size: .95rem;
+        padding: 20px 0;
+    }
+
+        .no-termini a {
+            color: #5bc400;
+            text-decoration: none;
+        }
+
+    /* ── TUTOR SPOTLIGHT ── */
+    .dash-spotlight {
+        max-width: 780px;
+        margin: 80px auto 0;
+        padding: 0 24px;
+        text-align: center;
+    }
+
+        .dash-spotlight h2 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .dash-spotlight .subtitle {
+            color: #a0b8c8;
+            font-size: 1rem;
+            margin-bottom: 34px;
+        }
+
+    .tutor-grid {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .tutor-card {
+        background: #1a3a55;
+        border-radius: 14px;
+        padding: 34px 20px 24px;
+        width: 185px;
+        text-align: center;
+        transition: transform .15s;
+        cursor: pointer;
+    }
+
+        .tutor-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .tutor-card i {
+            font-size: 3.4rem;
+            color: #a0b8c8;
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        .tutor-card .tutor-name {
+            font-size: .88rem;
+            font-weight: 700;
+            color: #fff;
+            display: block;
+        }
+
+        .tutor-card .tutor-ocjena {
+            font-size: .8rem;
+            color: #5bc400;
+            margin-top: 4px;
+            display: block;
+        }
+</style>
+
+<div class="dash-wrapper">
+
+    <!-- HERO -->
+    <div class="dash-hero">
+        <h1>Zdravo, @Model.Ime!</h1>
+        <div class="dash-search">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Pretraži tutore ili predmete npr. Tehnike programiranja" />
+        </div>
+    </div>
+
+    <!-- NADOLAZEĆI TERMINI -->
+    <div class="dash-sessions">
+        <h2>Tvoje nadolazeće tutoring sesije</h2>
+
+        @if (Model.NadolazaciTermini.Any())
+        {
+            @foreach (var st in Model.NadolazaciTermini)
+            {
+                <div class="termin-card">
+                    @st.Tutor.Ime.ToUpper() @st.Tutor.Prezime.ToUpper() —
+                    @st.Termin.datumIVrijeme.ToString("dd.MM.yyyy. HH:mm")
+                </div>
+            }
+        }
+        else
+        {
+            <p class="no-termini">
+                Nemaš nadolazećih termina.
+                <a asp-controller="Tutor" asp-action="Index">Pronađi tutora!</a>
+            </p>
+        }
+    </div>
+
+    <!-- TUTOR SPOTLIGHT -->
+    <div class="dash-spotlight">
+        <h2>TUTOR SPOTLIGHT</h2>
+        <p class="subtitle">Najbolje ocijenjeni tutori</p>
+
+        <div class="tutor-grid">
+            @foreach (var t in Model.TopTutori)
+            {
+                <a asp-controller="Tutor" asp-action="Detalji" asp-route-id="@t.Id"
+                       style="text-decoration:none;">
+                    <div class="tutor-card">
+                        <i class="bi bi-person-circle"></i>
+                        <span class="tutor-name">@t.Ime @t.Prezime</span>
+                        @if (t.ProsjecnaOcjena.HasValue)
+                        {
+                            <span class="tutor-ocjena">★ @t.ProsjecnaOcjena.Value.ToString("0.0")</span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    </div>
+
+</div>

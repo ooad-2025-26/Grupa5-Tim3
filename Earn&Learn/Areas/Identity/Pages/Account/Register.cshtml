@@ -215,7 +215,10 @@
     <div class="reg-card">
         <h2>Registracijski podaci</h2>
 
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+        <form id="registerForm" method="post" action="/Account/RegisterIdentity">
+            <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+            @Html.AntiForgeryToken()
+
             <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
             <div class="reg-field">
@@ -246,6 +249,14 @@
                 <label asp-for="Input.ConfirmPassword">Potvrda</label>
                 <input asp-for="Input.ConfirmPassword" type="password" placeholder="Ponovo upiši šifru" />
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="reg-field">
+                <label>Uloga</label>
+                <select name="uloga" style="width:100%; padding:11px 14px; background:#f0f0f0; border:none; border-radius:8px; font-size:.95rem;">
+                    <option value="2">Student</option>
+                    <option value="1">Tutor</option>
+                </select>
             </div>
 
             <label class="reg-check">

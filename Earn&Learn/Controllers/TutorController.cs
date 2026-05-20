@@ -17,7 +17,26 @@ namespace Earn_Learn.Controllers
             _userManager = userManager;
             _context = context;
         }
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> Dashboard()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Tutor)
+                return RedirectToAction("Index", "Home");
 
+            var nadolazaciTermini = await _context.Termin.Where(t => t.idTutora == user.Id && t.datumIVrijeme >= DateTime.Now).OrderBy(t => t.datumIVrijeme).Take(10).ToListAsync();
+
+            var model = new TutorDashboardViewModel
+            {
+                Ime = user.Ime,
+                BrojCasova = user.BrojOdrzanihCasova ?? 0,
+                ProsjecnaOcjena = user.ProsjecnaOcjena ?? 0,
+                Balans = user.StanjeRacuna,
+                NadolazaciTermini = nadolazaciTermini
+            };
+
+            return View(model);
+        }
         public async Task<IActionResult> Index()
         {
             var tutori = await _context.Users
