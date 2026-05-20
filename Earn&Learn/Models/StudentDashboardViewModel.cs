@@ -12,5 +12,6 @@
     {
         public Termin Termin { get; set; } = null!;
         public Korisnik Tutor { get; set; } = null!;
+        public Predmet? Predmet { get; set; }
     }
 }

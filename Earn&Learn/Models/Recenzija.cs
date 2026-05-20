@@ -6,9 +6,10 @@ namespace Earn_Learn.Models
     {
         [Key]
         public int id { get; set; }
-        public int idStudenta { get; set; }
-        public int idTutora { get; set; }
+        public string idStudenta { get; set; } = string.Empty;
+        public string idTutora { get; set; } = string.Empty;
         public int ocjena { get; set; }
-        public string komentar { get; set; }
+        public string komentar { get; set; } = string.Empty;
+        public DateTime datumRecenzije { get; set; } = DateTime.UtcNow;
     }
 }

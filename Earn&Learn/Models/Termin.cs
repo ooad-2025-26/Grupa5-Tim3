@@ -7,11 +7,13 @@ namespace Earn_Learn.Models
     {
         [Key]
         public int id { get; set; }
-        public string idStudenta { get; set; }
-        public string idTutora { get; set; }
+        public string idStudenta { get; set; } = string.Empty;
+        public string idTutora { get; set; } = string.Empty;
+        public int? idPredmeta { get; set; }
         public DateTime datumIVrijeme { get; set; }
         public TipInstrukcija tipInstrukcija { get; set; }
         public StatusTermina status { get; set; }
-        public string qrKod { get; set; }
+        public string? qrKod { get; set; }
+        public double cijena { get; set; }
     }
 }

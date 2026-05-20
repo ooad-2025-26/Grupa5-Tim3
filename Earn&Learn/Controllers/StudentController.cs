@@ -1,6 +1,7 @@
 ﻿using Earn_Learn.Data;
 using Earn_Learn.Enums;
 using Earn_Learn.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,19 +18,16 @@ namespace Earn_Learn.Controllers
             _userManager = userManager;
             _context = context;
         }
-        [Microsoft.AspNetCore.Authorization.Authorize]
+
+        [Authorize]
         public async Task<IActionResult> Dashboard()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null || user.Uloga != Uloga.Student)
                 return RedirectToAction("Index", "Home");
 
-            // idStudenta u Termin je int, ali user.Id je GUID string
-            // Dohvati termine gdje se idStudenta poklapa s BrojIndeksa studenta
-            // ILI ako koristiš auto-increment int ID, trebaš ga čuvati odvojeno
-            // Zasad dohvaćamo sve termine i filtriramo po nadolazećem datumu
             var termini = await _context.Termin
-                .Where(t => t.datumIVrijeme >= DateTime.Now)
+                .Where(t => t.idStudenta == user.Id && t.datumIVrijeme >= DateTime.Now)
                 .OrderBy(t => t.datumIVrijeme)
                 .Take(5)
                 .ToListAsync();
@@ -37,14 +35,16 @@ namespace Earn_Learn.Controllers
             var terminiSaTutorom = new List<TerminSaTutorom>();
             foreach (var termin in termini)
             {
-                var tutorKorisnik = await _context.Users
-                    .Where(u => u.Uloga == Uloga.Tutor)
-                    .FirstOrDefaultAsync();
+                var tutorKorisnik = await _context.Users.FindAsync(termin.idTutora);
+                var predmet = termin.idPredmeta.HasValue
+                    ? await _context.Predmet.FindAsync(termin.idPredmeta.Value)
+                    : null;
 
                 terminiSaTutorom.Add(new TerminSaTutorom
                 {
                     Termin = termin,
-                    Tutor = tutorKorisnik ?? new Korisnik { Ime = "Nepoznat", Prezime = "" }
+                    Tutor = tutorKorisnik ?? new Korisnik { Ime = "Nepoznat", Prezime = "" },
+                    Predmet = predmet
                 });
             }
 

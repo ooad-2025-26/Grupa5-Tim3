@@ -52,6 +52,15 @@
             background: transparent;
         }
 
+        .dash-search button {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
     /* ── SESIJE ── */
     .dash-sessions {
         max-width: 780px;
@@ -160,10 +169,17 @@
     <!-- HERO -->
     <div class="dash-hero">
         <h1>Zdravo, @Model.Ime!</h1>
-        <div class="dash-search">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Pretraži tutore ili predmete npr. Tehnike programiranja" />
-        </div>
+
+        <!-- Search bar koji vodi na Tutor/Pretraga -->
+        <form asp-controller="Tutor" asp-action="Pretraga" method="get">
+            <div class="dash-search">
+                <i class="bi bi-search"></i>
+                <input type="text" name="q" placeholder="Pretraži tutore ili predmete npr. Tehnike programiranja" />
+                <button type="submit">
+                    <i class="bi bi-arrow-right" style="color:#0d2d45;"></i>
+                </button>
+            </div>
+        </form>
     </div>
 
     <!-- NADOLAZEĆI TERMINI -->
@@ -177,6 +193,10 @@
                 <div class="termin-card">
                     @st.Tutor.Ime.ToUpper() @st.Tutor.Prezime.ToUpper() —
                     @st.Termin.datumIVrijeme.ToString("dd.MM.yyyy. HH:mm")
+                    @if (st.Predmet != null)
+                    {
+                        <span style="color:#a0b8c8; font-weight:400; margin-left:8px;">| @st.Predmet.naziv</span>
+                    }
                 </div>
             }
         }
@@ -197,12 +217,13 @@
         <div class="tutor-grid">
             @foreach (var t in Model.TopTutori)
             {
-                <a asp-controller="Tutor" asp-action="Detalji" asp-route-id="@t.Id"
+                <!-- Vodi na Profil, ne Detalji -->
+                <a asp-controller="Tutor" asp-action="Profil" asp-route-id="@t.Id"
                        style="text-decoration:none;">
                     <div class="tutor-card">
                         <i class="bi bi-person-circle"></i>
                         <span class="tutor-name">@t.Ime @t.Prezime</span>
-                        @if (t.ProsjecnaOcjena.HasValue)
+                        @if (t.ProsjecnaOcjena.HasValue && t.ProsjecnaOcjena > 0)
                         {
                             <span class="tutor-ocjena">★ @t.ProsjecnaOcjena.Value.ToString("0.0")</span>
                         }

@@ -1,0 +1,142 @@
+﻿@model Earn_Learn.Models.TutorProfilViewModel
+@using Earn_Learn.Enums
+
+@{
+    ViewData["Title"] = "Rezerviši termin";
+}
+
+<div style="background:#dce8f0; min-height:100vh; padding:48px 0;">
+    <div class="container" style="max-width:700px; margin:auto; padding:0 24px;">
+
+        @if (TempData["Uspjeh"] != null)
+        {
+            <div class="alert alert-success">@TempData["Uspjeh"]</div>
+        }
+        @if (TempData["Greska"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Greska"]</div>
+        }
+
+        <div style="background:#c8dce8; border-radius:16px; padding:40px; text-align:center;">
+            <h2 style="font-weight:700; margin-bottom:4px;">Cijena instrukcija:</h2>
+            <h1 style="font-weight:800; font-size:2.2rem; margin-bottom:32px;">@Model.Tutor.CijenaPoSatu KM / h</h1>
+
+            @if (Model.DostupniTermini.Any() && Model.Predmeti.Any())
+            {
+                <form asp-action="RezervisiTermin" asp-controller="Tutor" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="tutorId" value="@Model.Tutor.Id" />
+
+                    <!-- Tip instrukcija -->
+                    <p style="font-weight:600; margin-bottom:16px;">Odaberi način izvođenja tutorijala:</p>
+                    <div style="display:flex; gap:16px; justify-content:center; margin-bottom:32px;">
+                        <label style="cursor:pointer;">
+                            <input type="radio" name="tipInstrukcija" value="@((int)TipInstrukcija.Online)" checked style="display:none;" id="radioOnline" />
+                            <div class="tip-btn" onclick="selectTip(this,'radioOnline')"
+                                 style="background:#0d4f8a; color:white; padding:20px 48px; border-radius:10px; font-weight:700; font-size:1.1rem; min-width:140px;">
+                                Online
+                            </div>
+                        </label>
+                        <label style="cursor:pointer;">
+                            <input type="radio" name="tipInstrukcija" value="@((int)TipInstrukcija.Uzivo)" style="display:none;" id="radioUzivo" />
+                            <div class="tip-btn" onclick="selectTip(this,'radioUzivo')"
+                                 style="background:#333; color:white; padding:20px 48px; border-radius:10px; font-weight:700; font-size:1.1rem; min-width:140px;">
+                                Uživo
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Odabir predmeta -->
+                    <p style="font-weight:600; margin-bottom:16px;">Odaberi predmet:</p>
+                    <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:32px;">
+                        @foreach (var predmet in Model.Predmeti)
+                        {
+                            <label style="cursor:pointer;">
+                                <input type="radio" name="predmetId" value="@predmet.id" style="display:none;" class="predmet-radio" />
+                                <div class="predmet-btn"
+                                     style="background:#2a3f55; color:white; padding:16px 20px; border-radius:10px; font-weight:600; font-size:0.9rem; min-width:160px; transition:background 0.15s;">
+                                    <small style="color:#a0b8c8; display:block; font-size:0.75rem; margin-bottom:4px;">Predmet</small>
+                                    @predmet.naziv
+                                </div>
+                            </label>
+                        }
+                    </div>
+
+                    <!-- Odabir termina -->
+                    <p style="font-weight:600; margin-bottom:16px;">Odaberi jedan od dostupnih termina:</p>
+                    <div style="background:#b8d0dc; border-radius:10px; overflow:hidden; margin-bottom:32px;">
+                        @foreach (var termin in Model.DostupniTermini)
+                        {
+                            <label class="termin-row"
+                                   style="display:flex; justify-content:space-between; padding:16px 24px; border-bottom:1px solid #a0bcc8; cursor:pointer; align-items:center; transition:background 0.15s;">
+                                <input type="radio" name="terminId" value="@termin.id" style="display:none;" class="termin-radio" />
+                                <span style="font-weight:600;">@termin.datumIVrijeme.ToString("dddd HH:mm")</span>
+                                <span style="color:#555;">@termin.datumIVrijeme.ToString("dd.MM.yyyy.")</span>
+                            </label>
+                        }
+                    </div>
+
+                    <!-- Rezime -->
+                    <div id="rezime" style="display:none; background:white; border-radius:12px; padding:24px; margin-bottom:24px; text-align:center;">
+                        <h3 style="font-weight:700; margin-bottom:4px;">Rezime & Cijena</h3>
+                        <p style="color:#777; margin-bottom:12px;">Pregledajte i potvrdite izbor.</p>
+                        <p id="rezimeTekst" style="line-height:2;"></p>
+                    </div>
+
+                    <button type="submit"
+                            style="background:#4caf8a; color:white; border:none; padding:16px 56px; border-radius:10px; font-weight:700; font-size:1.1rem; cursor:pointer;">
+                        Potvrdi
+                    </button>
+                </form>
+            }
+            else
+            {
+                <p style="color:#555;">Trenutno nema dostupnih termina ili predmeta za ovog tutora.</p>
+                <a asp-controller="Tutor" asp-action="Profil" asp-route-id="@Model.Tutor.Id"
+                   style="color:#0d4f8a; font-weight:600;">← Nazad na profil</a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function selectTip(el, radioId) {
+            document.querySelectorAll('.tip-btn').forEach(b => b.style.background = '#333');
+            el.style.background = '#0d4f8a';
+            document.getElementById(radioId).checked = true;
+        }
+
+        document.querySelectorAll('.predmet-radio').forEach(r => {
+            r.addEventListener('change', updateRezime);
+            r.closest('label').querySelector('.predmet-btn').addEventListener('click', function () {
+                document.querySelectorAll('.predmet-btn').forEach(b => b.style.background = '#2a3f55');
+                this.style.background = '#0d4f8a';
+            });
+        });
+
+        document.querySelectorAll('.termin-radio').forEach(r => {
+            r.addEventListener('change', function () {
+                document.querySelectorAll('.termin-row').forEach(l => l.style.background = '');
+                this.closest('label').style.background = '#8fc8d8';
+                updateRezime();
+            });
+        });
+
+        function updateRezime() {
+            const termin = document.querySelector('.termin-radio:checked');
+            const predmet = document.querySelector('.predmet-radio:checked');
+            if (!termin || !predmet) return;
+
+            const terminLabel = termin.closest('label').querySelector('span:first-of-type').textContent.trim();
+            const predmetLabel = predmet.closest('label').querySelector('.predmet-btn').textContent.trim().replace('Predmet', '').trim();
+
+            document.getElementById('rezimeTekst').innerHTML =
+                `Odabrani termin: <strong>${terminLabel}</strong><br>
+                 Predmet: <strong>${predmetLabel}</strong><br>
+                 Tutor: <strong>@Model.Tutor.Ime @Model.Tutor.Prezime</strong><br>
+                 Ukupna cijena: <strong>@Model.Tutor.CijenaPoSatu KM</strong>`;
+            document.getElementById('rezime').style.display = 'block';
+        }
+    </script>
+}
