@@ -21,6 +21,25 @@ namespace Earn_Learn.Controllers
             return View();
         }
 
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Contact(string ime, string email, string poruka)
+        {
+            if (string.IsNullOrWhiteSpace(ime) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(poruka))
+            {
+                ViewBag.Greska = "Sva polja su obavezna.";
+                return View();
+            }
+
+            ViewBag.Uspjeh = "Vaša poruka je uspješno poslana! Javit ćemo vam se uskoro.";
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

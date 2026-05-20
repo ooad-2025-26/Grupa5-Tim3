@@ -51,7 +51,6 @@
             display: block;
         }
 
-    /* FORM SECTION */
     .reg-form-section {
         background: linear-gradient(180deg, #5bc400 0%, #2d7a00 100%);
         margin: 0 30px 60px;
@@ -93,6 +92,7 @@
         .reg-field input[type="text"],
         .reg-field input[type="email"],
         .reg-field input[type="password"],
+        .reg-field input[type="file"],
         .reg-field select {
             width: 100%;
             border: none;
@@ -189,6 +189,60 @@
         color: #e53935;
         font-size: .85rem;
     }
+
+    .val-hint {
+        font-size: .8rem;
+        margin-top: 5px;
+        display: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+    }
+
+        .val-hint.greska {
+            display: block;
+            background: #fff3f3;
+            color: #e53935;
+            border: 1px solid #fecaca;
+        }
+
+        .val-hint.ok {
+            display: block;
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+    .sifra-pravila {
+        margin-top: 6px;
+        font-size: .8rem;
+        display: none;
+    }
+
+        .sifra-pravila.vidljivo {
+            display: block;
+        }
+
+    .pravilo {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 2px 0;
+        color: #aaa;
+        transition: color .2s;
+    }
+
+        .pravilo.ispunjeno {
+            color: #16a34a;
+        }
+
+        .pravilo.neispunjeno {
+            color: #e53935;
+        }
+
+    .pravilo-ikona {
+        font-size: .85rem;
+        min-width: 14px;
+    }
 </style>
 
 <!-- HERO -->
@@ -215,7 +269,7 @@
     <div class="reg-card">
         <h2>Registracijski podaci</h2>
 
-        <form id="registerForm" method="post" action="/Account/RegisterIdentity">
+        <form id="registerForm" method="post" action="/Account/RegisterIdentity" enctype="multipart/form-data">
             <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
             @Html.AntiForgeryToken()
 
@@ -235,19 +289,35 @@
 
             <div class="reg-field">
                 <label asp-for="Input.Email">Email</label>
-                <input asp-for="Input.Email" type="email" placeholder="tvojmail@etf.unsa.ba" />
+                <input asp-for="Input.Email" type="email" id="emailInput" placeholder="tvojmail@etf.unsa.ba" />
+                <div class="val-hint" id="emailHint"></div>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
 
             <div class="reg-field">
                 <label asp-for="Input.Password">Šifra</label>
-                <input asp-for="Input.Password" type="password" placeholder="Najmanje 6 karaktera" />
+                <input asp-for="Input.Password" type="password" id="sifraInput" placeholder="Najmanje 6 karaktera" />
+                <div class="sifra-pravila" id="sifraPravila">
+                    <div class="pravilo" id="p-duzina">
+                        <span class="pravilo-ikona">○</span> Najmanje 6 karaktera
+                    </div>
+                    <div class="pravilo" id="p-veliko">
+                        <span class="pravilo-ikona">○</span> Najmanje jedno veliko slovo
+                    </div>
+                    <div class="pravilo" id="p-broj">
+                        <span class="pravilo-ikona">○</span> Najmanje jedan broj
+                    </div>
+                    <div class="pravilo" id="p-znak">
+                        <span class="pravilo-ikona">○</span> Najmanje jedan specijalni znak (!#$%^&amp;*)
+                    </div>
+                </div>
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
 
             <div class="reg-field">
                 <label asp-for="Input.ConfirmPassword">Potvrda</label>
-                <input asp-for="Input.ConfirmPassword" type="password" placeholder="Ponovo upiši šifru" />
+                <input asp-for="Input.ConfirmPassword" type="password" id="potvrdaInput" placeholder="Ponovo upiši šifru" />
+                <div class="val-hint" id="potvrdaHint"></div>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
 
@@ -279,6 +349,12 @@
                     </div>
                     <span asp-validation-for="Input.OdabraniPredmeti" class="text-danger"></span>
                 </div>
+
+                <div class="reg-field">
+                    <label>Prilog - ocjene iz predmeta</label>
+                    <input type="file" name="prilogOcjene" accept="image/*,.pdf" />
+                    <small style="color:#888; font-size:.8rem;">JPG, PNG ili PDF, max 5MB</small>
+                </div>
             </div>
 
             <button type="submit" class="btn-registruj">Registruj se</button>
@@ -286,7 +362,6 @@
     </div>
 </section>
 
-<!-- LOGIN HINT -->
 <div class="reg-login-hint">
     <strong>Već imate nalog? Prijavite se</strong><br>
     <a asp-area="Identity" asp-page="/Account/Login">Kliknite ovdje za prijavu u postojeći račun.</a>
@@ -295,8 +370,87 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        // ── TUTOR FIELDS ──
         document.getElementById('zelimTutor').addEventListener('change', function () {
             document.getElementById('tutor-fields').style.display = this.checked ? 'block' : 'none';
+        });
+
+        // ── EMAIL VALIDACIJA ──
+        var emailInput = document.getElementById('emailInput');
+        var emailHint = document.getElementById('emailHint');
+
+        emailInput.addEventListener('input', function () {
+            var val = this.value.trim();
+            if (val === '') {
+                emailHint.className = 'val-hint';
+                emailHint.textContent = '';
+                return;
+            }
+            if (!val.endsWith('\x40et.unsa.ba')) {
+                emailHint.className = 'val-hint greska';
+                emailHint.textContent = 'Email mora biti u formatu: ime@etf.unsa.ba';
+            } else {
+                emailHint.className = 'val-hint ok';
+                emailHint.textContent = 'Email je ispravan';
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
+            var email = emailInput.value.trim();
+            if (!email.endsWith('\x40et.unsa.ba')) {
+                e.preventDefault();
+                emailHint.className = 'val-hint greska';
+                emailHint.textContent = 'Email mora biti u formatu: ime@etf.unsa.ba';
+                emailInput.focus();
+            }
+        });
+
+        // ── SIFRA VALIDACIJA ──
+        var sifraInput = document.getElementById('sifraInput');
+        var sifraPravila = document.getElementById('sifraPravila');
+
+        function provjeriPravilo(id, ispunjeno) {
+            var el = document.getElementById(id);
+            var ikona = el.querySelector('.pravilo-ikona');
+            if (ispunjeno) {
+                el.className = 'pravilo ispunjeno';
+                ikona.textContent = 'v';
+            } else {
+                el.className = 'pravilo neispunjeno';
+                ikona.textContent = 'x';
+            }
+        }
+
+        sifraInput.addEventListener('focus', function () {
+            sifraPravila.className = 'sifra-pravila vidljivo';
+        });
+
+        sifraInput.addEventListener('input', function () {
+            var val = this.value;
+            sifraPravila.className = 'sifra-pravila vidljivo';
+            provjeriPravilo('p-duzina', val.length >= 6);
+            provjeriPravilo('p-veliko', /[A-Z]/.test(val));
+            provjeriPravilo('p-broj', /[0-9]/.test(val));
+            provjeriPravilo('p-znak', /[!#$%^&*()\-_=+\[\]{};:'"\\|,.<>\/? ]/.test(val));
+        });
+
+        // ── POTVRDA SIFRE ──
+        var potvrdaInput = document.getElementById('potvrdaInput');
+        var potvrdaHint = document.getElementById('potvrdaHint');
+
+        potvrdaInput.addEventListener('input', function () {
+            if (this.value === '') {
+                potvrdaHint.className = 'val-hint';
+                potvrdaHint.textContent = '';
+                return;
+            }
+            if (this.value !== sifraInput.value) {
+                potvrdaHint.className = 'val-hint greska';
+                potvrdaHint.textContent = 'Sifre se ne podudaraju.';
+            } else {
+                potvrdaHint.className = 'val-hint ok';
+                potvrdaHint.textContent = 'Sifre se podudaraju';
+            }
         });
     </script>
 }

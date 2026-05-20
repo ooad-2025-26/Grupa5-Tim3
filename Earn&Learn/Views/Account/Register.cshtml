@@ -14,7 +14,7 @@
         </div>
     }
 
-    <form method="post" asp-controller="Account" asp-action="Register">
+    <form method="post" asp-controller="Account" asp-action="Register" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
 
         <div style="margin-bottom:16px;">
@@ -35,17 +35,25 @@
         </div>
         <div style="margin-bottom:16px;">
             <label>Uloga</label><br />
-            <select name="uloga" id="uloga-select" onchange="toggleIndeks(this)"
+            <select name="uloga" id="uloga-select" onchange="togglePolja(this)"
                     style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;">
                 <option value="2">Student</option>
                 <option value="1">Tutor</option>
                 <option value="0">System Manager</option>
             </select>
         </div>
+
         <div style="margin-bottom:16px;" id="indeks-field">
             <label>Broj indeksa</label><br />
             <input type="number" name="brojIndeksa"
                    style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px;" />
+        </div>
+
+        <div style="margin-bottom:16px; display:none;" id="prilog-field">
+            <label>Prilog - ocjene iz predmeta</label><br />
+            <input type="file" name="prilogOcjene" accept="image/*,.pdf"
+                   style="width:100%; padding:10px; border:1px solid #ccc; border-radius:8px; background:#fff;" />
+            <small style="color:#888;">JPG, PNG ili PDF, max 5MB</small>
         </div>
 
         <button type="submit"
@@ -57,9 +65,11 @@
 </div>
 
 <script>
-    function toggleIndeks(select) {
-        document.getElementById('indeks-field').style.display =
-            select.value === '2' ? 'block' : 'none';
+    function togglePolja(select) {
+        var jeStudent = select.value === '2';
+        var jeTutor = select.value === '1';
+        document.getElementById('indeks-field').style.display = jeStudent ? 'block' : 'none';
+        document.getElementById('prilog-field').style.display = jeTutor ? 'block' : 'none';
     }
-    window.onload = () => toggleIndeks(document.getElementById('uloga-select'));
+    window.onload = () => togglePolja(document.getElementById('uloga-select'));
 </script>

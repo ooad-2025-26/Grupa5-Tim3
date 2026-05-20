@@ -14,5 +14,6 @@ namespace Earn_Learn.Models
         public double? ProsjecnaOcjena { get; set; }
         public int? BrojOdrzanihCasova { get; set; }
         public double StanjeRacuna { get; set; } = 0.0;
+        public string? PrilogOcjene { get; set; }
     }
 }

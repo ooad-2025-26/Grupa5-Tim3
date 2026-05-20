@@ -11,14 +11,17 @@ namespace Earn_Learn.Controllers
         private readonly SignInManager<Korisnik> _signInManager;
         private readonly UserManager<Korisnik> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
         public AccountController(SignInManager<Korisnik> signInManager,
                                   UserManager<Korisnik> userManager,
-                                  ApplicationDbContext context)
+                                  ApplicationDbContext context,
+                                  IWebHostEnvironment env)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _context = context;
+            _env = env;
         }
 
         // ── LOGIN ──
@@ -54,7 +57,6 @@ namespace Earn_Learn.Controllers
             return LocalRedirect("/Identity/Account/Login");
         }
 
-        // ── REGISTER ──
         // ── REGISTER GET ──
         [HttpGet]
         public IActionResult Register() => View();
@@ -64,12 +66,44 @@ namespace Earn_Learn.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(
             string ime, string prezime, string email,
-            string password, Uloga uloga, int? brojIndeksa)
+            string password, Uloga uloga, int? brojIndeksa,
+            IFormFile? prilogOcjene)
         {
             if (uloga == Uloga.SystemManager)
             {
                 TempData["RegError"] = "Nije moguće registrovati System Manager nalog.";
                 return RedirectToAction("Register");
+            }
+
+            // Čuvanje priloga ako je tutor uploadao
+            string? prilogPath = null;
+            if (uloga == Uloga.Tutor && prilogOcjene != null && prilogOcjene.Length > 0)
+            {
+                var dozvoljeniTipovi = new[] { "image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf" };
+                if (!dozvoljeniTipovi.Contains(prilogOcjene.ContentType))
+                {
+                    TempData["RegError"] = "Dozvoljeni formati su JPG, PNG i PDF.";
+                    return RedirectToAction("Register");
+                }
+
+                if (prilogOcjene.Length > 5 * 1024 * 1024)
+                {
+                    TempData["RegError"] = "Prilog ne smije biti veći od 5MB.";
+                    return RedirectToAction("Register");
+                }
+
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "prilozi");
+                Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(prilogOcjene.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await prilogOcjene.CopyToAsync(stream);
+                }
+
+                prilogPath = "/uploads/prilozi/" + fileName;
             }
 
             var korisnik = new Korisnik
@@ -80,7 +114,8 @@ namespace Earn_Learn.Controllers
                 UserName = email,
                 Uloga = uloga,
                 BrojIndeksa = uloga == Uloga.Student ? brojIndeksa : null,
-                DatumRegistracije = DateTime.UtcNow
+                DatumRegistracije = DateTime.UtcNow,
+                PrilogOcjene = prilogPath
             };
 
             var rezultat = await _userManager.CreateAsync(korisnik, password);
