@@ -1,4 +1,4 @@
 ﻿namespace Earn_Learn.Enums
 {
-    public enum TipInstrukcija { Online, Uzivo }
+    public enum TipInstrukcija { Online, Uzivo, Hibridno }
 }

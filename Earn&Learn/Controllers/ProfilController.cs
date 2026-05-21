@@ -33,6 +33,12 @@ namespace Earn_Learn.Controllers
                       (kp, p) => p.naziv)
                 .ToListAsync();
 
+            if (user.Uloga == Uloga.Tutor)
+            {
+                ViewBag.CijenaPoSatu = user.CijenaPoSatu ?? 0;
+                ViewBag.ProsjecnaOcjena = user.ProsjecnaOcjena ?? 0;
+            }
+
             var model = new ProfilViewModel
             {
                 Ime = user.Ime,
@@ -44,6 +50,27 @@ namespace Earn_Learn.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UrediCijenu(double cijenaPoSatu)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Tutor)
+                return RedirectToAction("Index", "Home");
+
+            if (cijenaPoSatu < 0)
+            {
+                TempData["Greska"] = "Cijena ne može biti negativna.";
+                return RedirectToAction("Index");
+            }
+
+            user.CijenaPoSatu = cijenaPoSatu;
+            await _userManager.UpdateAsync(user);
+
+            TempData["Uspjeh"] = $"Cijena uspješno ažurirana na {cijenaPoSatu:0.00} KM/h.";
+            return RedirectToAction("Index");
         }
     }
 }

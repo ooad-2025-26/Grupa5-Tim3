@@ -98,22 +98,26 @@
         color: #c62828;
     }
 
-    .btn-detalji {
-        background: none;
-        border: 1px solid #0d2d45;
-        color: #0d2d45;
+    .btn-otkai {
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 8px;
         padding: 6px 12px;
-        border-radius: 4px;
-        font-size: 0.85rem;
+        font-size: .80rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s;
-        text-decoration: none;
+        color: #555;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: background .2s, border-color .2s, color .2s;
+        white-space: nowrap;
     }
 
-        .btn-detalji:hover {
-            background: #0d2d45;
-            color: #fff;
+        .btn-otkai:hover {
+            background: #ffe0e0;
+            border-color: #f88;
+            color: #c00;
         }
 
     .btn-kreiraj {
@@ -138,11 +142,40 @@
         color: #aaa;
         font-size: .82rem;
     }
+
+    .alert-success {
+        padding: 13px 22px;
+        background: #e8f5e0;
+        color: #2e7d00;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: .93rem;
+        margin-bottom: 20px;
+    }
+
+    .alert-error {
+        padding: 13px 22px;
+        background: #fff0f0;
+        color: #c00;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: .93rem;
+        margin-bottom: 20px;
+    }
 </style>
 
 <div class="casovi-wrapper">
     <div class="casovi-naslov">Moji časovi</div>
     <div class="casovi-podnaslov">Pregled Vaših termina i zakazanih instrukcija od strane studenata</div>
+
+    @if (TempData["Uspjeh"] != null)
+    {
+        <div class="alert-success">✓ @TempData["Uspjeh"]</div>
+    }
+    @if (TempData["Greska"] != null)
+    {
+        <div class="alert-error">✗ @TempData["Greska"]</div>
+    }
 
     @if (Model == null || !Model.Any())
     {
@@ -169,7 +202,7 @@
                     <th>Datum i vrijeme</th>
                     <th>Tip</th>
                     <th>Status</th>
-                    <th>Akcija</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -203,9 +236,12 @@
                             </span>
                         </td>
                         <td>
-                            <a class="btn-detalji" asp-controller="Termins" asp-action="Details" asp-route-id="@stavka.Termin.id">
-                                Detalji
-                            </a>
+                            <form method="post" asp-action="OtkaziTermin" asp-controller="Tutor"
+                                  onsubmit="return confirm('Sigurno želiš otkazati ovaj termin?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="terminId" value="@stavka.Termin.id" />
+                                <button type="submit" class="btn-otkai">🗑 otkaži</button>
+                            </form>
                         </td>
                     </tr>
                 }

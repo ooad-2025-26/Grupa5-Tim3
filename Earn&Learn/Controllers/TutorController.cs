@@ -26,11 +26,30 @@ namespace Earn_Learn.Controllers
             if (user == null || user.Uloga != Uloga.Tutor)
                 return RedirectToAction("Index", "Home");
 
-            var nadolazaciTermini = await _context.Termin
+            var termini = await _context.Termin
                 .Where(t => t.idTutora == user.Id && t.datumIVrijeme >= DateTime.Now)
                 .OrderBy(t => t.datumIVrijeme)
                 .Take(10)
                 .ToListAsync();
+
+            var nadolazaciDetalji = new List<TerminDetaljiViewModel>();
+            foreach (var t in termini)
+            {
+                var predmet = t.idPredmeta.HasValue
+                    ? await _context.Predmet.FindAsync(t.idPredmeta.Value)
+                    : null;
+
+                var student = !string.IsNullOrEmpty(t.idStudenta)
+                    ? await _context.Users.FindAsync(t.idStudenta)
+                    : null;
+
+                nadolazaciDetalji.Add(new TerminDetaljiViewModel
+                {
+                    Termin = t,
+                    ImePredmeta = predmet?.naziv,
+                    ImeStudenta = student != null ? $"{student.Ime} {student.Prezime}" : null
+                });
+            }
 
             var model = new TutorDashboardViewModel
             {
@@ -38,10 +57,44 @@ namespace Earn_Learn.Controllers
                 BrojCasova = user.BrojOdrzanihCasova ?? 0,
                 ProsjecnaOcjena = user.ProsjecnaOcjena ?? 0,
                 Balans = user.StanjeRacuna,
-                NadolazaciTermini = nadolazaciTermini
+                NadolazaciTermini = nadolazaciDetalji
             };
 
             return View(model);
+        }
+
+        // ===================== OTKAŽI TERMIN (TUTOR) =====================
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OtkaziTermin(int terminId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Tutor)
+                return Unauthorized();
+
+            var termin = await _context.Termin.FindAsync(terminId);
+            if (termin == null || termin.idTutora != user.Id)
+                return NotFound();
+
+            // Ako je rezervisan, vrati novac studentu
+            if (termin.status == StatusTermina.Rezervisan && !string.IsNullOrEmpty(termin.idStudenta))
+            {
+                var student = await _context.Users.FindAsync(termin.idStudenta);
+                if (student != null)
+                {
+                    student.StanjeRacuna += termin.cijena;
+                    user.StanjeRacuna -= termin.cijena;
+                    await _userManager.UpdateAsync(student);
+                    await _userManager.UpdateAsync(user);
+                }
+            }
+
+            _context.Termin.Remove(termin);
+            await _context.SaveChangesAsync();
+
+            TempData["Uspjeh"] = "Termin je uspješno otkazan.";
+            return RedirectToAction("Dashboard");
         }
 
         // ===================== PROFIL TUTORA =====================

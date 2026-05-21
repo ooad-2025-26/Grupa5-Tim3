@@ -120,6 +120,10 @@
                     <input type="radio" name="tipInstrukcija" value="Uzivo" />
                     Uživo
                 </label>
+                <label class="tip-kartica" id="lblHibridno">
+                    <input type="radio" name="tipInstrukcija" value="Hibridno" />
+                    Hibridno
+                </label>
             </div>
         </div>
 
@@ -155,7 +159,6 @@
 </div>
 
 <script>
-    // Vizualno označavanje odabrane opcije
     document.querySelectorAll('input[name="tipInstrukcija"]').forEach(function (radio) {
         radio.addEventListener('change', function () {
             document.querySelectorAll('.tip-kartica').forEach(function (k) {

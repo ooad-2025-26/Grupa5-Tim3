@@ -10,23 +10,27 @@
         margin: 60px auto;
         padding: 0 24px;
     }
+
     .profil-ime {
         font-size: 1.8rem;
         font-weight: 800;
         color: #0d2d45;
         margin-bottom: 4px;
     }
+
     .profil-uloga {
         font-size: 1rem;
         font-weight: 600;
         color: #888;
         margin-bottom: 40px;
     }
+
     .profil-grid {
         display: flex;
         gap: 60px;
         flex-wrap: wrap;
     }
+
     .profil-sekcija h4 {
         font-size: .8rem;
         font-weight: 800;
@@ -35,35 +39,158 @@
         text-transform: uppercase;
         margin-bottom: 20px;
     }
+
     .profil-row {
         margin-bottom: 20px;
     }
-    .profil-row .label {
-        font-size: .9rem;
-        font-weight: 700;
-        color: #0d2d45;
-        margin-bottom: 2px;
-    }
-    .profil-row .value {
-        font-size: .9rem;
-        color: #555;
-    }
+
+        .profil-row .label {
+            font-size: .9rem;
+            font-weight: 700;
+            color: #0d2d45;
+            margin-bottom: 2px;
+        }
+
+        .profil-row .value {
+            font-size: .9rem;
+            color: #555;
+        }
+
     .predmet-item {
         font-size: .95rem;
         font-weight: 700;
         color: #0d2d45;
         margin-bottom: 14px;
     }
+
     .profil-footer {
         margin-top: 60px;
         color: #aaa;
         font-size: .82rem;
+    }
+
+    /* Cijena edit */
+    .cijena-box {
+        background: #f7faf4;
+        border: 2px solid #e0f0d0;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-top: 8px;
+    }
+
+    .cijena-prikaz {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .cijena-vrijednost {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0d2d45;
+    }
+
+    .btn-edit-cijena {
+        background: none;
+        border: 1px solid #5bc400;
+        color: #5bc400;
+        border-radius: 8px;
+        padding: 5px 14px;
+        font-size: .82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+        .btn-edit-cijena:hover {
+            background: #5bc400;
+            color: #fff;
+        }
+
+    .cijena-forma {
+        display: none;
+        margin-top: 16px;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .cijena-input {
+        padding: 8px 12px;
+        border: 2px solid #5bc400;
+        border-radius: 8px;
+        font-size: .95rem;
+        font-weight: 700;
+        color: #0d2d45;
+        outline: none;
+        width: 130px;
+    }
+
+    .btn-spremi {
+        background: #5bc400;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 18px;
+        font-size: .88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity .2s;
+    }
+
+        .btn-spremi:hover {
+            opacity: .85;
+        }
+
+    .btn-odustani {
+        background: none;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font-size: .88rem;
+        color: #888;
+        cursor: pointer;
+    }
+
+        .btn-odustani:hover {
+            background: #f5f5f5;
+        }
+
+    .alert-success-profil {
+        padding: 12px 20px;
+        background: #e8f5e0;
+        color: #2e7d00;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: .92rem;
+        margin-bottom: 24px;
+    }
+
+    .alert-error-profil {
+        padding: 12px 20px;
+        background: #fff0f0;
+        color: #c00;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: .92rem;
+        margin-bottom: 24px;
     }
 </style>
 
 <div class="profil-wrapper">
     <div class="profil-ime">@Model.Ime @Model.Prezime</div>
     <div class="profil-uloga">@Model.Uloga.ToString()</div>
+
+    @if (TempData["Uspjeh"] != null)
+    {
+        <div class="alert-success-profil">✓ @TempData["Uspjeh"]</div>
+    }
+    @if (TempData["Greska"] != null)
+    {
+        <div class="alert-error-profil">✗ @TempData["Greska"]</div>
+    }
 
     <div class="profil-grid">
         <div class="profil-sekcija">
@@ -84,20 +211,40 @@
 
             @if (Model.Uloga == Earn_Learn.Enums.Uloga.Tutor)
             {
-                @if (ViewBag.CijenaPoSatu != null)
-                {
-                    <div class="profil-row">
-                        <div class="label">Cijena po satu</div>
-                        <div class="value">@ViewBag.CijenaPoSatu KM/h</div>
-                    </div>
-                }
                 @if (ViewBag.ProsjecnaOcjena != null)
                 {
                     <div class="profil-row">
                         <div class="label">Prosječna ocjena</div>
-                        <div class="value">⭐ @ViewBag.ProsjecnaOcjena.ToString("0.0")</div>
+                        <div class="value">⭐ @(((double)ViewBag.ProsjecnaOcjena).ToString("0.0"))</div>
                     </div>
                 }
+
+                <!-- CIJENA SA EDIT OPCIJOM -->
+                <div class="profil-row">
+                    <div class="label">Cijena po satu</div>
+                    <div class="cijena-box">
+                        <div class="cijena-prikaz">
+                            <span class="cijena-vrijednost" id="cijenaVrijednost">@(((double)ViewBag.CijenaPoSatu).ToString("0.00")) KM/h</span>
+                            <button class="btn-edit-cijena" onclick="toggleEditCijena()">✏ Uredi</button>
+                        </div>
+
+                        <div class="cijena-forma" id="cijenaForma">
+                            <form method="post" asp-action="UrediCijenu" asp-controller="Profil" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                                @Html.AntiForgeryToken()
+                                <input type="number"
+                                       name="cijenaPoSatu"
+                                       class="cijena-input"
+                                       value="@((double)ViewBag.CijenaPoSatu)"
+                                       min="0"
+                                       step="0.5"
+                                       required />
+                                <span style="font-size:.9rem; color:#888;">KM/h</span>
+                                <button type="submit" class="btn-spremi">Spremi</button>
+                                <button type="button" class="btn-odustani" onclick="toggleEditCijena()">Odustani</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             }
         </div>
 
@@ -117,3 +264,18 @@
         &copy; 2026<br />Sva prava zadržana
     </div>
 </div>
+
+<script>
+    function toggleEditCijena() {
+        var forma = document.getElementById('cijenaForma');
+        var prikaz = document.querySelector('.cijena-prikaz');
+        if (forma.style.display === 'flex') {
+            forma.style.display = 'none';
+            prikaz.style.display = 'flex';
+        } else {
+            forma.style.display = 'flex';
+            prikaz.style.display = 'none';
+            forma.querySelector('input').focus();
+        }
+    }
+</script>

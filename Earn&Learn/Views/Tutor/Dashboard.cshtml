@@ -58,7 +58,7 @@
         }
 
     .tdash-termini {
-        max-width: 780px;
+        max-width: 960px;
         margin: 0 auto;
         padding: 0 20px;
     }
@@ -72,44 +72,99 @@
         font-weight: 800;
     }
 
-    .tdash-termin-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 16px 24px;
-        border-bottom: 1px solid #eee;
-        color: #0d2d45;
-        background: #fff;
+    .tdash-table-head {
+        display: grid;
+        grid-template-columns: 2fr 1.6fr 1.8fr 0.8fr 1.1fr 90px;
+        padding: 10px 24px;
+        background: #f7f7f7;
+        border-bottom: 2px solid #e8f5e0;
+        font-size: .75rem;
+        font-weight: 700;
+        color: #5bc400;
+        text-transform: uppercase;
+        letter-spacing: .06em;
     }
 
+    .tdash-termin-row {
+        display: grid;
+        grid-template-columns: 2fr 1.6fr 1.8fr 0.8fr 1.1fr 90px;
+        align-items: center;
+        padding: 15px 24px;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fff;
+        color: #0d2d45;
+        transition: background .15s;
+    }
+
+        .tdash-termin-row:hover {
+            background: #fafffe;
+        }
+
         .tdash-termin-row:last-child {
+            border-bottom: none;
             border-radius: 0 0 10px 10px;
         }
 
-        .tdash-termin-row .naziv {
-            font-size: .95rem;
-            font-weight: 600;
-            color: #333;
+    .tdash-predmet {
+        font-weight: 700;
+        font-size: .95rem;
+        color: #0d2d45;
+    }
+
+    .tdash-student {
+        font-size: .88rem;
+        color: #444;
+    }
+
+        .tdash-student.slobodan {
+            font-size: .85rem;
+            color: #bbb;
+            font-style: italic;
         }
 
-        .tdash-termin-row .datum {
-            font-size: .88rem;
-            color: #888;
-        }
+    .tdash-datum {
+        font-size: .87rem;
+        color: #555;
+    }
+
+    .tdash-tip {
+        font-size: .85rem;
+        color: #666;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 11px;
+        border-radius: 20px;
+        font-size: .74rem;
+        font-weight: 700;
+        letter-spacing: .02em;
+    }
+
+    .badge-rezervisan {
+        background: #fff3e0;
+        color: #e65c00;
+    }
+
+    .badge-slobodan {
+        background: #e8f5e0;
+        color: #2e7d00;
+    }
 
     .btn-otkai {
         background: #f0f0f0;
         border: 1px solid #ddd;
         border-radius: 8px;
-        padding: 6px 14px;
-        font-size: .82rem;
+        padding: 6px 12px;
+        font-size: .80rem;
         font-weight: 600;
         cursor: pointer;
         color: #555;
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        gap: 6px;
-        transition: background .2s;
+        gap: 5px;
+        transition: background .2s, border-color .2s, color .2s;
+        white-space: nowrap;
     }
 
         .btn-otkai:hover {
@@ -119,10 +174,33 @@
         }
 
     .no-termini {
-        color: #888;
-        padding: 20px 24px;
+        color: #999;
+        padding: 28px 24px;
         background: #fff;
         border-radius: 0 0 10px 10px;
+        font-size: .95rem;
+    }
+
+    .alert-success {
+        max-width: 960px;
+        margin: 20px auto 0;
+        padding: 13px 22px;
+        background: #e8f5e0;
+        color: #2e7d00;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: .93rem;
+    }
+
+    .alert-error {
+        max-width: 960px;
+        margin: 20px auto 0;
+        padding: 13px 22px;
+        background: #fff0f0;
+        color: #c00;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: .93rem;
     }
 </style>
 
@@ -150,20 +228,62 @@
         </div>
     </div>
 
+    <!-- ALERTS -->
+    @if (TempData["Uspjeh"] != null)
+    {
+        <div class="alert-success">✓ @TempData["Uspjeh"]</div>
+    }
+    @if (TempData["Greska"] != null)
+    {
+        <div class="alert-error">✗ @TempData["Greska"]</div>
+    }
+
     <!-- NADOLAZEĆI TERMINI -->
     <div class="tdash-termini" style="margin-top: 40px;">
         <div class="tdash-termini-header">Nadolazeći časovi</div>
 
         @if (Model.NadolazaciTermini.Any())
         {
-            @foreach (var t in Model.NadolazaciTermini)
+            <div class="tdash-table-head">
+                <span>Predmet</span>
+                <span>Student</span>
+                <span>Datum i vrijeme</span>
+                <span>Tip</span>
+                <span>Status</span>
+                <span></span>
+            </div>
+
+            @foreach (var item in Model.NadolazaciTermini)
             {
+                var t = item.Termin;
+                var tipLabel = t.tipInstrukcija.ToString() == "Online" ? "Online" : "Uživo";
+                var statusLabel = t.status.ToString() == "Rezervisan" ? "Rezervisan" : "Slobodan";
+                var badgeClass = statusLabel == "Rezervisan" ? "badge-rezervisan" : "badge-slobodan";
+
                 <div class="tdash-termin-row">
-                    <span class="naziv">Termin #@t.id</span>
-                    <div style="display:flex; align-items:center; gap:16px;">
-                        <span class="datum">@t.datumIVrijeme.ToString("d.M.yyyy.")</span>
-                        <button class="btn-otkai">🗑 otkaži</button>
-                    </div>
+
+                    <span class="tdash-predmet">@(item.ImePredmeta ?? "—")</span>
+
+                    @if (!string.IsNullOrEmpty(item.ImeStudenta))
+                    {
+                        <span class="tdash-student">@item.ImeStudenta</span>
+                    }
+                    else
+                    {
+                        <span class="tdash-student slobodan">Slobodan termin</span>
+                    }
+
+                    <span class="tdash-datum">@t.datumIVrijeme.ToString("dd. MMM yyyy. 'u' HH:mm")</span>
+                    <span class="tdash-tip">@tipLabel</span>
+                    <span><span class="badge @badgeClass">@statusLabel</span></span>
+
+                    <form method="post" asp-action="OtkaziTermin" asp-controller="Tutor"
+                          onsubmit="return confirm('Sigurno želiš otkazati ovaj termin?')">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="terminId" value="@t.id" />
+                        <button type="submit" class="btn-otkai">🗑 otkaži</button>
+                    </form>
+
                 </div>
             }
         }
