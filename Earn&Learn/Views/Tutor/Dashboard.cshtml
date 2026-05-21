@@ -5,16 +5,32 @@
 }
 
 <style>
-    .tdash-wrapper { color: #fff; padding-bottom: 60px; }
+    .tdash-wrapper {
+        color: #fff;
+        padding-bottom: 60px;
+    }
 
     .tdash-hero {
         background: #0d2d45;
         padding: 70px 20px 80px;
         text-align: center;
     }
-    .tdash-hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
-    .tdash-hero h2 { font-size: 1.6rem; font-weight: 700; color: #a0b8c8; }
-    .tdash-hero h2 span { color: #5bc400; }
+
+        .tdash-hero h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .tdash-hero h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #a0b8c8;
+        }
+
+            .tdash-hero h2 span {
+                color: #5bc400;
+            }
 
     .tdash-stats {
         background: #0d2d45;
@@ -24,15 +40,29 @@
         padding: 40px 20px 60px;
         flex-wrap: wrap;
     }
-    .tdash-stat { text-align: center; }
-    .tdash-stat .broj { font-size: 3rem; font-weight: 800; color: #fff; }
-    .tdash-stat .label { font-size: .95rem; color: #a0b8c8; margin-top: 4px; }
+
+    .tdash-stat {
+        text-align: center;
+    }
+
+        .tdash-stat .broj {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .tdash-stat .label {
+            font-size: .95rem;
+            color: #a0b8c8;
+            margin-top: 4px;
+        }
 
     .tdash-termini {
         max-width: 780px;
         margin: 0 auto;
         padding: 0 20px;
     }
+
     .tdash-termini-header {
         background: #e8f5e0;
         color: #0d2d45;
@@ -41,6 +71,7 @@
         font-size: 1.2rem;
         font-weight: 800;
     }
+
     .tdash-termin-row {
         display: flex;
         justify-content: space-between;
@@ -50,9 +81,22 @@
         color: #0d2d45;
         background: #fff;
     }
-    .tdash-termin-row:last-child { border-radius: 0 0 10px 10px; }
-    .tdash-termin-row .naziv { font-size: .95rem; font-weight: 600; color: #333; }
-    .tdash-termin-row .datum { font-size: .88rem; color: #888; }
+
+        .tdash-termin-row:last-child {
+            border-radius: 0 0 10px 10px;
+        }
+
+        .tdash-termin-row .naziv {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .tdash-termin-row .datum {
+            font-size: .88rem;
+            color: #888;
+        }
+
     .btn-otkai {
         background: #f0f0f0;
         border: 1px solid #ddd;
@@ -67,8 +111,19 @@
         gap: 6px;
         transition: background .2s;
     }
-    .btn-otkai:hover { background: #ffe0e0; border-color: #f88; color: #c00; }
-    .no-termini { color: #888; padding: 20px 24px; background: #fff; border-radius: 0 0 10px 10px; }
+
+        .btn-otkai:hover {
+            background: #ffe0e0;
+            border-color: #f88;
+            color: #c00;
+        }
+
+    .no-termini {
+        color: #888;
+        padding: 20px 24px;
+        background: #fff;
+        border-radius: 0 0 10px 10px;
+    }
 </style>
 
 <div class="tdash-wrapper">

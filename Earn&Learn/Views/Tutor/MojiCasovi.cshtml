@@ -1,7 +1,11 @@
 ﻿@model IEnumerable<Earn_Learn.Models.TerminSaTutorom>
+@using Earn_Learn.Models
+@using Earn_Learn.Enums
 @{
-    ViewData["Title"] = "Moji časovi (Tutor)";
+    ViewData["Title"] = "Moji časovi";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var mjeseci = new[] { "", "januar", "februar", "mart", "april", "maj", "juni",
+                          "juli", "august", "septembar", "oktobar", "novembar", "decembar" };
 }
 
 <style>
@@ -10,48 +14,56 @@
         margin: 60px auto;
         padding: 0 24px;
     }
+
     .casovi-naslov {
         font-size: 1.8rem;
         font-weight: 800;
         color: #0d2d45;
         margin-bottom: 4px;
     }
+
     .casovi-podnaslov {
         font-size: 1rem;
         font-weight: 600;
         color: #888;
         margin-bottom: 40px;
     }
+
     .tabela-casova {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
         background: #fff;
     }
-    .tabela-casova th {
-        text-align: left;
-        padding: 12px 16px;
-        font-size: .85rem;
-        font-weight: 800;
-        color: #5bc400;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        border-bottom: 2px solid #f0f0f0;
-    }
-    .tabela-casova td {
-        padding: 16px;
-        font-size: .92rem;
-        color: #333;
-        border-bottom: 1px solid #f5f5f5;
-        vertical-align: middle;
-    }
-    .tabela-casova tr:hover {
-        background-color: #fafafa;
-    }
+
+        .tabela-casova th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: .85rem;
+            font-weight: 800;
+            color: #5bc400;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tabela-casova td {
+            padding: 16px;
+            font-size: .92rem;
+            color: #333;
+            border-bottom: 1px solid #f5f5f5;
+            vertical-align: middle;
+        }
+
+        .tabela-casova tr:hover {
+            background-color: #fafafa;
+        }
+
     .predmet-naziv {
         font-weight: 700;
         color: #0d2d45;
     }
+
     .status-badge {
         display: inline-block;
         padding: 4px 12px;
@@ -60,12 +72,32 @@
         font-weight: 700;
         text-transform: uppercase;
     }
-    .status-Slobodan { background-color: #e8f5e9; color: #2e7d32; }
-    .status-Rezervisan { background-color: #fff3e0; color: #ef6c00; }
-    .status-Potvrdjen { background-color: #e3f2fd; color: #1565c0; }
-    .status-Odrzan { background-color: #f3e5f5; color: #6a1b9a; }
-    .status-Otkazan { background-color: #ffebee; color: #c62828; }
-    
+
+    .status-Slobodan {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .status-Rezervisan {
+        background-color: #fff3e0;
+        color: #ef6c00;
+    }
+
+    .status-Potvrdjen {
+        background-color: #e3f2fd;
+        color: #1565c0;
+    }
+
+    .status-Odrzan {
+        background-color: #f3e5f5;
+        color: #6a1b9a;
+    }
+
+    .status-Otkazan {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+
     .btn-detalji {
         background: none;
         border: 1px solid #0d2d45;
@@ -78,10 +110,29 @@
         transition: all 0.2s;
         text-decoration: none;
     }
-    .btn-detalji:hover {
-        background: #0d2d45;
+
+        .btn-detalji:hover {
+            background: #0d2d45;
+            color: #fff;
+        }
+
+    .btn-kreiraj {
+        display: inline-block;
+        background: #5bc400;
         color: #fff;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        text-decoration: none;
+        transition: opacity 0.2s;
     }
+
+        .btn-kreiraj:hover {
+            opacity: 0.85;
+            color: #fff;
+        }
+
     .casovi-footer {
         margin-top: 60px;
         color: #aaa;
@@ -98,9 +149,18 @@
         <div style="background-color: #f4f6f8; padding: 20px; border-radius: 6px; color: #555;">
             Trenutno nemate unesenih termina u rasporedu.
         </div>
+        <a class="btn-kreiraj" style="margin-top:16px; display:inline-block;" asp-controller="Tutor" asp-action="KreirajTermin">
+            + Kreiraj termin
+        </a>
     }
     else
     {
+        <div style="text-align: right; margin-bottom: 12px;">
+            <a class="btn-kreiraj" asp-controller="Tutor" asp-action="KreirajTermin">
+                + Kreiraj termin
+            </a>
+        </div>
+
         <table class="tabela-casova">
             <thead>
                 <tr>
@@ -115,6 +175,9 @@
             <tbody>
                 @foreach (var stavka in Model)
                 {
+                    var d = stavka.Termin.datumIVrijeme;
+                    var datumBos = $"{d.Day}. {mjeseci[d.Month]} {d.Year}. u {d.ToString("HH:mm")}";
+                    var tipTekst = stavka.Termin.tipInstrukcija == TipInstrukcija.Uzivo ? "Uživo" : "Online";
                     <tr>
                         <td>
                             <span class="predmet-naziv">
@@ -122,14 +185,18 @@
                             </span>
                         </td>
                         <td>
-                            @if(stavka.Termin.idStudenta != null) {
-                                @:@stavka.Tutor.Ime @stavka.Tutor.Prezime
-                            } else {
+                            @if (!string.IsNullOrEmpty(stavka.Termin.idStudenta))
+                            {
+                                @stavka.Tutor.Ime
+                                @: @stavka.Tutor.Prezime
+                            }
+                            else
+                            {
                                 <span style="color: #aaa; font-style: italic;">Slobodan termin</span>
                             }
                         </td>
-                        <td>@stavka.Termin.datumIVrijeme.ToString("dd. MMM yyyy. u HH:mm")</td>
-                        <td>@stavka.Termin.tipInstrukcija.ToString()</td>
+                        <td>@datumBos</td>
+                        <td>@tipTekst</td>
                         <td>
                             <span class="status-badge status-@stavka.Termin.status.ToString()">
                                 @stavka.Termin.status.ToString()

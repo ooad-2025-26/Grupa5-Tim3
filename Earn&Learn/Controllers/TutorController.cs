@@ -51,7 +51,6 @@ namespace Earn_Learn.Controllers
             if (tutor == null || tutor.Uloga != Uloga.Tutor)
                 return NotFound();
 
-            // Predmeti tutora
             var korisnikPredmeti = await _context.KorisnikPredmet
                 .Where(kp => kp.idKorisnika == id)
                 .ToListAsync();
@@ -62,7 +61,6 @@ namespace Earn_Learn.Controllers
                 .Where(p => idPredmeta.Contains(p.id))
                 .ToListAsync();
 
-            // Recenzije tutora — dohvati i ime studenta odmah ovdje
             var recenzijeRaw = await _context.Recenzija
                 .Where(r => r.idTutora == id)
                 .OrderByDescending(r => r.datumRecenzije)
@@ -79,7 +77,6 @@ namespace Earn_Learn.Controllers
                 });
             }
 
-            // Dostupni termini (slobodni, u budućnosti)
             var dostupniTermini = await _context.Termin
                 .Where(t => t.idTutora == id
                          && t.datumIVrijeme >= DateTime.Now
@@ -123,7 +120,6 @@ namespace Earn_Learn.Controllers
             if (tutor == null)
                 return NotFound();
 
-            // Provjeri balans studenta
             double cijena = tutor.CijenaPoSatu ?? 0;
             if (student.StanjeRacuna < cijena)
             {
@@ -131,14 +127,12 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Profil", new { id = tutor.Id });
             }
 
-            // Rezerviši termin
             termin.idStudenta = student.Id;
             termin.idPredmeta = predmetId;
             termin.tipInstrukcija = tipInstrukcija;
             termin.status = StatusTermina.Rezervisan;
             termin.cijena = cijena;
 
-            // Skini s računa studenta, dodaj tutoru
             student.StanjeRacuna -= cijena;
             tutor.StanjeRacuna += cijena;
 
@@ -160,7 +154,6 @@ namespace Earn_Learn.Controllers
             if (student == null || student.Uloga != Uloga.Student)
                 return Unauthorized();
 
-            // Provjeri da li je student imao čas s ovim tutorom
             var imaOdrzanCas = await _context.Termin
                 .AnyAsync(t => t.idStudenta == student.Id
                             && t.idTutora == tutorId
@@ -172,7 +165,6 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Profil", new { id = tutorId });
             }
 
-            // Provjeri da li već postoji recenzija
             var postojiRecenzija = await _context.Recenzija
                 .AnyAsync(r => r.idStudenta == student.Id && r.idTutora == tutorId);
 
@@ -194,7 +186,6 @@ namespace Earn_Learn.Controllers
             _context.Recenzija.Add(recenzija);
             await _context.SaveChangesAsync();
 
-            // Ažuriraj prosječnu ocjenu tutora
             var sve = await _context.Recenzija.Where(r => r.idTutora == tutorId).ToListAsync();
             var tutor = await _userManager.FindByIdAsync(tutorId);
             if (tutor != null)
@@ -374,7 +365,6 @@ namespace Earn_Learn.Controllers
             if (user == null || user.Uloga != Uloga.Tutor)
                 return RedirectToAction("Index", "Home");
 
-            // Povlačimo sve termine gdje je ovaj korisnik tutor
             var termini = await _context.Termin
                 .Where(t => t.idTutora == user.Id)
                 .OrderByDescending(t => t.datumIVrijeme)
@@ -397,6 +387,56 @@ namespace Earn_Learn.Controllers
             }
 
             return View(model);
+        }
+
+        // ===================== KREIRAJ TERMIN (TUTOR) =====================
+        [Authorize]
+        public async Task<IActionResult> KreirajTermin()
+        {
+            var tutor = await _userManager.GetUserAsync(User);
+            if (tutor == null || tutor.Uloga != Uloga.Tutor)
+                return Forbid();
+
+            var predmeti = await _context.KorisnikPredmet
+                .Where(kp => kp.idKorisnika == tutor.Id)
+                .Join(_context.Predmet,
+                      kp => kp.idPredmeta,
+                      p => p.id,
+                      (kp, p) => p)
+                .ToListAsync();
+
+            ViewBag.Predmeti = predmeti;
+            ViewBag.CijenaPoSatu = tutor.CijenaPoSatu ?? 0;
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> KreirajTermin(
+            DateTime datumIVrijeme,
+            int idPredmeta,
+            TipInstrukcija tipInstrukcija)
+        {
+            var tutor = await _userManager.GetUserAsync(User);
+            if (tutor == null || tutor.Uloga != Uloga.Tutor)
+                return Forbid();
+
+            var termin = new Termin
+            {
+                idTutora = tutor.Id,
+                idStudenta = string.Empty,
+                idPredmeta = idPredmeta,
+                datumIVrijeme = datumIVrijeme,
+                tipInstrukcija = tipInstrukcija,
+                status = StatusTermina.Slobodan,
+                cijena = tutor.CijenaPoSatu ?? 0
+            };
+
+            _context.Add(termin);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("MojiCasovi");
         }
     }
 }
