@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 using Earn_Learn.Data;
 using Earn_Learn.Enums;
 using Earn_Learn.Models;
@@ -36,25 +40,29 @@ namespace Earn_Learn.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required(ErrorMessage = "Ime je obavezno.")]
+            [RegularExpression(@"^[a-zA-ZčćžšđČĆŽŠĐ]+$", ErrorMessage = "Ime ne smije sadržati specijalne karaktere.")]
             public string Ime { get; set; } = string.Empty;
 
             [Required(ErrorMessage = "Prezime je obavezno.")]
+            [RegularExpression(@"^[a-zA-ZčćžšđČĆŽŠĐ]+$", ErrorMessage = "Prezime ne može sadržati specijalne karaktere.")]
             public string Prezime { get; set; } = string.Empty;
 
             [Required(ErrorMessage = "Email je obavezan.")]
-            [EmailAddress(ErrorMessage = "Neispravan format emaila.")]
+            [EmailAddress(ErrorMessage = "Nije validan format email adrese.")]
+            [RegularExpression(@"^[a-zA-Z0-9._%+-]+@etf\.unsa\.ba$", ErrorMessage = "Nekorektna e-mail adresa. ")]
             public string Email { get; set; } = string.Empty;
 
             [Required(ErrorMessage = "Šifra je obavezna.")]
-            [StringLength(100, ErrorMessage = "Šifra mora imati najmanje {2} karaktera.", MinimumLength = 6)]
+            [StringLength(100, ErrorMessage = "{0} mora biti dugačka barem {2} karaktera.", MinimumLength = 6)]
             [DataType(DataType.Password)]
             public string Password { get; set; } = string.Empty;
 
             [DataType(DataType.Password)]
-            [Compare("Password", ErrorMessage = "Šifre se ne poklapaju.")]
+            [Display(Name = "Potvrda šifre")]
+            [Compare("Password", ErrorMessage = "Šifre se ne podudaraju.")]
             public string ConfirmPassword { get; set; } = string.Empty;
 
-            public bool ZelimBitiTutor { get; set; } = false;
+            public bool ZelimBitiTutor { get; set; }
 
             public List<int> OdabraniPredmeti { get; set; } = new();
         }
@@ -68,17 +76,18 @@ namespace Earn_Learn.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string? returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-            await UcitajPredmete();
 
             if (ModelState.IsValid)
             {
+                var odabranaUloga = Input.ZelimBitiTutor ? Uloga.Tutor : Uloga.Student;
+
                 var korisnik = new Korisnik
                 {
-                    UserName = Input.Email,
-                    Email = Input.Email,
                     Ime = Input.Ime,
                     Prezime = Input.Prezime,
-                    Uloga = Input.ZelimBitiTutor ? Uloga.Tutor : Uloga.Student,
+                    Email = Input.Email,
+                    UserName = Input.Email,
+                    Uloga = odabranaUloga,
                     DatumRegistracije = DateTime.UtcNow
                 };
 
@@ -86,8 +95,7 @@ namespace Earn_Learn.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    // Ako je tutor, spremi odabrane predmete
-                    if (Input.ZelimBitiTutor && Input.OdabraniPredmeti.Any())
+                    if (Input.ZelimBitiTutor && Input.OdabraniPredmeti != null && Input.OdabraniPredmeti.Any())
                     {
                         foreach (var predmetId in Input.OdabraniPredmeti)
                         {
@@ -110,6 +118,8 @@ namespace Earn_Learn.Areas.Identity.Pages.Account
                 }
             }
 
+            // Ako validacija padne, ponovo punimo listu predmeta prije povratka na formu
+            await UcitajPredmete();
             return Page();
         }
 

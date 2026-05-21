@@ -1,0 +1,119 @@
+﻿@model Earn_Learn.Models.ProfilViewModel
+@{
+    ViewData["Title"] = "Moj profil";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .profil-wrapper {
+        max-width: 800px;
+        margin: 60px auto;
+        padding: 0 24px;
+    }
+    .profil-ime {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0d2d45;
+        margin-bottom: 4px;
+    }
+    .profil-uloga {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #888;
+        margin-bottom: 40px;
+    }
+    .profil-grid {
+        display: flex;
+        gap: 60px;
+        flex-wrap: wrap;
+    }
+    .profil-sekcija h4 {
+        font-size: .8rem;
+        font-weight: 800;
+        color: #5bc400;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+    }
+    .profil-row {
+        margin-bottom: 20px;
+    }
+    .profil-row .label {
+        font-size: .9rem;
+        font-weight: 700;
+        color: #0d2d45;
+        margin-bottom: 2px;
+    }
+    .profil-row .value {
+        font-size: .9rem;
+        color: #555;
+    }
+    .predmet-item {
+        font-size: .95rem;
+        font-weight: 700;
+        color: #0d2d45;
+        margin-bottom: 14px;
+    }
+    .profil-footer {
+        margin-top: 60px;
+        color: #aaa;
+        font-size: .82rem;
+    }
+</style>
+
+<div class="profil-wrapper">
+    <div class="profil-ime">@Model.Ime @Model.Prezime</div>
+    <div class="profil-uloga">@Model.Uloga.ToString()</div>
+
+    <div class="profil-grid">
+        <div class="profil-sekcija">
+            <h4>Osnovni podaci</h4>
+
+            @if (Model.Uloga == Earn_Learn.Enums.Uloga.Student && Model.BrojIndeksa.HasValue)
+            {
+                <div class="profil-row">
+                    <div class="label">Godina studija</div>
+                    <div class="value">Broj indeksa: @Model.BrojIndeksa</div>
+                </div>
+            }
+
+            <div class="profil-row">
+                <div class="label">Email adresa</div>
+                <div class="value">@Model.Email</div>
+            </div>
+
+            @if (Model.Uloga == Earn_Learn.Enums.Uloga.Tutor)
+            {
+                @if (ViewBag.CijenaPoSatu != null)
+                {
+                    <div class="profil-row">
+                        <div class="label">Cijena po satu</div>
+                        <div class="value">@ViewBag.CijenaPoSatu KM/h</div>
+                    </div>
+                }
+                @if (ViewBag.ProsjecnaOcjena != null)
+                {
+                    <div class="profil-row">
+                        <div class="label">Prosječna ocjena</div>
+                        <div class="value">⭐ @ViewBag.ProsjecnaOcjena.ToString("0.0")</div>
+                    </div>
+                }
+            }
+        </div>
+
+        @if (Model.Predmeti != null && Model.Predmeti.Any())
+        {
+            <div class="profil-sekcija">
+                <h4>@(Model.Uloga == Earn_Learn.Enums.Uloga.Tutor ? "Predmeti koje predajem:" : "Predmeti od interesa:")</h4>
+                @foreach (var p in Model.Predmeti)
+                {
+                    <div class="predmet-item"><i class="bi bi-book text-muted me-2"></i>@p</div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="profil-footer">
+        &copy; 2026<br />Sva prava zadržana
+    </div>
+</div>

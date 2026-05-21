@@ -27,14 +27,19 @@
             margin-bottom: 28px;
         }
 
+    /* Omotač za kontrolu apsolutnog pozicioniranja dropdowna */
+    .search-wrapper-container {
+        position: relative;
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
     .dash-search {
         display: flex;
         align-items: center;
         background: #fff;
         border-radius: 30px;
         padding: 13px 24px;
-        max-width: 560px;
-        margin: 0 auto;
         gap: 12px;
     }
 
@@ -60,6 +65,107 @@
             display: flex;
             align-items: center;
         }
+
+    /* ── STILOVI ZA DROPDOWN PRETRAGE ── */
+    .search-results-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 1000;
+        margin-top: 10px;
+        max-height: 420px;
+        overflow-y: auto;
+        display: none; /* Sakriveno dok korisnik ne unese tekst */
+        padding: 8px;
+    }
+
+    .search-tutor-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.2s, transform 0.15s;
+        border-radius: 12px;
+    }
+
+        .search-tutor-card:last-child {
+            border-bottom: none;
+        }
+
+        .search-tutor-card:hover {
+            background: #f7f9fb;
+        }
+
+    .tutor-info-box {
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .tutor-info-box h4 {
+            margin: 0;
+            font-size: 1.05rem;
+            color: #0d2d45;
+            font-weight: 800;
+        }
+
+        .tutor-info-box p {
+            margin: 0;
+            font-size: 0.88rem;
+            color: #666;
+            line-height: 1.4;
+        }
+
+    .tutor-info-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-top: 2px;
+    }
+
+    .search-rating {
+        color: #ffc107;
+    }
+
+    .search-price {
+        color: #0d2d45;
+        background: #eef2f5;
+        padding: 2px 8px;
+        border-radius: 6px;
+    }
+
+    .btn-zakazi-search {
+        background: #5bc400;
+        color: #fff !important;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 20px;
+        font-size: 0.88rem;
+        font-weight: 800;
+        text-decoration: none !important;
+        transition: background 0.2s;
+        white-space: nowrap;
+    }
+
+        .btn-zakazi-search:hover {
+            background: #4ab000;
+        }
+
+    .search-no-results {
+        padding: 20px;
+        text-align: center;
+        color: #888;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
 
     /* ── SESIJE ── */
     .dash-sessions {
@@ -97,7 +203,13 @@
         .no-termini a {
             color: #5bc400;
             text-decoration: none;
+            cursor: pointer;
+            font-weight: bold;
         }
+
+            .no-termini a:hover {
+                text-decoration: underline;
+            }
 
     /* ── TUTOR SPOTLIGHT ── */
     .dash-spotlight {
@@ -166,23 +278,22 @@
 
 <div class="dash-wrapper">
 
-    <!-- HERO -->
     <div class="dash-hero">
         <h1>Zdravo, @Model.Ime!</h1>
 
-        <!-- Search bar koji vodi na Tutor/Pretraga -->
-        <form asp-controller="Tutor" asp-action="Pretraga" method="get">
+        <div class="search-wrapper-container">
             <div class="dash-search">
                 <i class="bi bi-search"></i>
-                <input type="text" name="q" placeholder="Pretraži tutore ili predmete npr. Tehnike programiranja" />
-                <button type="submit">
+                <input type="text" id="studentSearchInput" placeholder="Pretraži tutore ili predmete npr. Tehnike programiranja" autocomplete="off" />
+                <button type="button" id="btnSearchSubmit">
                     <i class="bi bi-arrow-right" style="color:#0d2d45;"></i>
                 </button>
             </div>
-        </form>
+            
+            <div id="searchResultsDropdown" class="search-results-dropdown"></div>
+        </div>
     </div>
 
-    <!-- NADOLAZEĆI TERMINI -->
     <div class="dash-sessions">
         <h2>Tvoje nadolazeće tutoring sesije</h2>
 
@@ -204,12 +315,11 @@
         {
             <p class="no-termini">
                 Nemaš nadolazećih termina.
-                <a asp-controller="Tutor" asp-action="Index">Pronađi tutora!</a>
+                <a id="linkPronadjiTutora">Pronađi tutora!</a>
             </p>
         }
     </div>
 
-    <!-- TUTOR SPOTLIGHT -->
     <div class="dash-spotlight">
         <h2>TUTOR SPOTLIGHT</h2>
         <p class="subtitle">Najbolje ocijenjeni tutori</p>
@@ -217,9 +327,7 @@
         <div class="tutor-grid">
             @foreach (var t in Model.TopTutori)
             {
-                <!-- Vodi na Profil, ne Detalji -->
-                <a asp-controller="Tutor" asp-action="Profil" asp-route-id="@t.Id"
-                       style="text-decoration:none;">
+                <a asp-controller="Tutor" asp-action="Profil" asp-route-id="@t.Id" style="text-decoration:none;">
                     <div class="tutor-card">
                         <i class="bi bi-person-circle"></i>
                         <span class="tutor-name">@t.Ime @t.Prezime</span>
@@ -232,5 +340,89 @@
             }
         </div>
     </div>
-
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function () {
+            var searchInput = $('#studentSearchInput');
+            var resultsDropdown = $('#searchResultsDropdown');
+
+            // NOVO: Klik na "Pronađi tutora!" link skrola na vrh i fokusira input polje pretrage
+            $('#linkPronadjiTutora').on('click', function (e) {
+                e.preventDefault();
+                
+                // Lagani scroll do vrha stranice gdje se nalazi search bar
+                $('html, body').animate({
+                    scrollTop: $(".dash-hero").offset().top
+                }, 400, function() {
+                    // Kada završi scroll, automatski aktivira i fokusira polje za unos
+                    searchInput.focus();
+                });
+            });
+
+            // Osluškivanje unosa u search bar
+            searchInput.on('input', function () {
+                var query = $(this).val().trim();
+
+                if (query.length === 0) {
+                    resultsDropdown.hide().empty();
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Student/PretraziTutore',
+                    type: 'GET',
+                    data: { query: query },
+                    success: function (data) {
+                        resultsDropdown.empty();
+
+                        if (data.length === 0) {
+                            resultsDropdown.append('<div class="search-no-results">Nema pronađenih tutora ni predmeta.</div>');
+                        } else {
+                            $.each(data, function (index, tutor) {
+                                var predmetiLista = tutor.predmeti.join(', ');
+                                var ocjenaTekst = tutor.prosjecnaOcjena > 0 ? '★ ' + tutor.prosjecnaOcjena.toFixed(1) : '★ Nema ocjena';
+                                
+                                var cardHtml = `
+                                    <div class="search-tutor-card">
+                                        <div class="tutor-info-box">
+                                            <h4>${tutor.ime} ${tutor.prezime}</h4>
+                                            <p><strong>Predmeti:</strong> ${predmetiLista || 'Nema dodijeljenih predmeta'}</p>
+                                            <div class="tutor-info-meta">
+                                                <span class="search-rating">${ocjenaTekst}</span>
+                                                <span class="search-price">Cijena po dogovoru</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <a href="/Tutor/Profil?id=${tutor.id}" class="btn-zakazi-search">Zakaži</a>
+                                        </div>
+                                    </div>
+                                `;
+                                resultsDropdown.append(cardHtml);
+                            });
+                        }
+                        resultsDropdown.show();
+                    },
+                    error: function () {
+                        console.error("Greška prilikom izvršavanja pretrage.");
+                    }
+                });
+            });
+
+            $(document).click(function (e) {
+                if (!$(e.target).closest('.search-wrapper-container').length) {
+                    resultsDropdown.hide();
+                }
+            });
+
+            searchInput.click(function () {
+                if ($(this).val().trim().length > 0) {
+                    resultsDropdown.show();
+                }
+            });
+        });
+    </script>
+}

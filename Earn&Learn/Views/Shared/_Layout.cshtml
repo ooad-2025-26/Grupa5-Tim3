@@ -154,22 +154,37 @@
             <img src="~/images/Logo.png" alt="Earn&Learn logo" />
         </a>
         <div class="el-nav-links">
-            <a class="nav-text" asp-area="" asp-controller="Home" asp-action="About">O nama</a>
-            <a class="nav-text" asp-area="" asp-controller="Home" asp-action="Contact">Kontakt</a>
-
             @if (User.Identity != null && User.Identity.IsAuthenticated)
             {
-                <span class="nav-text" style="font-weight:700; color:#0d2d45;">
-                    Zdravo, @((await UserManager.GetUserAsync(User))?.Ime ?? User.Identity!.Name)
-                </span>
+                var korisnik = await UserManager.GetUserAsync(User);
+
+                @if (korisnik?.Uloga == Earn_Learn.Enums.Uloga.Student)
+                {
+                    <a class="nav-text" asp-controller="Student" asp-action="Dashboard">Dashboard</a>
+                    <a class="nav-text" asp-controller="Student" asp-action="MojiCasovi">Moji Časovi</a>
+                }
+                else if (korisnik?.Uloga == Earn_Learn.Enums.Uloga.Tutor)
+                {
+                    <a class="nav-text" asp-controller="Tutor" asp-action="Dashboard">Dashboard</a>
+                    <a class="nav-text" asp-controller="Tutor" asp-action="MojiCasovi">Moji Časovi</a>
+                }
+                else if (korisnik?.Uloga == Earn_Learn.Enums.Uloga.SystemManager)
+                {
+                    <a class="nav-text" asp-controller="SystemManager" asp-action="Dashboard">Dashboard</a>
+                }
+
+                <a class="btn-prijava" asp-controller="Profil" asp-action="Index">Moj profil</a>
+
                 <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post" style="display:inline;">
                     <button type="submit" class="btn-prijava" style="border:none; cursor:pointer;">Odjava</button>
                 </form>
             }
             else
             {
+                <a class="nav-text" asp-controller="Home" asp-action="About">O nama</a>
+                <a class="nav-text" asp-controller="Home" asp-action="Contact">Kontakt</a>
                 <a class="btn-prijava" asp-area="Identity" asp-page="/Account/Login">Prijava</a>
-                <a class="btn-registracija" asp-area="Identity" asp-page="/Account/Register">Registracija</a>
+                <a class="btn-registracija" href="/Identity/Account/Register">Registracija</a>
             }
         </div>
     </nav>

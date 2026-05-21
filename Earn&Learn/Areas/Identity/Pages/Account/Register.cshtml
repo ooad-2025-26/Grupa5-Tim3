@@ -9,7 +9,7 @@
 <style>
     .reg-hero {
         background: #5bc400;
-        padding: 60px 20px 40px;
+        padding: 40px 20px;
         text-align: center;
         margin: 0 30px 0;
         border-radius: 0 0 18px 18px;
@@ -26,29 +26,8 @@
             color: rgba(255,255,255,0.88);
             font-size: .97rem;
             max-width: 520px;
-            margin: 0 auto 36px;
+            margin: 0 auto;
             line-height: 1.6;
-        }
-
-    .reg-role-row {
-        display: flex;
-        justify-content: center;
-        gap: 60px;
-        flex-wrap: wrap;
-    }
-
-    .reg-role-item {
-        text-align: center;
-        color: #fff;
-        font-weight: 700;
-        font-size: 1rem;
-        cursor: pointer;
-    }
-
-        .reg-role-item .role-icon {
-            font-size: 2.2rem;
-            margin-bottom: 8px;
-            display: block;
         }
 
     .reg-form-section {
@@ -114,27 +93,6 @@
 
         .reg-field input::placeholder {
             color: #aaa;
-        }
-
-    .reg-check {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 16px;
-        cursor: pointer;
-    }
-
-        .reg-check input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #5bc400;
-            cursor: pointer;
-        }
-
-        .reg-check span {
-            font-size: .93rem;
-            font-weight: 600;
-            color: #333;
         }
 
     #tutor-fields {
@@ -243,28 +201,50 @@
         font-size: .85rem;
         min-width: 14px;
     }
+    /* Dodatni stilovi za dugme oka unutar input grupe */
+    .password-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+        .password-wrapper input {
+            padding-right: 45px !important; /* Prostor da tekst ne ide preko oka */
+        }
+
+    .btn-toggle-password {
+        position: absolute;
+        right: 0;
+        top: 0;
+        height: 100%;
+        background: transparent;
+        border: none;
+        padding: 0 14px;
+        color: #888;
+        cursor: pointer;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0 8px 8px 0;
+    }
+
+        .btn-toggle-password:focus {
+            outline: none;
+        }
+    
+        .btn-toggle-password:hover {
+            color: #5bc400;
+        }
 </style>
 
-<!-- HERO -->
 <section class="reg-hero">
     <h1>Pridruži se Earn&amp;Learn zajednici</h1>
     <p>
-        Odaberi svoju ulogu ispod kako bi nastavio/la. Studentima nudimo brzu pomoć i povezivanje
-        s tutorima. Ako želiš podučavati i zaraditi putem platforme, odaberi Tutor.
+        Popuni svoje podatke ispod i odaberi ulogu kako bi započeo/la rad na platformi.
     </p>
-    <div class="reg-role-row">
-        <div class="reg-role-item">
-            <span class="role-icon"><i class="bi bi-coin"></i></span>
-            Registruj se kao<br>Tutor
-        </div>
-        <div class="reg-role-item">
-            <span class="role-icon"><i class="bi bi-journal-bookmark"></i></span>
-            Registruj se kao<br>Student
-        </div>
-    </div>
 </section>
 
-<!-- FORM -->
 <section class="reg-form-section">
     <div class="reg-card">
         <h2>Registracijski podaci</h2>
@@ -277,13 +257,13 @@
 
             <div class="reg-field">
                 <label asp-for="Input.Ime">Ime</label>
-                <input asp-for="Input.Ime" type="text" placeholder="Ime" />
+                <input asp-for="Input.Ime" type="text" placeholder="Unesite ime" />
                 <span asp-validation-for="Input.Ime" class="text-danger"></span>
             </div>
 
             <div class="reg-field">
                 <label asp-for="Input.Prezime">Prezime</label>
-                <input asp-for="Input.Prezime" type="text" placeholder="Prezime" />
+                <input asp-for="Input.Prezime" type="text" placeholder="Unesite prezime" />
                 <span asp-validation-for="Input.Prezime" class="text-danger"></span>
             </div>
 
@@ -296,7 +276,12 @@
 
             <div class="reg-field">
                 <label asp-for="Input.Password">Šifra</label>
-                <input asp-for="Input.Password" type="password" id="sifraInput" placeholder="Najmanje 6 karaktera" />
+                <div class="password-wrapper">
+                    <input asp-for="Input.Password" type="password" id="sifraInput" placeholder="Najmanje 6 karaktera" />
+                    <button type="button" class="btn-toggle-password" onclick="togglePasswordVisibility('sifraInput', 'okoIkonaSifra')">
+                        <i class="bi bi-eye-slash" id="okoIkonaSifra"></i>
+                    </button>
+                </div>
                 <div class="sifra-pravila" id="sifraPravila">
                     <div class="pravilo" id="p-duzina">
                         <span class="pravilo-ikona">○</span> Najmanje 6 karaktera
@@ -304,11 +289,11 @@
                     <div class="pravilo" id="p-veliko">
                         <span class="pravilo-ikona">○</span> Najmanje jedno veliko slovo
                     </div>
+                    <div class="pravilo" id="p-malo">
+                        <span class="pravilo-ikona">○</span> Najmanje jedno malo slovo
+                    </div>
                     <div class="pravilo" id="p-broj">
                         <span class="pravilo-ikona">○</span> Najmanje jedan broj
-                    </div>
-                    <div class="pravilo" id="p-znak">
-                        <span class="pravilo-ikona">○</span> Najmanje jedan specijalni znak (!#$%^&amp;*)
                     </div>
                 </div>
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
@@ -316,23 +301,25 @@
 
             <div class="reg-field">
                 <label asp-for="Input.ConfirmPassword">Potvrda</label>
-                <input asp-for="Input.ConfirmPassword" type="password" id="potvrdaInput" placeholder="Ponovo upiši šifru" />
+                <div class="password-wrapper">
+                    <input asp-for="Input.ConfirmPassword" type="password" id="potvrdaInput" placeholder="Ponovo upiši šifru" />
+                    <button type="button" class="btn-toggle-password" onclick="togglePasswordVisibility('potvrdaInput', 'okoIkonaPotvrda')">
+                        <i class="bi bi-eye-slash" id="okoIkonaPotvrda"></i>
+                    </button>
+                </div>
                 <div class="val-hint" id="potvrdaHint"></div>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
 
             <div class="reg-field">
-                <label>Uloga</label>
-                <select name="uloga" style="width:100%; padding:11px 14px; background:#f0f0f0; border:none; border-radius:8px; font-size:.95rem;">
+                <label>Izaberi ulogu</label>
+                <select id="ulogaSelect" name="uloga">
                     <option value="2">Student</option>
                     <option value="1">Tutor</option>
                 </select>
             </div>
 
-            <label class="reg-check">
-                <input type="checkbox" id="zelimTutor" asp-for="Input.ZelimBitiTutor" />
-                <span>Želim biti tutor</span>
-            </label>
+            <input type="checkbox" id="zelimTutor" asp-for="Input.ZelimBitiTutor" style="display:none;" />
 
             <div id="tutor-fields">
                 <div class="reg-field">
@@ -370,10 +357,26 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // ── TUTOR FIELDS ──
-        document.getElementById('zelimTutor').addEventListener('change', function () {
-            document.getElementById('tutor-fields').style.display = this.checked ? 'block' : 'none';
+        // ── KONTROLA DROPDOWNA I PRIKAZ POLJA ──
+        var ulogaSelect = document.getElementById('ulogaSelect');
+        var zelimTutorCheckbox = document.getElementById('zelimTutor');
+        var tutorFields = document.getElementById('tutor-fields');
+
+        ulogaSelect.addEventListener('change', function () {
+            if (this.value === "1") { // Ako je izabran Tutor
+                zelimTutorCheckbox.checked = true;
+                tutorFields.style.display = 'block';
+            } else { // Ako je izabran Student
+                zelimTutorCheckbox.checked = false;
+                tutorFields.style.display = 'none';
+            }
         });
+
+        // Pokreni odmah na učitavanju u slučaju da browser zapamti prethodni izbor
+        if (ulogaSelect.value === "1") {
+            zelimTutorCheckbox.checked = true;
+            tutorFields.style.display = 'block';
+        }
 
         // ── EMAIL VALIDACIJA ──
         var emailInput = document.getElementById('emailInput');
@@ -386,9 +389,9 @@
                 emailHint.textContent = '';
                 return;
             }
-            if (!val.endsWith('\x40et.unsa.ba')) {
+            if (!val.endsWith('@@etf.unsa.ba')) {
                 emailHint.className = 'val-hint greska';
-                emailHint.textContent = 'Email mora biti u formatu: ime@etf.unsa.ba';
+                emailHint.textContent = 'Email mora biti u formatu: ime@@etf.unsa.ba';
             } else {
                 emailHint.className = 'val-hint ok';
                 emailHint.textContent = 'Email je ispravan';
@@ -397,10 +400,10 @@
 
         document.getElementById('registerForm').addEventListener('submit', function (e) {
             var email = emailInput.value.trim();
-            if (!email.endsWith('\x40et.unsa.ba')) {
+            if (!email.endsWith('@@etf.unsa.ba')) {
                 e.preventDefault();
                 emailHint.className = 'val-hint greska';
-                emailHint.textContent = 'Email mora biti u formatu: ime@etf.unsa.ba';
+                emailHint.textContent = 'Email mora biti u formatu: ime@@etf.unsa.ba';
                 emailInput.focus();
             }
         });
@@ -414,10 +417,10 @@
             var ikona = el.querySelector('.pravilo-ikona');
             if (ispunjeno) {
                 el.className = 'pravilo ispunjeno';
-                ikona.textContent = 'v';
+                ikona.textContent = '✓';
             } else {
                 el.className = 'pravilo neispunjeno';
-                ikona.textContent = 'x';
+                ikona.textContent = '✗';
             }
         }
 
@@ -430,8 +433,8 @@
             sifraPravila.className = 'sifra-pravila vidljivo';
             provjeriPravilo('p-duzina', val.length >= 6);
             provjeriPravilo('p-veliko', /[A-Z]/.test(val));
+            provjeriPravilo('p-malo', /[a-z]/.test(val));
             provjeriPravilo('p-broj', /[0-9]/.test(val));
-            provjeriPravilo('p-znak', /[!#$%^&*()\-_=+\[\]{};:'"\\|,.<>\/? ]/.test(val));
         });
 
         // ── POTVRDA SIFRE ──
@@ -446,11 +449,27 @@
             }
             if (this.value !== sifraInput.value) {
                 potvrdaHint.className = 'val-hint greska';
-                potvrdaHint.textContent = 'Sifre se ne podudaraju.';
+                potvrdaHint.textContent = 'Šifre se ne podudaraju.';
             } else {
                 potvrdaHint.className = 'val-hint ok';
-                potvrdaHint.textContent = 'Sifre se podudaraju';
+                potvrdaHint.textContent = 'Šifre se podudaraju';
             }
         });
+
+        // ── FUNKCIJA ZA PRIKAZ/SKRIVANJE ŠIFRE (OKO) ──
+        function togglePasswordVisibility(inputId, iconId) {
+            var input = document.getElementById(inputId);
+            var icon = document.getElementById(iconId);
+            
+            if (input.type === "password") {
+                input.type = "text";
+                // Mijenjamo prekriženo oko u otvoreno oko
+                icon.className = "bi bi-eye";
+            } else {
+                input.type = "password";
+                // Vraćamo na prekriženo oko
+                icon.className = "bi bi-eye-slash";
+            }
+        }
     </script>
 }

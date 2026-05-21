@@ -1,0 +1,152 @@
+﻿@model IEnumerable<Earn_Learn.Models.TerminSaTutorom>
+@{
+    ViewData["Title"] = "Moji časovi (Tutor)";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .casovi-wrapper {
+        max-width: 900px;
+        margin: 60px auto;
+        padding: 0 24px;
+    }
+    .casovi-naslov {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0d2d45;
+        margin-bottom: 4px;
+    }
+    .casovi-podnaslov {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #888;
+        margin-bottom: 40px;
+    }
+    .tabela-casova {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: #fff;
+    }
+    .tabela-casova th {
+        text-align: left;
+        padding: 12px 16px;
+        font-size: .85rem;
+        font-weight: 800;
+        color: #5bc400;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .tabela-casova td {
+        padding: 16px;
+        font-size: .92rem;
+        color: #333;
+        border-bottom: 1px solid #f5f5f5;
+        vertical-align: middle;
+    }
+    .tabela-casova tr:hover {
+        background-color: #fafafa;
+    }
+    .predmet-naziv {
+        font-weight: 700;
+        color: #0d2d45;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .status-Slobodan { background-color: #e8f5e9; color: #2e7d32; }
+    .status-Rezervisan { background-color: #fff3e0; color: #ef6c00; }
+    .status-Potvrdjen { background-color: #e3f2fd; color: #1565c0; }
+    .status-Odrzan { background-color: #f3e5f5; color: #6a1b9a; }
+    .status-Otkazan { background-color: #ffebee; color: #c62828; }
+    
+    .btn-detalji {
+        background: none;
+        border: 1px solid #0d2d45;
+        color: #0d2d45;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+    .btn-detalji:hover {
+        background: #0d2d45;
+        color: #fff;
+    }
+    .casovi-footer {
+        margin-top: 60px;
+        color: #aaa;
+        font-size: .82rem;
+    }
+</style>
+
+<div class="casovi-wrapper">
+    <div class="casovi-naslov">Moji časovi</div>
+    <div class="casovi-podnaslov">Pregled Vaših termina i zakazanih instrukcija od strane studenata</div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div style="background-color: #f4f6f8; padding: 20px; border-radius: 6px; color: #555;">
+            Trenutno nemate unesenih termina u rasporedu.
+        </div>
+    }
+    else
+    {
+        <table class="tabela-casova">
+            <thead>
+                <tr>
+                    <th>Predmet</th>
+                    <th>Student</th>
+                    <th>Datum i vrijeme</th>
+                    <th>Tip</th>
+                    <th>Status</th>
+                    <th>Akcija</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var stavka in Model)
+                {
+                    <tr>
+                        <td>
+                            <span class="predmet-naziv">
+                                @(stavka.Predmet != null ? stavka.Predmet.naziv : "Opšte instrukcije")
+                            </span>
+                        </td>
+                        <td>
+                            @if(stavka.Termin.idStudenta != null) {
+                                @:@stavka.Tutor.Ime @stavka.Tutor.Prezime
+                            } else {
+                                <span style="color: #aaa; font-style: italic;">Slobodan termin</span>
+                            }
+                        </td>
+                        <td>@stavka.Termin.datumIVrijeme.ToString("dd. MMM yyyy. u HH:mm")</td>
+                        <td>@stavka.Termin.tipInstrukcija.ToString()</td>
+                        <td>
+                            <span class="status-badge status-@stavka.Termin.status.ToString()">
+                                @stavka.Termin.status.ToString()
+                            </span>
+                        </td>
+                        <td>
+                            <a class="btn-detalji" asp-controller="Termins" asp-action="Details" asp-route-id="@stavka.Termin.id">
+                                Detalji
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <div class="casovi-footer">
+        &copy; 2026<br />Sva prava zadržana
+    </div>
+</div>

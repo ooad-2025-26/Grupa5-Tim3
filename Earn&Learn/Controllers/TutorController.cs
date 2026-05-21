@@ -365,5 +365,38 @@ namespace Earn_Learn.Controllers
             };
             return View(model);
         }
+
+        // ===================== MOJI ČASOVI (TUTOR) =====================
+        [Authorize]
+        public async Task<IActionResult> MojiCasovi()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Tutor)
+                return RedirectToAction("Index", "Home");
+
+            // Povlačimo sve termine gdje je ovaj korisnik tutor
+            var termini = await _context.Termin
+                .Where(t => t.idTutora == user.Id)
+                .OrderByDescending(t => t.datumIVrijeme)
+                .ToListAsync();
+
+            var model = new List<TerminSaTutorom>();
+            foreach (var termin in termini)
+            {
+                var studentKorisnik = await _context.Users.FindAsync(termin.idStudenta);
+                var predmet = termin.idPredmeta.HasValue
+                    ? await _context.Predmet.FindAsync(termin.idPredmeta.Value)
+                    : null;
+
+                model.Add(new TerminSaTutorom
+                {
+                    Termin = termin,
+                    Tutor = studentKorisnik ?? new Korisnik { Ime = "Nije", Prezime = "rezervisano" },
+                    Predmet = predmet
+                });
+            }
+
+            return View(model);
+        }
     }
 }

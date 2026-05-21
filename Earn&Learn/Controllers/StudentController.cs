@@ -76,5 +76,72 @@ namespace Earn_Learn.Controllers
             await _userManager.DeleteAsync(student);
             return RedirectToAction(nameof(Index));
         }
+        [Authorize]
+        public async Task<IActionResult> MojiCasovi()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Student)
+                return RedirectToAction("Index", "Home");
+
+            // Povlačimo sve termine za ulogovanog studenta iz baze
+            var termini = await _context.Termin
+                .Where(t => t.idStudenta == user.Id)
+                .OrderByDescending(t => t.datumIVrijeme) // Najnoviji časovi idu prvi
+                .ToListAsync();
+
+            var model = new List<TerminSaTutorom>();
+            foreach (var termin in termini)
+            {
+                var tutorKorisnik = await _context.Users.FindAsync(termin.idTutora);
+                var predmet = termin.idPredmeta.HasValue
+                    ? await _context.Predmet.FindAsync(termin.idPredmeta.Value)
+                    : null;
+
+                model.Add(new TerminSaTutorom
+                {
+                    Termin = termin,
+                    Tutor = tutorKorisnik ?? new Korisnik { Ime = "Nepoznat", Prezime = "" },
+                    Predmet = predmet
+                });
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> PretraziTutore(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return Json(new List<object>());
+            }
+
+            var q = query.ToLower().Trim();
+
+            // Pretražujemo tutore čije ime/prezime sadrži tekst 
+            // ILI koji predaju predmet čiji naziv sadrži tekst
+            var rezultati = await _context.Users
+                .Where(u => u.Uloga == Enums.Uloga.Tutor)
+                .Where(u => u.Ime.ToLower().Contains(q) ||
+                            u.Prezime.ToLower().Contains(q) ||
+                            _context.KorisnikPredmet.Any(kp => kp.idKorisnika == u.Id &&
+                                                               _context.Predmet.Any(p => p.id == kp.idPredmeta && p.naziv.ToLower().Contains(q))))
+                .Select(u => new
+                {
+                    id = u.Id,
+                    ime = u.Ime,
+                    prezime = u.Prezime,
+                    prosjecnaOcjena = u.ProsjecnaOcjena ?? 0,
+                    // Izvlačimo nazive predmeta koje ovaj tutor predaje
+                    predmeti = _context.KorisnikPredmet
+                        .Where(kp => kp.idKorisnika == u.Id)
+                        .Join(_context.Predmet, kp => kp.idPredmeta, p => p.id, (kp, p) => p.naziv)
+                        .ToList()
+                })
+                .Take(5) // Limitiramo na top 5 rezultata radi brzine i dizajna
+                .ToListAsync();
+
+            return Json(rezultati);
+        }
     }
 }
