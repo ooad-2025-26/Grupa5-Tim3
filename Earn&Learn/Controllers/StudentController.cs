@@ -108,7 +108,6 @@ namespace Earn_Learn.Controllers
             return View(model);
         }
 
-        // ===================== OTKAŽI TERMIN (STUDENT) =====================
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -122,7 +121,6 @@ namespace Earn_Learn.Controllers
             if (termin == null || termin.idStudenta != user.Id)
                 return NotFound();
 
-            // Vrati novac studentu i skini tutoru
             if (termin.status == StatusTermina.Rezervisan)
             {
                 var tutor = await _context.Users.FindAsync(termin.idTutora);
@@ -134,7 +132,6 @@ namespace Earn_Learn.Controllers
                     await _userManager.UpdateAsync(user);
                 }
 
-                // Termin ostaje u bazi ali se oslobađa (ne briše se da tutor vidi)
                 termin.idStudenta = string.Empty;
                 termin.idPredmeta = null;
                 termin.status = StatusTermina.Slobodan;
@@ -150,9 +147,7 @@ namespace Earn_Learn.Controllers
         public async Task<IActionResult> PretraziTutore(string query)
         {
             if (string.IsNullOrWhiteSpace(query))
-            {
                 return Json(new List<object>());
-            }
 
             var q = query.ToLower().Trim();
 
@@ -161,7 +156,7 @@ namespace Earn_Learn.Controllers
                 .Where(u => u.Ime.ToLower().Contains(q) ||
                             u.Prezime.ToLower().Contains(q) ||
                             _context.KorisnikPredmet.Any(kp => kp.idKorisnika == u.Id &&
-                                                               _context.Predmet.Any(p => p.id == kp.idPredmeta && p.naziv.ToLower().Contains(q))))
+                                _context.Predmet.Any(p => p.id == kp.idPredmeta && p.naziv.ToLower().Contains(q))))
                 .Select(u => new
                 {
                     id = u.Id,
@@ -178,6 +173,94 @@ namespace Earn_Learn.Controllers
                 .ToListAsync();
 
             return Json(rezultati);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Novcanik()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Student)
+                return RedirectToAction("Index", "Home");
+
+            var transakcije = await _context.Transakcija
+                .Where(t => t.idStudenta == user.Id)
+                .OrderByDescending(t => t.datumUplate)
+                .Take(10)
+                .ToListAsync();
+
+            ViewBag.StanjeRacuna = user.StanjeRacuna;
+            ViewBag.UkupnoUplaceno = transakcije
+                .Where(t => t.statusPlacanja == StatusPlacanja.Uspjesno && t.iznos > 0)
+                .Sum(t => t.iznos);
+
+            return View(transakcije);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UplatiNovac(double iznos)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Student)
+                return Unauthorized();
+
+            if (iznos <= 0 || iznos > 10000)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return Json(new { success = false, poruka = "Iznos mora biti između 1 i 10,000 KM." });
+
+                TempData["Greska"] = "Iznos mora biti između 1 i 10,000 KM.";
+                return RedirectToAction(nameof(Novcanik));
+            }
+
+            user.StanjeRacuna += iznos;
+            await _userManager.UpdateAsync(user);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new
+                {
+                    success = true,
+                    novoStanje = user.StanjeRacuna,
+                    poruka = $"Uspješno ste uplatili {iznos:N2} KM na vaš račun."
+                });
+
+            TempData["Uspjeh"] = $"Uspješno ste uplatili {iznos:N2} KM na vaš račun.";
+            return RedirectToAction(nameof(Novcanik));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PotvrdiPrisustvo(int terminId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Student)
+                return Unauthorized();
+
+            var termin = await _context.Termin.FindAsync(terminId);
+            if (termin == null || termin.idStudenta != user.Id)
+                return Json(new { success = false, poruka = "Termin nije pronađen." });
+
+            if (termin.status != StatusTermina.Rezervisan)
+                return Json(new { success = false, poruka = "Termin nije u statusu rezervisan." });
+
+            if (user.StanjeRacuna < termin.cijena)
+                return Json(new { success = false, poruka = $"Nemate dovoljno sredstava. Potrebno: {termin.cijena:N2} KM." });
+
+            var tutor = await _context.Users.FindAsync(termin.idTutora);
+            if (tutor == null)
+                return Json(new { success = false, poruka = "Tutor nije pronađen." });
+
+            user.StanjeRacuna -= termin.cijena;
+            tutor.StanjeRacuna += termin.cijena;
+            termin.status = StatusTermina.Odrzan;
+
+            await _userManager.UpdateAsync(user);
+            await _userManager.UpdateAsync(tutor);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, poruka = $"Prisustvo potvrđeno! Skinuto {termin.cijena:N2} KM s računa." });
         }
     }
 }

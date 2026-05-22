@@ -7,8 +7,8 @@ namespace Earn_Learn.Models
     {
         [Key]
         public int id { get; set; }
-        public int idStudenta { get; set; }
-        public int idTutora { get; set; }
+        public string idStudenta { get; set; } = string.Empty;
+        public string idTutora { get; set; } = string.Empty;
         public double iznos { get; set; }
         public DateTime datumUplate { get; set; }
         public NacinPlacanja nacinPlacanja { get; set; }

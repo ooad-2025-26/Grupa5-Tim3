@@ -17,6 +17,7 @@ namespace Earn_Learn.Controllers
             _userManager = userManager;
             _context = context;
         }
+
         [Microsoft.AspNetCore.Authorization.Authorize]
         public async Task<IActionResult> Dashboard()
         {
@@ -39,6 +40,7 @@ namespace Earn_Learn.Controllers
 
             return View(model);
         }
+
         public async Task<IActionResult> Index()
         {
             var manageri = await _context.Users
@@ -92,6 +94,108 @@ namespace Earn_Learn.Controllers
 
             await _userManager.DeleteAsync(manager);
             return RedirectToAction(nameof(Index));
+        }
+
+        // ── KORISNICI ──
+        public async Task<IActionResult> UpravljajKorisnicima(string? pretraga)
+        {
+            var korisnici = _context.Users
+                .Where(u => u.Uloga != Uloga.SystemManager)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pretraga))
+                korisnici = korisnici.Where(u =>
+                    u.Ime.Contains(pretraga) ||
+                    u.Prezime.Contains(pretraga) ||
+                    u.Email.Contains(pretraga));
+
+            ViewBag.Pretraga = pretraga;
+            return View(await korisnici.ToListAsync());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ObrisiKorisnika(string id)
+        {
+            var korisnik = await _userManager.FindByIdAsync(id);
+            if (korisnik != null)
+                await _userManager.DeleteAsync(korisnik);
+            return RedirectToAction(nameof(UpravljajKorisnicima));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UrediKorisnika(string id, string ime, string prezime, string email)
+        {
+            var korisnik = await _userManager.FindByIdAsync(id);
+            if (korisnik == null) return NotFound();
+
+            korisnik.Ime = ime;
+            korisnik.Prezime = prezime;
+            korisnik.Email = email;
+            korisnik.UserName = email;
+
+            await _userManager.UpdateAsync(korisnik);
+            return RedirectToAction(nameof(UpravljajKorisnicima));
+        }
+
+        // ── PREDMETI ──
+        public async Task<IActionResult> UpravljajPredmetima(string? pretraga)
+        {
+            var predmeti = _context.Predmet.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pretraga))
+                predmeti = predmeti.Where(p => p.naziv.Contains(pretraga));
+
+            ViewBag.Pretraga = pretraga;
+            ViewBag.UkupnoPredmeta = await _context.Predmet.CountAsync();
+
+            var maxId = await _context.Predmet.MaxAsync(x => x.id);
+            ViewBag.NovihPredmeta = await _context.Predmet.CountAsync(p => p.id > maxId - 3);
+
+            ViewBag.BrojTutoraPoP = await _context.KorisnikPredmet
+                .Where(kp => _context.Users.Any(u => u.Id == kp.idKorisnika && u.Uloga == Uloga.Tutor))
+                .GroupBy(kp => kp.idPredmeta)
+                .Select(g => new { id = g.Key, count = g.Count() })
+                .ToDictionaryAsync(x => x.id, x => x.count);
+
+            return View(await predmeti.ToListAsync());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DodajPredmet(string naziv)
+        {
+            if (!string.IsNullOrWhiteSpace(naziv))
+            {
+                _context.Predmet.Add(new Predmet { naziv = naziv });
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(UpravljajPredmetima));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UrediPredmet(int id, string naziv)
+        {
+            var predmet = await _context.Predmet.FindAsync(id);
+            if (predmet == null) return NotFound();
+            predmet.naziv = naziv;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(UpravljajPredmetima));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ObrisiPredmet(int id)
+        {
+            var predmet = await _context.Predmet.FindAsync(id);
+            if (predmet != null)
+            {
+                _context.Predmet.Remove(predmet);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(UpravljajPredmetima));
         }
     }
 }

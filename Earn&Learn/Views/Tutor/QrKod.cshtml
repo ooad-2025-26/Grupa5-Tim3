@@ -1,0 +1,133 @@
+﻿@{
+    ViewData["Title"] = "QR Kod za prisustvo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var termin = ViewBag.Termin as Earn_Learn.Models.Termin;
+    string predmet = ViewBag.Predmet;
+    string qrKodString = ViewBag.QrKodString;
+}
+
+<style>
+    * { font-family: 'Nunito', sans-serif; }
+
+    .qr-hero {
+        background: #f0f7ff;
+        padding: 60px 20px 40px;
+        text-align: center;
+    }
+    .qr-hero h1 { font-size: 1.8rem; font-weight: 800; color: #0d2d45; margin-bottom: 8px; }
+    .qr-hero p { color: #666; font-size: .97rem; max-width: 480px; margin: 0 auto 6px; line-height: 1.5; }
+
+    .btn-zavrsi {
+        display: inline-block;
+        margin-top: 18px;
+        background: #5bc400;
+        color: #fff;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 30px;
+        font-weight: 800;
+        font-size: .92rem;
+        cursor: pointer;
+        transition: opacity .2s;
+    }
+    .btn-zavrsi:hover { opacity: .85; color: #fff; }
+
+    .qr-wrap { max-width: 680px; margin: 44px auto 60px; padding: 0 20px; }
+
+    .qr-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    #qrcode { margin-bottom: 14px; }
+    #qrcode img, #qrcode canvas {
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0,0,0,.12);
+        display: block;
+    }
+
+    .timer-badge {
+        display: inline-block;
+        background: #fff3cd;
+        color: #856404;
+        border-radius: 20px;
+        padding: 5px 16px;
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
+    .info-card {
+        border: 1.5px solid #eee;
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 16px;
+    }
+    .info-card h3 { font-size: 1rem; font-weight: 800; color: #0d2d45; margin: 0 0 8px; }
+    .info-card p { font-size: .92rem; color: #555; margin: 4px 0; }
+</style>
+
+<div class="qr-hero">
+    <h1>Generisanje QR Koda za Prisustvo</h1>
+    <p>Prikaži ovaj kod studentima na ekranu ili uživo.<br>Skeniranjem će biti označeni kao prisutni.</p>
+
+    <form asp-action="ZavrsiCas" method="post" style="display:inline;"
+          onsubmit="return confirm('Jesi li siguran da želiš završiti čas?')">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="terminId" value="@termin?.id" />
+        <button type="submit" class="btn-zavrsi">Završi čas</button>
+    </form>
+</div>
+
+<div class="qr-wrap">
+    <div class="qr-center">
+        <div id="qrcode"></div>
+        <div class="timer-badge" id="timer-badge">
+            ⏱ Ovaj kod je jedinstven za ovu sesiju i ističe za 15 minuta
+        </div>
+    </div>
+
+    <div class="info-card">
+        <h3>QR Kod za Prisustvo</h3>
+        <p>Prikažite ovaj jedinstveni kod studentima kako bi se označili kao prisutni. Svaki kod vrijedi 15 minuta.</p>
+    </div>
+
+    <div class="info-card">
+        <h3>Detalji Sesije</h3>
+        <p><strong>Predmet:</strong> @predmet</p>
+        <p><strong>Datum i Vrijeme:</strong> @termin?.datumIVrijeme.ToString("dd.MM.yyyy, HH:mm")</p>
+        <p><strong>Tip:</strong> @termin?.tipInstrukcija</p>
+    </div>
+
+    <p style="color:#aaa; font-size:.82rem; text-align:center; margin-top:10px;">
+        Ovaj kod je jedinstven za ovu sesiju i ističe za 15 minuta.
+    </p>
+</div>
+
+@section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    new QRCode(document.getElementById("qrcode"), {
+        text: "@qrKodString",
+        width: 220,
+        height: 220,
+        colorDark: "#0d2d45",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    let minutesLeft = 15;
+    const badge = document.getElementById('timer-badge');
+    setInterval(() => {
+        minutesLeft--;
+        if (minutesLeft <= 0) {
+            badge.textContent = '⚠ Kod je istekao - osvježi stranicu';
+            badge.style.background = '#ffe5e5';
+            badge.style.color = '#c0392b';
+        } else {
+            badge.textContent = `⏱ Ovaj kod je jedinstven za ovu sesiju i ističe za ${minutesLeft} minuta`;
+        }
+    }, 60000);
+</script>
+}

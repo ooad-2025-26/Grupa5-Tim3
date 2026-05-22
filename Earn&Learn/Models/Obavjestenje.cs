@@ -6,10 +6,10 @@ namespace Earn_Learn.Models
     {
         [Key]
         public int id { get; set; }
-        public int idKorisnika { get; set; }
-        public string naslov { get; set; }
-        public string sadrzaj { get; set; }
-        public DateTime datumSlanja { get; set; }
-        public bool procitano { get; set; }
+        public string idKorisnika { get; set; } = string.Empty;
+        public string naslov { get; set; } = string.Empty;
+        public string sadrzaj { get; set; } = string.Empty;
+        public DateTime datumSlanja { get; set; } = DateTime.UtcNow;
+        public bool procitano { get; set; } = false;
     }
 }
