@@ -22,7 +22,7 @@
         font-size: 1rem;
         font-weight: 600;
         color: #888;
-        margin-bottom: 40px;
+        margin-bottom: 16px;
     }
 
     .profil-grid {
@@ -177,11 +177,171 @@
         font-size: .92rem;
         margin-bottom: 24px;
     }
+
+    /* Postani tutor button */
+    .btn-postani-tutor {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #5bc400;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 22px;
+        font-size: .92rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .2s;
+        margin-bottom: 32px;
+        text-decoration: none;
+    }
+
+        .btn-postani-tutor:hover {
+            background: #4aab00;
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(91,196,0,.3);
+        }
+
+    /* Modal stilovi */
+    .tutor-modal .modal-content {
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0,0,0,.15);
+    }
+
+    .tutor-modal .modal-header {
+        border-bottom: 2px solid #f0f0f0;
+        padding: 24px 28px 16px;
+    }
+
+    .tutor-modal .modal-title {
+        font-weight: 800;
+        color: #0d2d45;
+        font-size: 1.2rem;
+    }
+
+    .tutor-modal .modal-body {
+        padding: 24px 28px;
+    }
+
+    .tutor-modal .modal-footer {
+        border-top: 2px solid #f0f0f0;
+        padding: 16px 28px 24px;
+    }
+
+    .predmeti-lista {
+        max-height: 280px;
+        overflow-y: auto;
+        border: 2px solid #e8e8e8;
+        border-radius: 10px;
+        padding: 12px 16px;
+        background: #fafafa;
+    }
+
+        .predmeti-lista::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .predmeti-lista::-webkit-scrollbar-thumb {
+            background: #5bc400;
+            border-radius: 3px;
+        }
+
+        .predmeti-lista .form-check {
+            padding: 6px 0 6px 26px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+            .predmeti-lista .form-check:last-child {
+                border-bottom: none;
+            }
+
+        .predmeti-lista .form-check-input:checked {
+            background-color: #5bc400;
+            border-color: #5bc400;
+        }
+
+        .predmeti-lista .form-check-label {
+            font-size: .9rem;
+            font-weight: 600;
+            color: #0d2d45;
+            cursor: pointer;
+        }
+
+    .modal-section-label {
+        font-size: .8rem;
+        font-weight: 800;
+        color: #5bc400;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .prilog-box {
+        border: 2px dashed #d0d0d0;
+        border-radius: 10px;
+        padding: 16px;
+        background: #fafafa;
+        transition: border-color .2s;
+    }
+
+        .prilog-box:hover {
+            border-color: #5bc400;
+        }
+
+    .btn-potvrdi {
+        background: #5bc400;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 28px;
+        font-size: .95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+        .btn-potvrdi:hover {
+            background: #4aab00;
+            transform: translateY(-1px);
+        }
+
+    .btn-odustani-modal {
+        background: none;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 10px 22px;
+        font-size: .9rem;
+        font-weight: 600;
+        color: #888;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+        .btn-odustani-modal:hover {
+            border-color: #bbb;
+            background: #f5f5f5;
+        }
 </style>
 
 <div class="profil-wrapper">
     <div class="profil-ime">@Model.Ime @Model.Prezime</div>
     <div class="profil-uloga">@Model.Uloga.ToString()</div>
+
+    @* Dugme "Postani tutor" — samo za studente *@
+    @if (Model.Uloga == Earn_Learn.Enums.Uloga.Student)
+    {
+        <button type="button" class="btn-postani-tutor"
+                data-bs-toggle="modal" data-bs-target="#postaniTutorModal">
+            🎓 Postani tutor
+        </button>
+
+        @if (TempData["TutorGreska"] != null)
+        {
+            <div class="alert-error-profil">✗ @TempData["TutorGreska"]</div>
+        }
+    }
 
     @if (TempData["Uspjeh"] != null)
     {
@@ -264,6 +424,64 @@
         &copy; 2026<br />Sva prava zadržana
     </div>
 </div>
+
+@* ── MODAL: Postani tutor ── *@
+@if (Model.Uloga == Earn_Learn.Enums.Uloga.Student)
+{
+    <div class="modal fade tutor-modal" id="postaniTutorModal" tabindex="-1"
+         aria-labelledby="postaniTutorLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="postaniTutorLabel">🎓 Postani tutor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post"
+                      asp-action="PostaniTutor"
+                      asp-controller="Profil"
+                      enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-body">
+
+                        <div class="modal-section-label">Predmeti koje želim podučavati</div>
+                        <div class="predmeti-lista mb-4">
+                            @foreach (var predmet in Model.SviPredmeti)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="odabraniPredmeti"
+                                           value="@predmet.id"
+                                           id="predmet_@predmet.id" />
+                                    <label class="form-check-label" for="predmet_@predmet.id">
+                                        @predmet.naziv
+                                    </label>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="modal-section-label">Prilog — ocjene iz predmeta</div>
+                        <div class="prilog-box">
+                            <input type="file"
+                                   name="prilogOcjene"
+                                   class="form-control border-0 bg-transparent p-0"
+                                   accept=".jpg,.jpeg,.png,.pdf" />
+                            <small class="text-muted mt-2 d-block">JPG, PNG ili PDF, max 5MB</small>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer gap-2">
+                        <button type="button" class="btn-odustani-modal"
+                                data-bs-dismiss="modal">
+                            Odustani
+                        </button>
+                        <button type="submit" class="btn-potvrdi">Potvrdi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
 
 <script>
     function toggleEditCijena() {
