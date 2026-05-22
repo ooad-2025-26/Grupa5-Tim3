@@ -34,7 +34,6 @@
                 .el-navbar .brand img {
                     height: 90px;
                     width: auto;
-                    /* logo has black bg — multiply blends it away on white navbar */
                     mix-blend-mode: multiply;
                 }
 
@@ -83,6 +82,23 @@
 
                 .btn-registracija:hover {
                     opacity: .85;
+                }
+
+            .btn-student-dash {
+                background: none;
+                border: 2px solid #5bc400;
+                color: #5bc400 !important;
+                border-radius: 20px;
+                padding: 5px 16px;
+                font-weight: 700;
+                text-decoration: none;
+                transition: all .2s;
+                font-size: .88rem;
+            }
+
+                .btn-student-dash:hover {
+                    background: #5bc400;
+                    color: #fff !important;
                 }
 
             /* ── FOOTER ── */
@@ -165,7 +181,8 @@
                 }
                 else if (korisnik?.Uloga == Earn_Learn.Enums.Uloga.Tutor)
                 {
-                    <a class="nav-text" asp-controller="Tutor" asp-action="Dashboard">Dashboard</a>
+                    <a class="nav-text" asp-controller="Tutor" asp-action="Dashboard">Tutor Dashboard</a>
+                    <a class="btn-student-dash" asp-controller="Tutor" asp-action="StudentDashboard">Student Dashboard</a>
                     <a class="nav-text" asp-controller="Tutor" asp-action="MojiCasovi">Moji Časovi</a>
                 }
                 else if (korisnik?.Uloga == Earn_Learn.Enums.Uloga.SystemManager)
