@@ -11,8 +11,8 @@
         background: #5bc400;
         padding: 40px 20px;
         text-align: center;
-        margin: 0 30px 0;
-        border-radius: 0 0 18px 18px;
+        margin: 0;
+        border-radius: 0;
     }
 
         .reg-hero h1 {
@@ -32,7 +32,7 @@
 
     .reg-form-section {
         background: linear-gradient(180deg, #5bc400 0%, #2d7a00 100%);
-        margin: 0 30px 60px;
+        margin: 0;
         border-radius: 0 0 18px 18px;
         padding: 40px 20px 60px;
         display: flex;
@@ -201,7 +201,7 @@
         font-size: .85rem;
         min-width: 14px;
     }
-    /* Dodatni stilovi za dugme oka unutar input grupe */
+
     .password-wrapper {
         position: relative;
         display: flex;
@@ -209,7 +209,7 @@
     }
 
         .password-wrapper input {
-            padding-right: 45px !important; /* Prostor da tekst ne ide preko oka */
+            padding-right: 45px !important;
         }
 
     .btn-toggle-password {
@@ -232,7 +232,7 @@
         .btn-toggle-password:focus {
             outline: none;
         }
-    
+
         .btn-toggle-password:hover {
             color: #5bc400;
         }
@@ -363,16 +363,15 @@
         var tutorFields = document.getElementById('tutor-fields');
 
         ulogaSelect.addEventListener('change', function () {
-            if (this.value === "1") { // Ako je izabran Tutor
+            if (this.value === "1") {
                 zelimTutorCheckbox.checked = true;
                 tutorFields.style.display = 'block';
-            } else { // Ako je izabran Student
+            } else {
                 zelimTutorCheckbox.checked = false;
                 tutorFields.style.display = 'none';
             }
         });
 
-        // Pokreni odmah na učitavanju u slučaju da browser zapamti prethodni izbor
         if (ulogaSelect.value === "1") {
             zelimTutorCheckbox.checked = true;
             tutorFields.style.display = 'block';
@@ -456,18 +455,15 @@
             }
         });
 
-        // ── FUNKCIJA ZA PRIKAZ/SKRIVANJE ŠIFRE (OKO) ──
+        // ── FUNKCIJA ZA PRIKAZ/SKRIVANJE ŠIFRE ──
         function togglePasswordVisibility(inputId, iconId) {
             var input = document.getElementById(inputId);
             var icon = document.getElementById(iconId);
-            
             if (input.type === "password") {
                 input.type = "text";
-                // Mijenjamo prekriženo oko u otvoreno oko
                 icon.className = "bi bi-eye";
             } else {
                 input.type = "password";
-                // Vraćamo na prekriženo oko
                 icon.className = "bi bi-eye-slash";
             }
         }

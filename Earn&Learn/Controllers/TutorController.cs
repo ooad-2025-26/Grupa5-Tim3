@@ -77,7 +77,6 @@ namespace Earn_Learn.Controllers
             if (termin == null || termin.idTutora != user.Id)
                 return NotFound();
 
-            // Ako je rezervisan, vrati novac studentu
             if (termin.status == StatusTermina.Rezervisan && !string.IsNullOrEmpty(termin.idStudenta))
             {
                 var student = await _context.Users.FindAsync(termin.idStudenta);
@@ -182,7 +181,11 @@ namespace Earn_Learn.Controllers
 
             termin.idStudenta = student.Id;
             termin.idPredmeta = predmetId;
-            termin.tipInstrukcija = tipInstrukcija;
+            // Za hibridni termin student bira Online ili Uzivo
+            if (termin.tipInstrukcija == TipInstrukcija.Hibridno)
+                termin.tipInstrukcija = tipInstrukcija;
+            // Za ostale tipove zadržava se ono što je tutor postavio
+
             termin.status = StatusTermina.Rezervisan;
             termin.cijena = cijena;
 
@@ -368,6 +371,18 @@ namespace Earn_Learn.Controllers
                 .Where(t => t.idTutora == id && t.datumIVrijeme >= DateTime.Now
                          && t.status == StatusTermina.Slobodan)
                 .OrderBy(t => t.datumIVrijeme).ToListAsync();
+
+            // dictionary terminId -> nazivPredmeta
+            var terminPredmeti = new Dictionary<int, string>();
+            foreach (var t in dostupniTermini)
+            {
+                if (t.idPredmeta.HasValue)
+                {
+                    var p = await _context.Predmet.FindAsync(t.idPredmeta.Value);
+                    terminPredmeti[t.id] = p?.naziv ?? "";
+                }
+            }
+            ViewBag.TerminPredmeti = terminPredmeti;
 
             var model = new TutorProfilViewModel
             {
