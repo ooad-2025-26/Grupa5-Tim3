@@ -1,133 +1,143 @@
 ﻿@{
-    ViewData["Title"] = "QR Kod za prisustvo";
+    ViewData["Title"] = "Moji časovi - QR Kod";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Izvlačenje pojedinačnih podataka koje je poslao TutorController.QrKod
     var termin = ViewBag.Termin as Earn_Learn.Models.Termin;
-    string predmet = ViewBag.Predmet;
-    string qrKodString = ViewBag.QrKodString;
+    var predmetNaziv = ViewBag.Predmet as string ?? "Opšte instrukcije";
+    var qrKodString = ViewBag.QrKodString as string;
 }
 
 <style>
-    * { font-family: 'Nunito', sans-serif; }
+    .casovi-wrapper { max-width: 1000px; margin: 60px auto; padding: 0 24px; }
+    .casovi-naslov { font-size: 1.8rem; font-weight: 800; color: #0d2d45; margin-bottom: 4px; }
+    .casovi-podnaslov { font-size: 1rem; font-weight: 600; color: #888; margin-bottom: 40px; }
 
-    .qr-hero {
-        background: #f0f7ff;
-        padding: 60px 20px 40px;
-        text-align: center;
+    .tabela-casova { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+    .tabela-casova th {
+        text-align: left; padding: 12px 16px; font-size: .85rem;
+        font-weight: 800; color: #5bc400; letter-spacing: 1px;
+        text-transform: uppercase; border-bottom: 2px solid #f0f0f0;
     }
-    .qr-hero h1 { font-size: 1.8rem; font-weight: 800; color: #0d2d45; margin-bottom: 8px; }
-    .qr-hero p { color: #666; font-size: .97rem; max-width: 480px; margin: 0 auto 6px; line-height: 1.5; }
-
-    .btn-zavrsi {
-        display: inline-block;
-        margin-top: 18px;
-        background: #5bc400;
-        color: #fff;
-        border: none;
-        border-radius: 20px;
-        padding: 10px 30px;
-        font-weight: 800;
-        font-size: .92rem;
-        cursor: pointer;
-        transition: opacity .2s;
+    .tabela-casova td {
+        padding: 16px; font-size: .92rem; color: #333;
+        border-bottom: 1px solid #f5f5f5; vertical-align: middle;
     }
-    .btn-zavrsi:hover { opacity: .85; color: #fff; }
 
-    .qr-wrap { max-width: 680px; margin: 44px auto 60px; padding: 0 20px; }
+    .predmet-naziv { font-weight: 700; color: #0d2d45; }
 
-    .qr-center {
+    .status-badge {
+        display: inline-block; padding: 4px 12px; border-radius: 4px;
+        font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+    }
+    .status-Rezervisan { background: #fff3e0; color: #ef6c00; }
+
+    .cijena-cell { font-weight: 700; color: #0d2d45; }
+    .casovi-footer { margin-top: 60px; color: #aaa; font-size: .82rem; }
+
+    /* Stilovi specifični za prikaz sekcije sa QR kodom */
+    .qr-prikaz-kontejner {
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-bottom: 32px;
-    }
-
-    #qrcode { margin-bottom: 14px; }
-    #qrcode img, #qrcode canvas {
+        justify-content: center;
+        padding: 30px;
+        background: #fbfbfb;
+        border: 2px dashed #b3c6ff;
         border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(0,0,0,.12);
-        display: block;
+        margin-top: 30px;
+        text-align: center;
     }
-
-    .timer-badge {
-        display: inline-block;
-        background: #fff3cd;
-        color: #856404;
-        border-radius: 20px;
-        padding: 5px 16px;
-        font-size: .82rem;
+    .qr-slika-box {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        margin-bottom: 15px;
+    }
+    .qr-tekst-kod {
+        font-family: monospace;
+        background: #e8f0ff;
+        color: #1a4fbf;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 1rem;
         font-weight: 700;
     }
-
-    .info-card {
-        border: 1.5px solid #eee;
-        border-radius: 14px;
-        padding: 20px 24px;
-        margin-bottom: 16px;
+    .btn-nazad-lista {
+        display: inline-block;
+        margin-top: 20px;
+        background: #0d2d45;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: .85rem;
+        transition: background .2s;
     }
-    .info-card h3 { font-size: 1rem; font-weight: 800; color: #0d2d45; margin: 0 0 8px; }
-    .info-card p { font-size: .92rem; color: #555; margin: 4px 0; }
+    .btn-nazad-lista:hover { background: #061b2c; color: #fff; }
 </style>
 
-<div class="qr-hero">
-    <h1>Generisanje QR Koda za Prisustvo</h1>
-    <p>Prikaži ovaj kod studentima na ekranu ili uživo.<br>Skeniranjem će biti označeni kao prisutni.</p>
+<div class="casovi-wrapper">
+    <div class="casovi-naslov">Moji časovi - QR Kod</div>
+    <div class="casovi-podnaslov">Prikaz generisanog QR koda za selektovani termin časa</div>
 
-    <form asp-action="ZavrsiCas" method="post" style="display:inline;"
-          onsubmit="return confirm('Jesi li siguran da želiš završiti čas?')">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="terminId" value="@termin?.id" />
-        <button type="submit" class="btn-zavrsi">Završi čas</button>
-    </form>
-</div>
-
-<div class="qr-wrap">
-    <div class="qr-center">
-        <div id="qrcode"></div>
-        <div class="timer-badge" id="timer-badge">
-            ⏱ Ovaj kod je jedinstven za ovu sesiju i ističe za 15 minuta
+    @if (termin == null)
+    {
+        <div class="alert alert-danger" style="padding: 13px 22px; background: #fff0f0; color: #c00; border-radius: 8px; font-weight:600;">
+            ✗ Podaci o terminu nisu pronađeni.
         </div>
-    </div>
+    }
+    else
+    {
+        <!-- Tabela zadržava identičan izgled i prikazuje informacije o tom jednom času -->
+        <table class="tabela-casova">
+            <thead>
+                <tr>
+                    <th>Predmet</th>
+                    <th>Datum i vrijeme</th>
+                    <th>Tip</th>
+                    <th>Cijena</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var tipTekst = termin.tipInstrukcija.ToString() == "Online" ? "Online" :
+                                   termin.tipInstrukcija.ToString() == "Hibridno" ? "Hibridno" : "Uživo";
+                }
+                <tr>
+                    <td><span class="predmet-naziv">@predmetNaziv</span></td>
+                    <td>@termin.datumIVrijeme.ToString("dd. MMM yyyy. u HH:mm")</td>
+                    <td>@tipTekst</td>
+                    <td class="cijena-cell">@termin.cijena.ToString("0.00") KM</td>
+                    <td>
+                        <span class="status-badge status-@termin.status.ToString()">
+                            @termin.status.ToString()
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-    <div class="info-card">
-        <h3>QR Kod za Prisustvo</h3>
-        <p>Prikažite ovaj jedinstveni kod studentima kako bi se označili kao prisutni. Svaki kod vrijedi 15 minuta.</p>
-    </div>
+        <!-- Sekcija koja se generiše ispod tabele i prikazuje stvarni QR kod za skeniranje -->
+        <div class="qr-prikaz-kontejner">
+            <h4 style="color: #0d2d45; font-weight: 800; margin-bottom: 15px;">📱 Skenirajte za potvrdu prisustva</h4>
+            
+            <div class="qr-slika-box">
+                <!-- Automatsko generisanje QR slike preko pouzdanog API-ja koristeći jedinstveni string iz baze -->
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=@qrKodString" alt="QR Kod" />
+            </div>
+            
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 5px;">Jedinstveni kod časa:</p>
+            <div class="qr-tekst-kod">@qrKodString</div>
+            
+            <a asp-action="MojiCasovi" asp-controller="Tutor" class="btn-nazad-lista">
+                ← Nazad na moje časove
+            </a>
+        </div>
+    }
 
-    <div class="info-card">
-        <h3>Detalji Sesije</h3>
-        <p><strong>Predmet:</strong> @predmet</p>
-        <p><strong>Datum i Vrijeme:</strong> @termin?.datumIVrijeme.ToString("dd.MM.yyyy, HH:mm")</p>
-        <p><strong>Tip:</strong> @termin?.tipInstrukcija</p>
-    </div>
-
-    <p style="color:#aaa; font-size:.82rem; text-align:center; margin-top:10px;">
-        Ovaj kod je jedinstven za ovu sesiju i ističe za 15 minuta.
-    </p>
+    <div class="casovi-footer">&copy; 2026<br />Sva prava zadržana</div>
 </div>
-
-@section Scripts {
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>
-    new QRCode(document.getElementById("qrcode"), {
-        text: "@qrKodString",
-        width: 220,
-        height: 220,
-        colorDark: "#0d2d45",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
-
-    let minutesLeft = 15;
-    const badge = document.getElementById('timer-badge');
-    setInterval(() => {
-        minutesLeft--;
-        if (minutesLeft <= 0) {
-            badge.textContent = '⚠ Kod je istekao - osvježi stranicu';
-            badge.style.background = '#ffe5e5';
-            badge.style.color = '#c0392b';
-        } else {
-            badge.textContent = `⏱ Ovaj kod je jedinstven za ovu sesiju i ističe za ${minutesLeft} minuta`;
-        }
-    }, 60000);
-</script>
-}
