@@ -75,7 +75,6 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Register");
             }
 
-            // Čuvanje priloga ako je tutor uploadao
             string? prilogPath = null;
             if (uloga == Uloga.Tutor && prilogOcjene != null && prilogOcjene.Length > 0)
             {
@@ -116,7 +115,6 @@ namespace Earn_Learn.Controllers
                 BrojIndeksa = uloga == Uloga.Student ? brojIndeksa : null,
                 DatumRegistracije = DateTime.UtcNow,
                 PrilogOcjene = prilogPath,
-                // Tutor čeka verifikaciju; studenti i ostali nemaju ovaj flag
                 VerifikovanTutor = uloga == Uloga.Tutor ? false : null
             };
 
@@ -128,7 +126,6 @@ namespace Earn_Learn.Controllers
                 return uloga switch
                 {
                     Uloga.Student => LocalRedirect("/Student/Dashboard"),
-                    // Tutor ide na pending stranicu dok ga admin ne verifikuje
                     Uloga.Tutor => LocalRedirect("/Tutor/Dashboard"),
                     _ => LocalRedirect("/")
                 };
@@ -147,7 +144,7 @@ namespace Earn_Learn.Controllers
             return LocalRedirect("/");
         }
 
-        // ── REGISTER IDENTITY (stara forma) ──
+        // ── REGISTER IDENTITY (Identity forma) ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegisterIdentity(
@@ -157,6 +154,7 @@ namespace Earn_Learn.Controllers
             [FromForm(Name = "Input.Password")] string password,
             [FromForm(Name = "Input.ZelimBitiTutor")] bool zelimTutor,
             [FromForm(Name = "Input.OdabraniPredmeti")] List<int>? odabraniPredmeti,
+            [FromForm(Name = "Input.PrilogOcjene")] IFormFile? prilogOcjene,
             int? uloga,
             string? returnUrl)
         {
@@ -168,6 +166,25 @@ namespace Earn_Learn.Controllers
 
             var odabranaUloga = (zelimTutor || uloga == 1) ? Uloga.Tutor : Uloga.Student;
 
+            // Čuvanje priloga ako je tutor uploadao dokument
+            string? prilogPath = null;
+            if (odabranaUloga == Uloga.Tutor && prilogOcjene != null && prilogOcjene.Length > 0)
+            {
+                var dozvoljeniTipovi = new[] { "image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf" };
+                if (dozvoljeniTipovi.Contains(prilogOcjene.ContentType))
+                {
+                    var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "prilozi");
+                    Directory.CreateDirectory(uploadsFolder);
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(prilogOcjene.FileName);
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await prilogOcjene.CopyToAsync(stream);
+                    }
+                    prilogPath = "/uploads/prilozi/" + fileName;
+                }
+            }
+
             var korisnik = new Korisnik
             {
                 Ime = ime ?? "",
@@ -176,6 +193,7 @@ namespace Earn_Learn.Controllers
                 UserName = email,
                 Uloga = odabranaUloga,
                 DatumRegistracije = DateTime.UtcNow,
+                PrilogOcjene = prilogPath,
                 VerifikovanTutor = odabranaUloga == Uloga.Tutor ? false : null
             };
 
