@@ -1,7 +1,10 @@
 ﻿@model Earn_Learn.Models.TutorProfilViewModel
 
+@inject Microsoft.AspNetCore.Identity.UserManager<Earn_Learn.Models.Korisnik> UserManager
 @{
     ViewData["Title"] = $"Recenzije – {Model.Tutor.Ime} {Model.Tutor.Prezime}";
+    var trenutniKorisnik = await UserManager.GetUserAsync(User);
+    bool jeTutor = trenutniKorisnik?.Uloga == Earn_Learn.Enums.Uloga.Tutor && trenutniKorisnik?.Id == Model.Tutor.Id;
 }
 
 <div style="background:white; min-height:100vh; padding:48px 0;">
@@ -57,10 +60,37 @@
                             }
                         </div>
                         <p style="color:#333; margin-bottom:16px;">@rec.Recenzija.komentar</p>
-                        <div>
-                            <strong>@rec.ImeStudenta</strong>
-                            <br /><small style="color:#888;">Student</small>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px;">
+                            <div>
+                                <strong>@rec.ImeStudenta</strong>
+                                <br /><small style="color:#888;">Student</small>
+                            </div>
+                            @if (jeTutor)
+                            {
+                                <button onclick="togglePrijavaRec(@rec.Recenzija.id)"
+                                        style="background:transparent; border:1px solid #e55; color:#e55; border-radius:12px; padding:4px 12px; font-size:.78rem; font-weight:700; cursor:pointer;">
+                                    ⚠ Prijavi
+                                </button>
+                            }
                         </div>
+                        @if (jeTutor)
+                        {
+                            <div id="prijava-rec-@rec.Recenzija.id" style="display:none; margin-top:12px; border-top:1px solid #eee; padding-top:12px;">
+                                <form asp-controller="Student" asp-action="PrijaviRecenziju" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="recenzijaId" value="@rec.Recenzija.id" />
+                                    <input type="hidden" name="tutorId" value="@Model.Tutor.Id" />
+                                    <input type="text" name="naslov" required placeholder="Naslov prijave" maxlength="100"
+                                           style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; margin-bottom:6px; box-sizing:border-box; font-size:.85rem;" />
+                                    <textarea name="opis" rows="2" required placeholder="Opiši razlog prijave..." maxlength="500"
+                                              style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; resize:none; box-sizing:border-box; font-size:.85rem;"></textarea>
+                                    <button type="submit"
+                                            style="margin-top:6px; background:#e55; color:#fff; border:none; border-radius:12px; padding:6px 16px; font-weight:700; font-size:.82rem; cursor:pointer;">
+                                        Pošalji prijavu
+                                    </button>
+                                </form>
+                            </div>
+                        }
                     </div>
                 }
             </div>
@@ -110,6 +140,11 @@
 
 @section Scripts {
     <script>
+        function togglePrijavaRec(id) {
+            var el = document.getElementById('prijava-rec-' + id);
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+
         document.querySelectorAll('.zvijezda').forEach(z => {
             z.addEventListener('mouseover', function () {
                 const val = parseInt(this.dataset.val);

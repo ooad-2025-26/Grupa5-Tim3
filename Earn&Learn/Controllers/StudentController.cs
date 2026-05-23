@@ -262,5 +262,57 @@ namespace Earn_Learn.Controllers
 
             return Json(new { success = true, poruka = $"Prisustvo potvrđeno! Skinuto {termin.cijena:N2} KM s računa." });
         }
+
+        // ── PRIJAVI TUTORA (student prijavljuje tutora adminu) ──
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PrijaviTutora(string tutorId, string naslov, string opis)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Student)
+                return Unauthorized();
+
+            var tutor = await _userManager.FindByIdAsync(tutorId);
+            if (tutor == null)
+                return NotFound();
+
+            _context.Prijava.Add(new Prijava
+            {
+                Naslov = naslov,
+                Opis = $"Prijava tutora {tutor.Ime} {tutor.Prezime}: {opis}",
+                IdPrijavitelja = user.Id,
+                DatumPrijave = DateTime.UtcNow,
+                Status = Earn_Learn.Enums.StatusPrijave.Prijavljeno
+            });
+            await _context.SaveChangesAsync();
+
+            TempData["Uspjeh"] = "Prijava je uspješno poslana adminu.";
+            return RedirectToAction("Profil", "Tutor", new { id = tutorId });
+        }
+
+        // ── PRIJAVI RECENZIJU (tutor prijavljuje recenziju adminu) ──
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PrijaviRecenziju(int recenzijaId, string tutorId, string naslov, string opis)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Tutor)
+                return Unauthorized();
+
+            _context.Prijava.Add(new Prijava
+            {
+                Naslov = naslov,
+                Opis = $"Prijava recenzije (ID: {recenzijaId}): {opis}",
+                IdPrijavitelja = user.Id,
+                DatumPrijave = DateTime.UtcNow,
+                Status = Earn_Learn.Enums.StatusPrijave.Prijavljeno
+            });
+            await _context.SaveChangesAsync();
+
+            TempData["Uspjeh"] = "Prijava recenzije je poslana adminu.";
+            return RedirectToAction("Recenzije", "Tutor", new { id = tutorId });
+        }
     }
 }
