@@ -1,6 +1,7 @@
 ﻿using Earn_Learn.Data;
 using Earn_Learn.Enums;
 using Earn_Learn.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,27 +19,156 @@ namespace Earn_Learn.Controllers
             _context = context;
         }
 
-        [Microsoft.AspNetCore.Authorization.Authorize]
+        [Authorize]
         public async Task<IActionResult> Dashboard()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null || user.Uloga != Uloga.SystemManager)
                 return RedirectToAction("Index", "Home");
 
+            // Broj zahtjeva = neverifikovani tutori + otvorene prijave
+            int neverifikovaniTutori = await _context.Users
+                .CountAsync(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == false);
+            int otvorenePrijave = await _context.Prijava
+                .CountAsync(p => p.Status != StatusPrijave.Rijeseno);
+
             var model = new AdminDashboardViewModel
             {
                 UkupnoKorisnika = await _context.Users.CountAsync(),
-                UkupnoTutora = await _context.Users.CountAsync(u => u.Uloga == Uloga.Tutor),
+                UkupnoTutora = await _context.Users.CountAsync(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == true),
                 AktivnihSesija = await _context.Termin.CountAsync(t => t.datumIVrijeme >= DateTime.Now),
                 UkupanPromet = await _context.Transakcija.SumAsync(t => t.iznos),
                 MjesecniPromet = await _context.Transakcija
                     .Where(t => t.datumUplate.Month == DateTime.Now.Month &&
                                 t.datumUplate.Year == DateTime.Now.Year)
                     .SumAsync(t => t.iznos),
-                ZahtjevaNCekanju = await _context.Termin.CountAsync(t => t.status == StatusTermina.Rezervisan)
+                ZahtjevaNCekanju = neverifikovaniTutori + otvorenePrijave
             };
 
             return View(model);
+        }
+
+        // ── ZAHTJEVI (hub stranica) ──
+        [Authorize]
+        public async Task<IActionResult> Zahtjevi()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.SystemManager)
+                return RedirectToAction("Index", "Home");
+
+            return View();
+        }
+
+        // ── PRIJAVE ──
+        [Authorize]
+        public async Task<IActionResult> Prijave()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.SystemManager)
+                return RedirectToAction("Index", "Home");
+
+            var prijave = await _context.Prijava
+                .OrderByDescending(p => p.DatumPrijave)
+                .ToListAsync();
+
+            return View(prijave);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ObrisiPrijavu(int id)
+        {
+            var prijava = await _context.Prijava.FindAsync(id);
+            if (prijava != null)
+            {
+                _context.Prijava.Remove(prijava);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Prijave));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DodajPrijavu(string naslov, string opis)
+        {
+            if (!string.IsNullOrWhiteSpace(naslov))
+            {
+                _context.Prijava.Add(new Prijava
+                {
+                    Naslov = naslov,
+                    Opis = opis ?? "",
+                    DatumPrijave = DateTime.UtcNow,
+                    Status = StatusPrijave.Prijavljeno
+                });
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Prijave));
+        }
+
+        // ── VERIFIKACIJA TUTORA ──
+        [Authorize]
+        public async Task<IActionResult> ZahtjeviZaVerifikaciju()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.SystemManager)
+                return RedirectToAction("Index", "Home");
+
+            var tutori = await _context.Users
+                .Where(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == false)
+                .ToListAsync();
+
+            ViewBag.BrojVerifikovanih = await _context.Users
+                .CountAsync(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == true);
+
+            return View(tutori);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifikujTutora(string id)
+        {
+            var tutor = await _userManager.FindByIdAsync(id);
+            if (tutor == null || tutor.Uloga != Uloga.Tutor)
+                return NotFound();
+
+            tutor.VerifikovanTutor = true;
+            await _userManager.UpdateAsync(tutor);
+
+            TempData["Uspjeh"] = $"Tutor {tutor.Ime} {tutor.Prezime} je uspješno verifikovan.";
+            return RedirectToAction(nameof(ZahtjeviZaVerifikaciju));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OdbijTutora(string id)
+        {
+            var tutor = await _userManager.FindByIdAsync(id);
+            if (tutor == null || tutor.Uloga != Uloga.Tutor)
+                return NotFound();
+
+            await _userManager.DeleteAsync(tutor);
+
+            TempData["Uspjeh"] = "Zahtjev za verifikaciju je odbijen i nalog je obrisan.";
+            return RedirectToAction(nameof(ZahtjeviZaVerifikaciju));
+        }
+
+        // ── DOKUMENTACIJA TUTORA ──
+        [Authorize]
+        public async Task<IActionResult> PrilogTutora(string id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.SystemManager)
+                return RedirectToAction("Index", "Home");
+
+            var tutor = await _userManager.FindByIdAsync(id);
+            if (tutor == null || tutor.Uloga != Uloga.Tutor)
+                return NotFound();
+
+            return View(tutor);
         }
 
         public async Task<IActionResult> Index()

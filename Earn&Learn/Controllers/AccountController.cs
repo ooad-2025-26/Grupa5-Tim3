@@ -115,7 +115,9 @@ namespace Earn_Learn.Controllers
                 Uloga = uloga,
                 BrojIndeksa = uloga == Uloga.Student ? brojIndeksa : null,
                 DatumRegistracije = DateTime.UtcNow,
-                PrilogOcjene = prilogPath
+                PrilogOcjene = prilogPath,
+                // Tutor čeka verifikaciju; studenti i ostali nemaju ovaj flag
+                VerifikovanTutor = uloga == Uloga.Tutor ? false : null
             };
 
             var rezultat = await _userManager.CreateAsync(korisnik, password);
@@ -126,6 +128,7 @@ namespace Earn_Learn.Controllers
                 return uloga switch
                 {
                     Uloga.Student => LocalRedirect("/Student/Dashboard"),
+                    // Tutor ide na pending stranicu dok ga admin ne verifikuje
                     Uloga.Tutor => LocalRedirect("/Tutor/Dashboard"),
                     _ => LocalRedirect("/")
                 };
@@ -133,6 +136,15 @@ namespace Earn_Learn.Controllers
 
             TempData["RegError"] = string.Join(", ", rezultat.Errors.Select(e => e.Description));
             return RedirectToAction("Register");
+        }
+
+        // ── LOGOUT ──
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return LocalRedirect("/");
         }
 
         // ── REGISTER IDENTITY (stara forma) ──
@@ -163,7 +175,8 @@ namespace Earn_Learn.Controllers
                 Email = email,
                 UserName = email,
                 Uloga = odabranaUloga,
-                DatumRegistracije = DateTime.UtcNow
+                DatumRegistracije = DateTime.UtcNow,
+                VerifikovanTutor = odabranaUloga == Uloga.Tutor ? false : null
             };
 
             var rezultat = await _userManager.CreateAsync(korisnik, password);

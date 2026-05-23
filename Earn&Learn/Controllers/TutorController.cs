@@ -26,6 +26,10 @@ namespace Earn_Learn.Controllers
             if (user == null || user.Uloga != Uloga.Tutor)
                 return RedirectToAction("Index", "Home");
 
+            // Ako tutor nije verifikovan, prikaži pending stranicu
+            if (user.VerifikovanTutor != true)
+                return View("VerifikacijaNaCekanju");
+
             var termini = await _context.Termin
                 .Where(t => t.idTutora == user.Id && t.datumIVrijeme >= DateTime.Now)
                 .OrderBy(t => t.datumIVrijeme)
@@ -70,6 +74,9 @@ namespace Earn_Learn.Controllers
             if (user == null || user.Uloga != Uloga.Tutor)
                 return RedirectToAction("Index", "Home");
 
+            if (user.VerifikovanTutor != true)
+                return View("VerifikacijaNaCekanju");
+
             var termini = await _context.Termin
                 .Where(t => t.idStudenta == user.Id && t.datumIVrijeme >= DateTime.Now)
                 .OrderBy(t => t.datumIVrijeme)
@@ -94,7 +101,7 @@ namespace Earn_Learn.Controllers
             }
 
             var topTutori = await _context.Users
-                .Where(u => u.Uloga == Uloga.Tutor && u.Id != user.Id)
+                .Where(u => u.Uloga == Uloga.Tutor && u.Id != user.Id && u.VerifikovanTutor == true)
                 .OrderByDescending(u => u.ProsjecnaOcjena)
                 .Take(4)
                 .ToListAsync();
@@ -293,7 +300,7 @@ namespace Earn_Learn.Controllers
         public async Task<IActionResult> Index()
         {
             var tutori = await _context.Users
-                .Where(k => k.Uloga == Uloga.Tutor)
+                .Where(k => k.Uloga == Uloga.Tutor && k.VerifikovanTutor == true)
                 .ToListAsync();
             return View(tutori);
         }
@@ -322,7 +329,8 @@ namespace Earn_Learn.Controllers
                 CijenaPoSatu = cijenaPoSatu,
                 ProsjecnaOcjena = 0,
                 BrojOdrzanihCasova = 0,
-                DatumRegistracije = DateTime.UtcNow
+                DatumRegistracije = DateTime.UtcNow,
+                VerifikovanTutor = true // Admin-kreiran tutor je automatski verifikovan
             };
             var rezultat = await _userManager.CreateAsync(korisnik, lozinka);
             if (rezultat.Succeeded) return RedirectToAction(nameof(Index));
@@ -365,7 +373,7 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Dashboard", "Student");
 
             var tutoriPoImenu = await _context.Users
-                .Where(u => u.Uloga == Uloga.Tutor &&
+                .Where(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == true &&
                             (u.Ime + " " + u.Prezime).Contains(q))
                 .ToListAsync();
 
@@ -381,7 +389,7 @@ namespace Earn_Learn.Controllers
                 .ToListAsync();
 
             var tutoriPoPredmetuKorisnici = await _context.Users
-                .Where(u => tutoriPoPredmetu.Contains(u.Id) && u.Uloga == Uloga.Tutor)
+                .Where(u => tutoriPoPredmetu.Contains(u.Id) && u.Uloga == Uloga.Tutor && u.VerifikovanTutor == true)
                 .ToListAsync();
 
             var sviTutori = tutoriPoImenu
@@ -467,6 +475,9 @@ namespace Earn_Learn.Controllers
             if (user == null || user.Uloga != Uloga.Tutor)
                 return RedirectToAction("Index", "Home");
 
+            if (user.VerifikovanTutor != true)
+                return View("VerifikacijaNaCekanju");
+
             var termini = await _context.Termin
                 .Where(t => t.idTutora == user.Id)
                 .OrderByDescending(t => t.datumIVrijeme)
@@ -497,6 +508,9 @@ namespace Earn_Learn.Controllers
             var tutor = await _userManager.GetUserAsync(User);
             if (tutor == null || tutor.Uloga != Uloga.Tutor)
                 return Forbid();
+
+            if (tutor.VerifikovanTutor != true)
+                return View("VerifikacijaNaCekanju");
 
             var predmeti = await _context.KorisnikPredmet
                 .Where(kp => kp.idKorisnika == tutor.Id)

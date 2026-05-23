@@ -19,15 +19,18 @@ namespace Earn_Learn.Areas.Identity.Pages.Account
         private readonly UserManager<Korisnik> _userManager;
         private readonly SignInManager<Korisnik> _signInManager;
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
         public RegisterModel(
             UserManager<Korisnik> userManager,
             SignInManager<Korisnik> signInManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IWebHostEnvironment env)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _env = env;
         }
 
         [BindProperty]
@@ -65,6 +68,8 @@ namespace Earn_Learn.Areas.Identity.Pages.Account
             public bool ZelimBitiTutor { get; set; }
 
             public List<int> OdabraniPredmeti { get; set; } = new();
+
+            public IFormFile? PrilogOcjene { get; set; }
         }
 
         public async Task OnGetAsync(string? returnUrl = null)
@@ -81,6 +86,21 @@ namespace Earn_Learn.Areas.Identity.Pages.Account
             {
                 var odabranaUloga = Input.ZelimBitiTutor ? Uloga.Tutor : Uloga.Student;
 
+                // Čuvanje priloga ako je tutor uploadao dokument
+                string? prilogPath = null;
+                if (odabranaUloga == Uloga.Tutor && Input.PrilogOcjene != null && Input.PrilogOcjene.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "prilozi");
+                    Directory.CreateDirectory(uploadsFolder);
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(Input.PrilogOcjene.FileName);
+                    var filePath = Path.Combine(uploadsFolder, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await Input.PrilogOcjene.CopyToAsync(stream);
+                    }
+                    prilogPath = "/uploads/prilozi/" + fileName;
+                }
+
                 var korisnik = new Korisnik
                 {
                     Ime = Input.Ime,
@@ -88,7 +108,9 @@ namespace Earn_Learn.Areas.Identity.Pages.Account
                     Email = Input.Email,
                     UserName = Input.Email,
                     Uloga = odabranaUloga,
-                    DatumRegistracije = DateTime.UtcNow
+                    DatumRegistracije = DateTime.UtcNow,
+                    PrilogOcjene = prilogPath,
+                    VerifikovanTutor = odabranaUloga == Uloga.Tutor ? false : null
                 };
 
                 var result = await _userManager.CreateAsync(korisnik, Input.Password);

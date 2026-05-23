@@ -13,16 +13,15 @@ namespace Earn_Learn.Data
         public DbSet<Earn_Learn.Models.Termin> Termin { get; set; } = default!;
         public DbSet<Earn_Learn.Models.Predmet> Predmet { get; set; } = default!;
         public DbSet<Earn_Learn.Models.KorisnikPredmet> KorisnikPredmet { get; set; } = default!;
+        public DbSet<Earn_Learn.Models.Prijava> Prijava { get; set; } = default!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // Kompozitni ključ za KorisnikPredmet
             builder.Entity<KorisnikPredmet>()
                 .HasKey(kp => new { kp.idKorisnika, kp.idPredmeta });
 
-            // Seed podaci za predmete
             builder.Entity<Predmet>().HasData(
                 new Predmet { id = 1, naziv = "Administracija računarskih mreža" },
                 new Predmet { id = 2, naziv = "Aktuatori" },
