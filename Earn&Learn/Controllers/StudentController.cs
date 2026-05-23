@@ -263,6 +263,50 @@ namespace Earn_Learn.Controllers
             return Json(new { success = true, poruka = $"Prisustvo potvrđeno! Skinuto {termin.cijena:N2} KM s računa." });
         }
 
+        // ── PROFIL STUDENTA (admin može pregledati) ──
+        public async Task<IActionResult> Profil(string id)
+        {
+            var student = await _userManager.FindByIdAsync(id);
+            if (student == null || student.Uloga != Uloga.Student)
+                return NotFound();
+
+            var predmeti = await _context.KorisnikPredmet
+                .Where(kp => kp.idKorisnika == id)
+                .Join(_context.Predmet, kp => kp.idPredmeta, p => p.id, (kp, p) => p)
+                .ToListAsync();
+
+            var termini = await _context.Termin
+                .Where(t => t.idStudenta == id)
+                .OrderByDescending(t => t.datumIVrijeme)
+                .ToListAsync();
+
+            var recenzije = await _context.Recenzija
+                .Where(r => r.idStudenta == id)
+                .OrderByDescending(r => r.datumRecenzije)
+                .ToListAsync();
+
+            var recenzijeViewModel = new List<RecenzijaViewModel>();
+            foreach (var rec in recenzije)
+            {
+                var tutor = await _context.Users.FindAsync(rec.idTutora);
+                recenzijeViewModel.Add(new RecenzijaViewModel
+                {
+                    Recenzija = rec,
+                    ImeStudenta = tutor?.Ime ?? "Tutor"
+                });
+            }
+
+            var model = new StudentProfilViewModel
+            {
+                Student = student,
+                Predmeti = predmeti,
+                Termini = termini,
+                Recenzije = recenzijeViewModel
+            };
+
+            return View(model);
+        }
+
         // ── PRIJAVI TUTORA (student prijavljuje tutora adminu) ──
         [Authorize]
         [HttpPost]

@@ -20,6 +20,10 @@ namespace Earn_Learn.Controllers
         {
             return View();
         }
+        public IActionResult Terms()
+        {
+            return View();
+        }
 
         [HttpGet]
         public IActionResult Contact()

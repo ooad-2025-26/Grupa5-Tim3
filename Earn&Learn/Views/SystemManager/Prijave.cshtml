@@ -186,9 +186,14 @@
                 </div>
 
                 <div class="pr-actions">
-                    @if (!string.IsNullOrEmpty(p.IdPrijavitelja))
+                    @if (p.RecenzijaId.HasValue)
                     {
-                        <a asp-controller="Tutor" asp-action="Profil" asp-route-id="@p.IdPrijavitelja"
+                        <a asp-controller="Recenzijas" asp-action="Details" asp-route-id="@p.RecenzijaId"
+                           class="btn-posj">Posjeti recenziju</a>
+                    }
+                    else if (!string.IsNullOrEmpty(p.PrijavljeniTutorId))
+                    {
+                        <a asp-controller="Tutor" asp-action="Profil" asp-route-id="@p.PrijavljeniTutorId"
                            class="btn-posj">Posjeti korisnika</a>
                     }
                     <form method="post" asp-action="ObrisiPrijavu" asp-controller="SystemManager">
