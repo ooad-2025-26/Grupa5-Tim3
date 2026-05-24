@@ -37,7 +37,7 @@ namespace Earn_Learn.Controllers
                 .Join(_context.Predmet,
                       kp => kp.idPredmeta,
                       p => p.id,
-                      (kp, p) => p.naziv)
+                      (kp, p) => p)
                 .ToListAsync();
 
             if (user.Uloga == Uloga.Tutor)
@@ -50,6 +50,25 @@ namespace Earn_Learn.Controllers
                 .OrderBy(p => p.naziv)
                 .ToListAsync();
 
+            var recenzijeRaw = await _context.Recenzija
+                .Where(r => r.idStudenta == user.Id)
+                .OrderByDescending(r => r.datumRecenzije)
+                .ToListAsync();
+
+            var recenzije = new List<RecenzijaViewModel>();
+            foreach (var rec in recenzijeRaw)
+            {
+                var tutor = await _context.Users.FindAsync(rec.idTutora);
+                recenzije.Add(new RecenzijaViewModel
+                {
+                    Recenzija = rec,
+                    ImeStudenta = (tutor?.Ime + " " + tutor?.Prezime) ?? "Tutor"
+                });
+            }
+
+            var brojCasova = await _context.Termin
+                .CountAsync(t => t.idStudenta == user.Id && t.status == StatusTermina.Odrzan);
+
             var model = new ProfilViewModel
             {
                 Ime = user.Ime,
@@ -57,13 +76,39 @@ namespace Earn_Learn.Controllers
                 Email = user.Email ?? "",
                 Uloga = user.Uloga,
                 BrojIndeksa = user.BrojIndeksa,
-                Predmeti = predmeti,
+                GodinaStudija = user.GodinaStudija,
+                BrojRecenzija = recenzijeRaw.Count,
+                BrojCasova = brojCasova,
+                Predmeti = predmeti.Select(p => p.naziv).ToList(),
+                PredmetiObjekti = predmeti,
+                Recenzije = recenzije,
                 SviPredmeti = sviPredmeti
             };
 
             return View(model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UrediGodinuStudija(int godinaStudija)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return RedirectToAction("Index", "Home");
+
+            if (godinaStudija < 1 || godinaStudija > 6)
+            {
+                TempData["Greska"] = "Godina studija mora biti između 1 i 6.";
+                return RedirectToAction("Index");
+            }
+
+            user.GodinaStudija = godinaStudija;
+            await _userManager.UpdateAsync(user);
+
+            TempData["Uspjeh"] = "Godina studija uspješno ažurirana.";
+            return RedirectToAction("Index");
+        }
+
+        // ── POSTANI TUTOR ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PostaniTutor(
@@ -80,7 +125,6 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Čuvanje priloga
             string? prilogPath = null;
             if (prilogOcjene != null && prilogOcjene.Length > 0)
             {
@@ -110,30 +154,15 @@ namespace Earn_Learn.Controllers
                 prilogPath = "/uploads/prilozi/" + fileName;
             }
 
-            // Promjena uloge u bazi
             user.Uloga = Uloga.Tutor;
+            user.VerifikovanTutor = false;
             if (prilogPath != null)
                 user.PrilogOcjene = prilogPath;
 
+            // Predmeti se NE dodaju odmah — čekaju adminovo odobrenje
+            user.PredmetiNaCekanjuJson = System.Text.Json.JsonSerializer.Serialize(odabraniPredmeti);
+
             await _userManager.UpdateAsync(user);
-
-            // Dodavanje predmeta
-            foreach (var predmetId in odabraniPredmeti)
-            {
-                var postoji = await _context.KorisnikPredmet
-                    .AnyAsync(kp => kp.idKorisnika == user.Id && kp.idPredmeta == predmetId);
-                if (!postoji)
-                {
-                    _context.KorisnikPredmet.Add(new KorisnikPredmet
-                    {
-                        idKorisnika = user.Id,
-                        idPredmeta = predmetId
-                    });
-                }
-            }
-            await _context.SaveChangesAsync();
-
-            // Osvježi cookie da aplikacija prepozna novu ulogu odmah
             await _signInManager.RefreshSignInAsync(user);
 
             TempData["TutorUspjeh"] = "Uspješno ste postali tutor!";
@@ -158,6 +187,91 @@ namespace Earn_Learn.Controllers
             await _userManager.UpdateAsync(user);
 
             TempData["Uspjeh"] = $"Cijena uspješno ažurirana na {cijenaPoSatu:0.00} KM/h.";
+            return RedirectToAction("Index");
+        }
+
+        // ── DODAJ PREDMET (tutor šalje zahtjev adminu) ──
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DodajPredmet(int predmetId, IFormFile? prilogPredmet)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Tutor)
+                return RedirectToAction("Index");
+
+            var predmet = await _context.Predmet.FindAsync(predmetId);
+            if (predmet == null)
+            {
+                TempData["Greska"] = "Predmet nije pronađen.";
+                return RedirectToAction("Index");
+            }
+
+            var vecPostoji = await _context.KorisnikPredmet
+                .AnyAsync(kp => kp.idKorisnika == user.Id && kp.idPredmeta == predmetId);
+            if (vecPostoji)
+            {
+                TempData["Greska"] = "Već predajete ovaj predmet.";
+                return RedirectToAction("Index");
+            }
+
+            string? prilogPath = null;
+            if (prilogPredmet != null && prilogPredmet.Length > 0)
+            {
+                var dozvoljeniTipovi = new[] {
+                    "image/jpeg", "image/png", "image/gif",
+                    "image/webp", "application/pdf"
+                };
+                if (!dozvoljeniTipovi.Contains(prilogPredmet.ContentType))
+                {
+                    TempData["Greska"] = "Dozvoljeni formati su JPG, PNG i PDF.";
+                    return RedirectToAction("Index");
+                }
+                if (prilogPredmet.Length > 5 * 1024 * 1024)
+                {
+                    TempData["Greska"] = "Prilog ne smije biti veći od 5MB.";
+                    return RedirectToAction("Index");
+                }
+
+                var uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "prilozi");
+                Directory.CreateDirectory(uploadsFolder);
+                var fileName = Guid.NewGuid() + Path.GetExtension(prilogPredmet.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                    await prilogPredmet.CopyToAsync(stream);
+
+                prilogPath = "/uploads/prilozi/" + fileName;
+            }
+
+            user.VerifikovanTutor = false;
+            user.PredmetNaCekanjaId = predmetId;
+            if (prilogPath != null)
+                user.PrilogOcjene = prilogPath;
+
+            await _userManager.UpdateAsync(user);
+
+            TempData["Uspjeh"] = $"Zahtjev za dodavanje predmeta '{predmet.naziv}' je poslan adminu.";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ObrisiPredmet(int predmetId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Tutor)
+                return RedirectToAction("Index");
+
+            var kp = await _context.KorisnikPredmet
+                .FirstOrDefaultAsync(kp => kp.idKorisnika == user.Id && kp.idPredmeta == predmetId);
+
+            if (kp != null)
+            {
+                _context.KorisnikPredmet.Remove(kp);
+                await _context.SaveChangesAsync();
+                TempData["Uspjeh"] = "Predmet uspješno uklonjen.";
+            }
+
             return RedirectToAction("Index");
         }
     }

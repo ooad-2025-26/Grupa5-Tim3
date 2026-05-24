@@ -26,9 +26,8 @@ namespace Earn_Learn.Controllers
             if (user == null || user.Uloga != Uloga.SystemManager)
                 return RedirectToAction("Index", "Home");
 
-            // Broj zahtjeva = neverifikovani tutori + otvorene prijave
             int neverifikovaniTutori = await _context.Users
-                .CountAsync(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == false);
+                .CountAsync(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor != true);
             int otvorenePrijave = await _context.Prijava
                 .CountAsync(p => p.Status != StatusPrijave.Rijeseno);
 
@@ -48,7 +47,6 @@ namespace Earn_Learn.Controllers
             return View(model);
         }
 
-        // ── ZAHTJEVI (hub stranica) ──
         [Authorize]
         public async Task<IActionResult> Zahtjevi()
         {
@@ -59,7 +57,6 @@ namespace Earn_Learn.Controllers
             return View();
         }
 
-        // ── PRIJAVE ──
         [Authorize]
         public async Task<IActionResult> Prijave()
         {
@@ -116,13 +113,54 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Index", "Home");
 
             var tutori = await _context.Users
-                .Where(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == false)
+                .Where(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor != true)
                 .ToListAsync();
 
-            ViewBag.BrojVerifikovanih = await _context.Users
-                .CountAsync(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == true);
+            var tutoriSaPredmetima = new List<TutorSaPredmetima>();
+            foreach (var tutor in tutori)
+            {
+                var idPredmeta = await _context.KorisnikPredmet
+                    .Where(kp => kp.idKorisnika == tutor.Id)
+                    .Select(kp => kp.idPredmeta)
+                    .ToListAsync();
 
-            return View(tutori);
+                var predmeti = await _context.Predmet
+                    .Where(p => idPredmeta.Contains(p.id))
+                    .ToListAsync();
+
+                // Predmeti na čekanju iz JSON-a (novi tutori i studenti koji postaju tutori)
+                var predmetiNaCekanju = new List<Predmet>();
+                if (!string.IsNullOrEmpty(tutor.PredmetiNaCekanjuJson))
+                {
+                    var ids = System.Text.Json.JsonSerializer.Deserialize<List<int>>(tutor.PredmetiNaCekanjuJson);
+                    if (ids != null)
+                        predmetiNaCekanju = await _context.Predmet
+                            .Where(p => ids.Contains(p.id))
+                            .ToListAsync();
+                }
+
+                // Jedan predmet na čekanju (već verifikovani tutor koji dodaje novi predmet)
+                Predmet? predmetNaCekanju = null;
+                if (tutor.PredmetNaCekanjaId.HasValue)
+                    predmetNaCekanju = await _context.Predmet.FindAsync(tutor.PredmetNaCekanjaId.Value);
+
+                tutoriSaPredmetima.Add(new TutorSaPredmetima
+                {
+                    Tutor = tutor,
+                    Predmeti = predmeti,
+                    PredmetiNaCekanju = predmetiNaCekanju,
+                    PredmetNaCekanju = predmetNaCekanju
+                });
+            }
+
+            var model = new VerifikacijaViewModel
+            {
+                TutoriNaCekanju = tutoriSaPredmetima,
+                BrojVerifikovanih = await _context.Users
+                    .CountAsync(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == true)
+            };
+
+            return View(model);
         }
 
         [Authorize]
@@ -135,7 +173,49 @@ namespace Earn_Learn.Controllers
                 return NotFound();
 
             tutor.VerifikovanTutor = true;
+
+            // Dodaj predmete iz JSON-a (novi tutori)
+            if (!string.IsNullOrEmpty(tutor.PredmetiNaCekanjuJson))
+            {
+                var ids = System.Text.Json.JsonSerializer.Deserialize<List<int>>(tutor.PredmetiNaCekanjuJson);
+                if (ids != null)
+                {
+                    foreach (var predmetId in ids)
+                    {
+                        var postoji = await _context.KorisnikPredmet
+                            .AnyAsync(kp => kp.idKorisnika == tutor.Id && kp.idPredmeta == predmetId);
+                        if (!postoji)
+                        {
+                            _context.KorisnikPredmet.Add(new KorisnikPredmet
+                            {
+                                idKorisnika = tutor.Id,
+                                idPredmeta = predmetId
+                            });
+                        }
+                    }
+                }
+                tutor.PredmetiNaCekanjuJson = null;
+            }
+
+            // Dodaj predmet iz pojedinačnog zahtjeva (već verifikovani tutor)
+            if (tutor.PredmetNaCekanjaId.HasValue)
+            {
+                var vecPostoji = await _context.KorisnikPredmet
+                    .AnyAsync(kp => kp.idKorisnika == tutor.Id
+                                 && kp.idPredmeta == tutor.PredmetNaCekanjaId.Value);
+                if (!vecPostoji)
+                {
+                    _context.KorisnikPredmet.Add(new KorisnikPredmet
+                    {
+                        idKorisnika = tutor.Id,
+                        idPredmeta = tutor.PredmetNaCekanjaId.Value
+                    });
+                }
+                tutor.PredmetNaCekanjaId = null;
+            }
+
             await _userManager.UpdateAsync(tutor);
+            await _context.SaveChangesAsync();
 
             TempData["Uspjeh"] = $"Tutor {tutor.Ime} {tutor.Prezime} je uspješno verifikovan.";
             return RedirectToAction(nameof(ZahtjeviZaVerifikaciju));
@@ -156,7 +236,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction(nameof(ZahtjeviZaVerifikaciju));
         }
 
-        // ── DOKUMENTACIJA TUTORA ──
         [Authorize]
         public async Task<IActionResult> PrilogTutora(string id)
         {
@@ -226,7 +305,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ── KORISNICI ──
         public async Task<IActionResult> UpravljajKorisnicima(string? pretraga)
         {
             var korisnici = _context.Users
@@ -269,7 +347,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction(nameof(UpravljajKorisnicima));
         }
 
-        // ── PREDMETI ──
         public async Task<IActionResult> UpravljajPredmetima(string? pretraga)
         {
             var predmeti = _context.Predmet.AsQueryable();

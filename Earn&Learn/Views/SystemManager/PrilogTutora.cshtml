@@ -139,7 +139,7 @@
         }
     </div>
 
-    @if (Model.VerifikovanTutor == false)
+    @if (Model.VerifikovanTutor != true)
     {
         <div class="ver-btns">
             <form method="post" asp-action="VerifikujTutora" asp-controller="SystemManager">

@@ -10,7 +10,13 @@ namespace Earn_Learn.Models
         public string Email { get; set; } = "";
         public Uloga Uloga { get; set; }
         public int? BrojIndeksa { get; set; }
+        public int? GodinaStudija { get; set; }
+        public int? BrojRecenzija { get; set; }
+        public int? BrojCasova { get; set; }
         public List<string> Predmeti { get; set; } = new();
+        public List<Predmet> PredmetiObjekti { get; set; } = new();
+
+        public List<RecenzijaViewModel> Recenzije { get; set; } = new();
 
         // Za "Postani tutor" formu
         public List<Predmet> SviPredmeti { get; set; } = new();

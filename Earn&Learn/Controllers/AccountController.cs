@@ -113,9 +113,9 @@ namespace Earn_Learn.Controllers
                 UserName = email,
                 Uloga = uloga,
                 BrojIndeksa = uloga == Uloga.Student ? brojIndeksa : null,
-                DatumRegistracije = DateTime.UtcNow,
                 PrilogOcjene = prilogPath,
-                VerifikovanTutor = uloga == Uloga.Tutor ? false : null
+                VerifikovanTutor = uloga == Uloga.Tutor ? false : null,
+                DatumRegistracije = DateTime.UtcNow
             };
 
             var rezultat = await _userManager.CreateAsync(korisnik, password);
@@ -166,7 +166,6 @@ namespace Earn_Learn.Controllers
 
             var odabranaUloga = (zelimTutor || uloga == 1) ? Uloga.Tutor : Uloga.Student;
 
-            // Čuvanje priloga ako je tutor uploadao dokument
             string? prilogPath = null;
             if (odabranaUloga == Uloga.Tutor && prilogOcjene != null && prilogOcjene.Length > 0)
             {
@@ -201,17 +200,11 @@ namespace Earn_Learn.Controllers
 
             if (rezultat.Succeeded)
             {
-                if (odabranaUloga == Uloga.Tutor && odabraniPredmeti != null)
+                // Predmeti se NE dodaju odmah — čekaju adminovo odobrenje
+                if (odabranaUloga == Uloga.Tutor && odabraniPredmeti != null && odabraniPredmeti.Any())
                 {
-                    foreach (var predmetId in odabraniPredmeti)
-                    {
-                        _context.KorisnikPredmet.Add(new KorisnikPredmet
-                        {
-                            idKorisnika = korisnik.Id,
-                            idPredmeta = predmetId
-                        });
-                    }
-                    await _context.SaveChangesAsync();
+                    korisnik.PredmetiNaCekanjuJson = System.Text.Json.JsonSerializer.Serialize(odabraniPredmeti);
+                    await _userManager.UpdateAsync(korisnik);
                 }
 
                 await _signInManager.SignInAsync(korisnik, isPersistent: false);
