@@ -57,6 +57,82 @@
             margin-top: 4px;
         }
 
+    /* ── GRAFIKON ── */
+    .tdash-grafikon-wrapper {
+        max-width: 960px;
+        margin: 40px auto 0;
+        padding: 0 20px;
+    }
+
+    .tdash-grafikon-box {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+
+    .tdash-grafikon-header {
+        background: #e8f5e0;
+        color: #0d2d45;
+        padding: 16px 24px;
+        font-size: 1.2rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .grafikon-filter {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-filter {
+        background: #fff;
+        border: 2px solid #5bc400;
+        color: #5bc400;
+        border-radius: 20px;
+        padding: 5px 16px;
+        font-size: .82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .2s;
+        font-family: inherit;
+    }
+
+        .btn-filter.aktivan, .btn-filter:hover {
+            background: #5bc400;
+            color: #fff;
+        }
+
+    .grafikon-summary {
+        display: flex;
+        gap: 32px;
+        padding: 18px 24px 0;
+        flex-wrap: wrap;
+    }
+
+    .grafikon-summary-item .gs-iznos {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0d2d45;
+    }
+
+    .grafikon-summary-item .gs-label {
+        font-size: .78rem;
+        font-weight: 700;
+        color: #aaa;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .grafikon-canvas-wrap {
+        padding: 16px 24px 24px;
+    }
+
+    /* ── TERMINI ── */
     .tdash-termini {
         max-width: 960px;
         margin: 0 auto;
@@ -161,7 +237,7 @@
         border-radius: 8px;
         padding: 6px 12px;
         font-size: .80rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
         color: #555;
         display: inline-flex;
@@ -213,7 +289,7 @@
     <!-- HERO -->
     <div class="tdash-hero">
         <h1>Zdravo, @Model.Ime!</h1>
-        <h2>Tvoja zarada ovog mjeseca: <span>@Model.Balans.ToString("0") KM</span></h2>
+        <h2>Tvoja zarada ovog mjeseca: <span>@(((double)ViewBag.ZaradaOvajMjesec).ToString("0.00")) KM</span></h2>
     </div>
 
     <!-- STATISTIKE -->
@@ -242,6 +318,28 @@
         <div class="alert-error">✗ @TempData["Greska"]</div>
     }
 
+    <!-- GRAFIKON ZARADE -->
+    <div class="tdash-grafikon-wrapper">
+        <div class="tdash-grafikon-box">
+            <div class="tdash-grafikon-header">
+                Zarada — @ViewBag.Godina
+                <div class="grafikon-filter">
+                    <button class="btn-filter aktivan" id="btnMjesec" onclick="prikaziMjesec()">Ovaj mjesec</button>
+                    <button class="btn-filter" id="btnGodina" onclick="prikaziGodinu()">Ova godina</button>
+                </div>
+            </div>
+            <div class="grafikon-summary">
+                <div class="grafikon-summary-item">
+                    <div class="gs-iznos" id="sumIznos">@(((double)ViewBag.ZaradaOvajMjesec).ToString("0.00")) KM</div>
+                    <div class="gs-label" id="sumLabel">Zarada ovog mjeseca</div>
+                </div>
+            </div>
+            <div class="grafikon-canvas-wrap">
+                <canvas id="zaradaChart" height="90"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- NADOLAZEĆI TERMINI -->
     <div class="tdash-termini" style="margin-top: 40px;">
         <div class="tdash-termini-header">Nadolazeći časovi</div>
@@ -265,7 +363,6 @@
                 var badgeClass = statusLabel == "Rezervisan" ? "badge-rezervisan" : "badge-slobodan";
 
                 <div class="tdash-termin-row">
-
                     <span class="tdash-predmet" title="@(item.ImePredmeta ?? "—")">@(item.ImePredmeta ?? "—")</span>
 
                     @if (!string.IsNullOrEmpty(item.ImeStudenta))
@@ -287,7 +384,6 @@
                         <input type="hidden" name="terminId" value="@t.id" />
                         <button type="submit" class="btn-otkai">🗑 otkaži</button>
                     </form>
-
                 </div>
             }
         }
@@ -298,3 +394,95 @@
     </div>
 
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+    const zaradaPoMjesecima = @Html.Raw(ViewBag.ZaradaPoMjesecima);
+    const zaradaOvajMjesec  = @(((double)ViewBag.ZaradaOvajMjesec).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
+    const zaradaOvaGodina   = @(((double)ViewBag.ZaradaOvaGodina).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
+
+    const mjeseciLabels  = ["Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
+    const trenutniMjesec = new Date().getMonth(); // 0-indexed
+
+    // Pocetni prikaz: samo tekuci mjesec, ostali su 0
+    const podaciMjesec = zaradaPoMjesecima.map((v, i) => i === trenutniMjesec ? v : 0);
+
+    const ctx = document.getElementById('zaradaChart').getContext('2d');
+
+    const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+    labels: mjeseciLabels,
+    datasets: [{
+    label: 'Zarada (KM)',
+    data: podaciMjesec,
+    backgroundColor: mjeseciLabels.map((_, i) =>
+    i === trenutniMjesec ? '#5bc400' : '#d4f0a8'
+    ),
+    borderRadius: 6,
+    borderSkipped: false,
+    }]
+    },
+    options: {
+    responsive: true,
+    plugins: {
+    legend: { display: false },
+    tooltip: {
+    callbacks: {
+    label: ctx => ` ${ctx.parsed.y.toFixed(2)} KM`
+    }
+    }
+    },
+    scales: {
+    x: {
+    grid: { display: false },
+    ticks: {
+    font: { weight: '700', size: 12 },
+    color: (c) => c.index === trenutniMjesec ? '#0d2d45' : '#bbb'
+    }
+    },
+    y: {
+    beginAtZero: true,
+    // min 10 da y-osa ne ide 0-1 kad nema podataka
+    max: Math.max(...podaciMjesec, 10),
+    grid: { color: '#f0f0f0' },
+    ticks: {
+    callback: val => val + ' KM',
+    font: { size: 11 },
+    color: '#888'
+    }
+    }
+    }
+    }
+    });
+
+    function prikaziMjesec() {
+    const podaci = zaradaPoMjesecima.map((v, i) => i === trenutniMjesec ? v : 0);
+    chart.data.datasets[0].data = podaci;
+    chart.data.datasets[0].backgroundColor = mjeseciLabels.map((_, i) =>
+    i === trenutniMjesec ? '#5bc400' : '#d4f0a8'
+    );
+    chart.options.scales.y.max = Math.max(...podaci, 10);
+    chart.update();
+
+    document.getElementById('sumIznos').textContent = zaradaOvajMjesec + ' KM';
+    document.getElementById('sumLabel').textContent  = 'Zarada ovog mjeseca';
+    document.getElementById('btnMjesec').classList.add('aktivan');
+    document.getElementById('btnGodina').classList.remove('aktivan');
+    }
+
+    function prikaziGodinu() {
+    chart.data.datasets[0].data = zaradaPoMjesecima;
+    chart.data.datasets[0].backgroundColor = mjeseciLabels.map((_, i) =>
+    i === trenutniMjesec ? '#5bc400' : '#d4f0a8'
+    );
+    chart.options.scales.y.max = Math.max(...zaradaPoMjesecima, 10);
+    chart.update();
+
+    document.getElementById('sumIznos').textContent = zaradaOvaGodina + ' KM';
+    document.getElementById('sumLabel').textContent  = 'Zarada ove godine';
+    document.getElementById('btnGodina').classList.add('aktivan');
+    document.getElementById('btnMjesec').classList.remove('aktivan');
+    }
+</script>

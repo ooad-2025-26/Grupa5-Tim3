@@ -26,7 +26,6 @@ namespace Earn_Learn.Controllers
             if (user == null || user.Uloga != Uloga.Tutor)
                 return RedirectToAction("Index", "Home");
 
-            // Ako tutor nije verifikovan, prikaži pending stranicu
             if (user.VerifikovanTutor != true)
                 return View("VerifikacijaNaCekanju");
 
@@ -55,6 +54,41 @@ namespace Earn_Learn.Controllers
                 });
             }
 
+            // ── GRAFIKON: zarada po mjesecima za tekucu godinu ──
+            var godinaSada = DateTime.Now.Year;
+            var transakcijeGodina = await _context.Transakcija
+                .Where(t => t.idTutora == user.Id
+                         && t.statusPlacanja == StatusPlacanja.Uspjesno
+                         && t.datumUplate.Year == godinaSada)
+                .ToListAsync();
+
+            // iznos je negativan za tutora (odlazak novca od studenta), pa množimo s -1
+            var zaradaPoMjesecima = Enumerable.Range(1, 12)
+                .Select(m => transakcijeGodina
+                    .Where(t => t.datumUplate.Month == m)
+                    .Sum(t => t.iznos * -1))
+                .ToList();
+
+            // zarada za tekuci i prosli mjesec
+            var mjesecSada = DateTime.Now.Month;
+            var zaradaOvajMjesec = zaradaPoMjesecima[mjesecSada - 1];
+            var zaradaOvaGodina = zaradaPoMjesecima.Sum();
+
+            ViewBag.ZaradaPoMjesecima = System.Text.Json.JsonSerializer.Serialize(zaradaPoMjesecima);
+            ViewBag.ZaradaOvajMjesec = zaradaOvajMjesec;
+            ViewBag.ZaradaOvaGodina = zaradaOvaGodina;
+            ViewBag.Godina = godinaSada;
+
+            if (user.Uloga == Uloga.Tutor)
+            {
+                ViewBag.CijenaPoSatu = user.CijenaPoSatu ?? 0;
+                ViewBag.ProsjecnaOcjena = user.ProsjecnaOcjena ?? 0;
+            }
+
+            var sviPredmeti = await _context.Predmet
+                .OrderBy(p => p.naziv)
+                .ToListAsync();
+
             var model = new TutorDashboardViewModel
             {
                 Ime = user.Ime,
@@ -66,7 +100,6 @@ namespace Earn_Learn.Controllers
 
             return View(model);
         }
-
         [Authorize]
         public async Task<IActionResult> StudentDashboard()
         {
