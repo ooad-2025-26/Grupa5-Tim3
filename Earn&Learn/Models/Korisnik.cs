@@ -20,6 +20,6 @@ namespace Earn_Learn.Models
         // Verifikacija tutora: null = nije tutor, false = na čekanju, true = verifikovan
         public bool? VerifikovanTutor { get; set; }
         public int? PredmetNaCekanjaId { get; set; }
-        public string PredmetiNaCekanjuJson { get; set; }
+        public string PredmetiNaCekanjuJson { get; set; } = "[]"; // ← FIX
     }
 }

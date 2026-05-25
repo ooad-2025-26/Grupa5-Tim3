@@ -128,7 +128,6 @@ namespace Earn_Learn.Controllers
                     .Where(p => idPredmeta.Contains(p.id))
                     .ToListAsync();
 
-                // Predmeti na čekanju iz JSON-a (novi tutori i studenti koji postaju tutori)
                 var predmetiNaCekanju = new List<Predmet>();
                 if (!string.IsNullOrEmpty(tutor.PredmetiNaCekanjuJson))
                 {
@@ -139,7 +138,6 @@ namespace Earn_Learn.Controllers
                             .ToListAsync();
                 }
 
-                // Jedan predmet na čekanju (već verifikovani tutor koji dodaje novi predmet)
                 Predmet? predmetNaCekanju = null;
                 if (tutor.PredmetNaCekanjaId.HasValue)
                     predmetNaCekanju = await _context.Predmet.FindAsync(tutor.PredmetNaCekanjaId.Value);
@@ -173,9 +171,9 @@ namespace Earn_Learn.Controllers
                 return NotFound();
 
             tutor.VerifikovanTutor = true;
+            tutor.PredmetiNaCekanjuJson ??= "[]"; // ← FIX
 
-            // Dodaj predmete iz JSON-a (novi tutori)
-            if (!string.IsNullOrEmpty(tutor.PredmetiNaCekanjuJson))
+            if (!string.IsNullOrEmpty(tutor.PredmetiNaCekanjuJson) && tutor.PredmetiNaCekanjuJson != "[]")
             {
                 var ids = System.Text.Json.JsonSerializer.Deserialize<List<int>>(tutor.PredmetiNaCekanjuJson);
                 if (ids != null)
@@ -194,10 +192,9 @@ namespace Earn_Learn.Controllers
                         }
                     }
                 }
-                tutor.PredmetiNaCekanjuJson = null;
+                tutor.PredmetiNaCekanjuJson = "[]";
             }
 
-            // Dodaj predmet iz pojedinačnog zahtjeva (već verifikovani tutor)
             if (tutor.PredmetNaCekanjaId.HasValue)
             {
                 var vecPostoji = await _context.KorisnikPredmet
@@ -280,7 +277,8 @@ namespace Earn_Learn.Controllers
                 Email = email,
                 UserName = email,
                 Uloga = Uloga.SystemManager,
-                DatumRegistracije = DateTime.UtcNow
+                DatumRegistracije = DateTime.UtcNow,
+                PredmetiNaCekanjuJson = "[]" // ← FIX
             };
 
             var rezultat = await _userManager.CreateAsync(korisnik, lozinka);
@@ -342,6 +340,7 @@ namespace Earn_Learn.Controllers
             korisnik.Prezime = prezime;
             korisnik.Email = email;
             korisnik.UserName = email;
+            korisnik.PredmetiNaCekanjuJson ??= "[]"; // ← FIX
 
             await _userManager.UpdateAsync(korisnik);
             return RedirectToAction(nameof(UpravljajKorisnicima));

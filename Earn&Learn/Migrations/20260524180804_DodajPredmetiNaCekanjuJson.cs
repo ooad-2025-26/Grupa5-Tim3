@@ -14,7 +14,8 @@ namespace EarnLearn.Migrations
                 name: "PredmetiNaCekanjuJson",
                 table: "AspNetUsers",
                 type: "longtext",
-                nullable: false)
+                nullable: false,
+                defaultValue: "[]") // ← FIX
                 .Annotation("MySql:CharSet", "utf8mb4");
         }
 
