@@ -8,7 +8,9 @@
 }
 
 <style>
-    * { font-family: 'Nunito', sans-serif; }
+    * {
+        font-family: 'Nunito', sans-serif;
+    }
 
     .nv-hero {
         background: #0d2d45;
@@ -16,8 +18,18 @@
         text-align: center;
         color: #fff;
     }
-    .nv-hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 6px; }
-    .nv-hero p  { color: #a0b8c8; font-size: 1rem; margin: 0; }
+
+        .nv-hero h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .nv-hero p {
+            color: #a0b8c8;
+            font-size: 1rem;
+            margin: 0;
+        }
 
     .nv-stats {
         display: flex;
@@ -27,10 +39,25 @@
         text-align: center;
         flex-wrap: wrap;
     }
-    .nv-stat .broj  { font-size: 3rem; font-weight: 800; color: #0d2d45; line-height: 1; }
-    .nv-stat .label { font-size: .95rem; color: #888; margin-top: 6px; }
 
-    .nv-wrap { max-width: 700px; margin: 0 auto 60px; padding: 0 20px; }
+    .nv-stat .broj {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #0d2d45;
+        line-height: 1;
+    }
+
+    .nv-stat .label {
+        font-size: .95rem;
+        color: #888;
+        margin-top: 6px;
+    }
+
+    .nv-wrap {
+        max-width: 700px;
+        margin: 0 auto 60px;
+        padding: 0 20px;
+    }
 
     .nv-uplata-card {
         border: 1.5px solid #eee;
@@ -40,8 +67,19 @@
         background: #fff;
         box-shadow: 0 2px 12px rgba(0,0,0,.05);
     }
-    .nv-uplata-card h3 { font-size: 1.1rem; font-weight: 800; color: #0d2d45; margin-bottom: 6px; }
-    .nv-uplata-card p  { font-size: .88rem; color: #888; margin-bottom: 20px; }
+
+        .nv-uplata-card h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0d2d45;
+            margin-bottom: 6px;
+        }
+
+        .nv-uplata-card p {
+            font-size: .88rem;
+            color: #888;
+            margin-bottom: 20px;
+        }
 
     .iznos-grid {
         display: flex;
@@ -49,6 +87,7 @@
         flex-wrap: wrap;
         margin-bottom: 16px;
     }
+
     .btn-iznos {
         background: #f0f7ff;
         color: #0d2d45;
@@ -60,28 +99,33 @@
         cursor: pointer;
         transition: all .2s;
     }
-    .btn-iznos:hover, .btn-iznos.aktivan {
-        background: #0d2d45;
-        color: #fff;
-        border-color: #0d2d45;
-    }
+
+        .btn-iznos:hover, .btn-iznos.aktivan {
+            background: #0d2d45;
+            color: #fff;
+            border-color: #0d2d45;
+        }
 
     .nv-input-row {
         display: flex;
         gap: 10px;
         align-items: center;
     }
-    .nv-input-row input[type=number] {
-        flex: 1;
-        border: 1.5px solid #ddd;
-        border-radius: 10px;
-        padding: 10px 16px;
-        font-size: 1rem;
-        font-weight: 700;
-        outline: none;
-        color: #0d2d45;
-    }
-    .nv-input-row input:focus { border-color: #5bc400; }
+
+        .nv-input-row input[type=number] {
+            flex: 1;
+            border: 1.5px solid #ddd;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            outline: none;
+            color: #0d2d45;
+        }
+
+        .nv-input-row input:focus {
+            border-color: #5bc400;
+        }
 
     .btn-uplati {
         background: #5bc400;
@@ -95,7 +139,59 @@
         transition: opacity .2s;
         white-space: nowrap;
     }
-    .btn-uplati:hover { opacity: .85; }
+
+        .btn-uplati:hover {
+            opacity: .85;
+        }
+
+    .nv-iban-row {
+        margin-top: 12px;
+        margin-bottom: 4px;
+    }
+
+        .nv-iban-row label {
+            display: block;
+            font-size: .82rem;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 6px;
+        }
+
+        .nv-iban-row input[type=text] {
+            width: 100%;
+            border: 1.5px solid #ddd;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            outline: none;
+            color: #0d2d45;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .nv-iban-row input:focus {
+            border-color: #5bc400;
+        }
+
+        .nv-iban-row input.iban-error {
+            border-color: #e74c3c;
+        }
+
+        .nv-iban-row input.iban-ok {
+            border-color: #5bc400;
+        }
+
+    .nv-iban-hint {
+        font-size: .75rem;
+        color: #aaa;
+        margin-top: 4px;
+    }
+
+        .nv-iban-hint.err {
+            color: #e74c3c;
+        }
 
     .nv-section-title {
         font-size: 1rem;
@@ -114,17 +210,58 @@
         border-bottom: 1px solid #f5f5f5;
         gap: 12px;
     }
-    .nv-row:last-child { border-bottom: none; }
 
-    .nv-iznos-plus  { font-size: 1rem; font-weight: 800; color: #2e7d32; }
-    .nv-iznos-minus { font-size: 1rem; font-weight: 800; color: #c0392b; }
-    .nv-datum { font-size: .82rem; color: #aaa; }
-    .nv-tip   { font-size: .82rem; color: #555; flex: 1; }
+        .nv-row:last-child {
+            border-bottom: none;
+        }
 
-    .alert-ok  { background: #e8f5e0; color: #2e7d00; border-radius: 10px; padding: 12px 20px; font-weight: 700; margin-bottom: 20px; }
-    .alert-err { background: #fff0f0; color: #c00; border-radius: 10px; padding: 12px 20px; font-weight: 700; margin-bottom: 20px; }
+    .nv-iznos-plus {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #2e7d32;
+    }
 
-    .nv-empty { text-align: center; padding: 30px; color: #aaa; font-size: .95rem; }
+    .nv-iznos-minus {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #c0392b;
+    }
+
+    .nv-datum {
+        font-size: .82rem;
+        color: #aaa;
+    }
+
+    .nv-tip {
+        font-size: .82rem;
+        color: #555;
+        flex: 1;
+    }
+
+    .alert-ok {
+        background: #e8f5e0;
+        color: #2e7d00;
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .alert-err {
+        background: #fff0f0;
+        color: #c00;
+        border-radius: 10px;
+        padding: 12px 20px;
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .nv-empty {
+        text-align: center;
+        padding: 30px;
+        color: #aaa;
+        font-size: .95rem;
+    }
 
     .sim-card {
         background: linear-gradient(135deg, #0d2d45, #1a5276);
@@ -135,33 +272,49 @@
         position: relative;
         overflow: hidden;
     }
-    .sim-card::before {
-        content: '';
-        position: absolute;
-        top: -40px; right: -40px;
-        width: 160px; height: 160px;
-        background: rgba(255,255,255,.06);
-        border-radius: 50%;
-    }
-    .sim-card .chip {
-        width: 38px; height: 28px;
-        background: linear-gradient(135deg, #f5c518, #e6a800);
-        border-radius: 5px;
-        margin-bottom: 22px;
-    }
-    .sim-card .card-broj {
-        font-size: 1.1rem;
-        letter-spacing: 4px;
-        font-weight: 600;
-        margin-bottom: 16px;
-        color: #c8dff0;
-    }
-    .sim-card .card-stanje { font-size: 1.8rem; font-weight: 800; }
-    .sim-card .card-label  { font-size: .8rem; color: #a0b8c8; margin-top: 2px; }
+
+        .sim-card::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 160px;
+            height: 160px;
+            background: rgba(255,255,255,.06);
+            border-radius: 50%;
+        }
+
+        .sim-card .chip {
+            width: 38px;
+            height: 28px;
+            background: linear-gradient(135deg, #f5c518, #e6a800);
+            border-radius: 5px;
+            margin-bottom: 22px;
+        }
+
+        .sim-card .card-broj {
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #c8dff0;
+        }
+
+        .sim-card .card-stanje {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .sim-card .card-label {
+            font-size: .8rem;
+            color: #a0b8c8;
+            margin-top: 2px;
+        }
 
     .sim-badge {
         position: absolute;
-        top: 20px; right: 24px;
+        top: 20px;
+        right: 24px;
         background: rgba(91,196,0,.2);
         color: #5bc400;
         border-radius: 20px;
@@ -217,6 +370,12 @@
                        min="1" max="10000" step="0.01" required />
                 <button type="submit" class="btn-uplati">Uplati</button>
             </div>
+            <div class="nv-iban-row">
+                <label>Broj računa (IBAN)</label>
+                <input type="text" id="iban-input" placeholder="BA39 1990 0111 2345 6789"
+                       maxlength="27" autocomplete="off" spellcheck="false" />
+                <div class="nv-iban-hint" id="iban-hint">Format: BA39 XXXX XXXX XXXX XXXX — npr. BA39 1990 0111 2345 6789</div>
+            </div>
         </form>
     </div>
 
@@ -256,90 +415,136 @@
 </div>
 
 @section Scripts {
-<script>
-    function postaviIznos(iznos, btn) {
-        document.getElementById('iznos-input').value = iznos;
-        document.querySelectorAll('.btn-iznos').forEach(b => b.classList.remove('aktivan'));
-        btn.classList.add('aktivan');
-    }
-
-    document.getElementById('uplataForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const iznos = parseFloat(document.getElementById('iznos-input').value);
-        if (!iznos || iznos <= 0 || iznos > 10000) {
-            prikaziAlert('Iznos mora biti između 1 i 10,000 KM.', false);
-            return;
+    <script>
+        function postaviIznos(iznos, btn) {
+            document.getElementById('iznos-input').value = iznos;
+            document.querySelectorAll('.btn-iznos').forEach(b => b.classList.remove('aktivan'));
+            btn.classList.add('aktivan');
         }
 
-        const token = document.querySelector('[name="__RequestVerificationToken"]').value;
-        const btn = document.querySelector('.btn-uplati');
-        btn.disabled = true;
-        btn.textContent = '...';
+        // IBAN formatting & validation
+        const ibanInput = document.getElementById('iban-input');
+        const ibanHint = document.getElementById('iban-hint');
 
-        try {
-            const resp = await fetch('/Student/UplatiNovac', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: `iznos=${iznos}&__RequestVerificationToken=${encodeURIComponent(token)}`
-            });
+        function normalizeIban(val) {
+            return val.replace(/\s/g, '').toUpperCase();
+        }
+        function formatIban(raw) {
+            const clean = normalizeIban(raw);
+            return clean.replace(/(.{4})/g, '$1 ').trim();
+        }
+        function validateBaIban(raw) {
+            const clean = normalizeIban(raw);
+            // BA IBAN: BA + 2 check digits + 16 digits = 20 chars total
+            return /^BA\d{18}$/.test(clean);
+        }
 
-            const data = await resp.json();
+        ibanInput.addEventListener('input', function () {
+            const raw = this.value.replace(/[^A-Za-z0-9\s]/g, '');
+            const cursor = this.selectionStart;
+            this.value = formatIban(raw);
 
-            if (data.success) {
-                const novoStanje = parseFloat(data.novoStanje).toFixed(2) + ' KM';
+            this.classList.remove('iban-ok', 'iban-error');
+            ibanHint.classList.remove('err');
 
-                // Ažuriraj stanje na sva tri mjesta
-                document.getElementById('stat-stanje').textContent = novoStanje;
-                document.getElementById('card-stanje').textContent = novoStanje;
-
-                // Ažuriraj ukupno uplaćeno
-                const trenutnoUkupno = parseFloat(document.getElementById('stat-ukupno').textContent) || 0;
-                document.getElementById('stat-ukupno').textContent = (trenutnoUkupno + iznos).toFixed(2) + ' KM';
-
-                // Ukloni "nema transakcija" poruku ako postoji
-                const prazno = document.getElementById('nv-empty');
-                if (prazno) prazno.remove();
-
-                // Dodaj novi red na vrh historije
-                const sectionTitle = document.querySelector('.nv-section-title');
-                const sad = new Date();
-                const datum = sad.toLocaleDateString('bs-BA', { day: '2-digit', month: '2-digit', year: 'numeric' })
-                            + ' ' + sad.toLocaleTimeString('bs-BA', { hour: '2-digit', minute: '2-digit' });
-                const noviRed = document.createElement('div');
-                noviRed.className = 'nv-row';
-                noviRed.innerHTML = `
-                    <span class="nv-tip"><span>⬆ Uplata na račun</span></span>
-                    <span class="nv-datum">${datum}</span>
-                    <span class="nv-iznos-plus">+${iznos.toFixed(2)} KM</span>
-                `;
-                sectionTitle.insertAdjacentElement('afterend', noviRed);
-
-                document.getElementById('iznos-input').value = '';
-                document.querySelectorAll('.btn-iznos').forEach(b => b.classList.remove('aktivan'));
-                prikaziAlert(data.poruka, true);
+            const clean = normalizeIban(this.value);
+            if (clean.length === 0) {
+                ibanHint.textContent = 'Format: BA39 XXXX XXXX XXXX XXXX — npr. BA39 1990 0111 2345 6789';
+            } else if (clean.length < 20) {
+                ibanHint.textContent = `Uneseno ${clean.length} od 20 znakova`;
+            } else if (!validateBaIban(this.value)) {
+                this.classList.add('iban-error');
+                ibanHint.classList.add('err');
+                ibanHint.textContent = 'Neispravan format. Mora počinjati s BA39 i imati 20 znakova.';
             } else {
-                prikaziAlert(data.poruka, false);
+                this.classList.add('iban-ok');
+                ibanHint.textContent = '✓ Ispravan format IBAN-a';
             }
-        } catch {
-            prikaziAlert('Greška pri uplati. Pokušajte ponovo.', false);
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Uplati';
-        }
-    });
+        });
 
-    function prikaziAlert(poruka, uspjeh) {
-        const stari = document.querySelector('.alert-ok, .alert-err');
-        if (stari) stari.remove();
-        const div = document.createElement('div');
-        div.className = uspjeh ? 'alert-ok' : 'alert-err';
-        div.textContent = (uspjeh ? '✓ ' : '✗ ') + poruka;
-        document.querySelector('.nv-wrap').prepend(div);
-        setTimeout(() => div.remove(), 4000);
-    }
-</script>
+        document.getElementById('uplataForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const iznos = parseFloat(document.getElementById('iznos-input').value);
+            if (!iznos || iznos <= 0 || iznos > 10000) {
+                prikaziAlert('Iznos mora biti između 1 i 10,000 KM.', false);
+                return;
+            }
+
+            const ibanVal = document.getElementById('iban-input').value;
+            if (ibanVal.trim() !== '' && !validateBaIban(ibanVal)) {
+                prikaziAlert('Unesite ispravan BiH IBAN broj računa (npr. BA39 1990 0111 2345 6789).', false);
+                return;
+            }
+
+            const token = document.querySelector('[name="__RequestVerificationToken"]').value;
+            const btn = document.querySelector('.btn-uplati');
+            btn.disabled = true;
+            btn.textContent = '...';
+
+            try {
+                const resp = await fetch('/Student/UplatiNovac', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `iznos=${iznos}&__RequestVerificationToken=${encodeURIComponent(token)}`
+                });
+
+                const data = await resp.json();
+
+                if (data.success) {
+                    const novoStanje = parseFloat(data.novoStanje).toFixed(2) + ' KM';
+
+                    // Ažuriraj stanje na sva tri mjesta
+                    document.getElementById('stat-stanje').textContent = novoStanje;
+                    document.getElementById('card-stanje').textContent = novoStanje;
+
+                    // Ažuriraj ukupno uplaćeno
+                    const trenutnoUkupno = parseFloat(document.getElementById('stat-ukupno').textContent) || 0;
+                    document.getElementById('stat-ukupno').textContent = (trenutnoUkupno + iznos).toFixed(2) + ' KM';
+
+                    // Ukloni "nema transakcija" poruku ako postoji
+                    const prazno = document.getElementById('nv-empty');
+                    if (prazno) prazno.remove();
+
+                    // Dodaj novi red na vrh historije
+                    const sectionTitle = document.querySelector('.nv-section-title');
+                    const sad = new Date();
+                    const datum = sad.toLocaleDateString('bs-BA', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                        + ' ' + sad.toLocaleTimeString('bs-BA', { hour: '2-digit', minute: '2-digit' });
+                    const noviRed = document.createElement('div');
+                    noviRed.className = 'nv-row';
+                    noviRed.innerHTML = `
+                            <span class="nv-tip"><span>⬆ Uplata na račun</span></span>
+                            <span class="nv-datum">${datum}</span>
+                            <span class="nv-iznos-plus">+${iznos.toFixed(2)} KM</span>
+                        `;
+                    sectionTitle.insertAdjacentElement('afterend', noviRed);
+
+                    document.getElementById('iznos-input').value = '';
+                    document.querySelectorAll('.btn-iznos').forEach(b => b.classList.remove('aktivan'));
+                    prikaziAlert(data.poruka, true);
+                } else {
+                    prikaziAlert(data.poruka, false);
+                }
+            } catch {
+                prikaziAlert('Greška pri uplati. Pokušajte ponovo.', false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Uplati';
+            }
+        });
+
+        function prikaziAlert(poruka, uspjeh) {
+            const stari = document.querySelector('.alert-ok, .alert-err');
+            if (stari) stari.remove();
+            const div = document.createElement('div');
+            div.className = uspjeh ? 'alert-ok' : 'alert-err';
+            div.textContent = (uspjeh ? '✓ ' : '✗ ') + poruka;
+            document.querySelector('.nv-wrap').prepend(div);
+            setTimeout(() => div.remove(), 4000);
+        }
+    </script>
 }

@@ -131,7 +131,7 @@
             <div class="nv-row">
                 <span class="nv-tip">⬆ Uplata od studenta</span>
                 <span class="nv-datum">@t.datumUplate.ToString("dd.MM.yyyy HH:mm")</span>
-                <span class="nv-iznos-plus">+@((t.iznos * -1).ToString("N2")) KM</span>
+                <span class="nv-iznos-plus">+@(Math.Abs(t.iznos).ToString("N2")) KM</span>
             </div>
         }
     }
