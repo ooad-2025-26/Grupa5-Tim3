@@ -50,24 +50,49 @@ namespace Earn_Learn.Controllers
                 .OrderBy(p => p.naziv)
                 .ToListAsync();
 
-            var recenzijeRaw = await _context.Recenzija
-                .Where(r => r.idStudenta == user.Id)
-                .OrderByDescending(r => r.datumRecenzije)
-                .ToListAsync();
+            List<Recenzija> recenzijeRaw;
+            List<RecenzijaViewModel> recenzije = new();
 
-            var recenzije = new List<RecenzijaViewModel>();
-            foreach (var rec in recenzijeRaw)
+            if (user.Uloga == Uloga.Tutor)
             {
-                var tutor = await _context.Users.FindAsync(rec.idTutora);
-                recenzije.Add(new RecenzijaViewModel
+                // Recenzije koje su studenti ostavili OVOM tutoru
+                recenzijeRaw = await _context.Recenzija
+                    .Where(r => r.idTutora == user.Id)
+                    .OrderByDescending(r => r.datumRecenzije)
+                    .ToListAsync();
+
+                foreach (var rec in recenzijeRaw)
                 {
-                    Recenzija = rec,
-                    ImeStudenta = (tutor?.Ime + " " + tutor?.Prezime) ?? "Tutor"
-                });
+                    var student = await _context.Users.FindAsync(rec.idStudenta);
+                    recenzije.Add(new RecenzijaViewModel
+                    {
+                        Recenzija = rec,
+                        ImeStudenta = (student?.Ime + " " + student?.Prezime) ?? "Student"
+                    });
+                }
+            }
+            else
+            {
+                // Recenzije koje je ovaj student ostavio tutorima
+                recenzijeRaw = await _context.Recenzija
+                    .Where(r => r.idStudenta == user.Id)
+                    .OrderByDescending(r => r.datumRecenzije)
+                    .ToListAsync();
+
+                foreach (var rec in recenzijeRaw)
+                {
+                    var tutor = await _context.Users.FindAsync(rec.idTutora);
+                    recenzije.Add(new RecenzijaViewModel
+                    {
+                        Recenzija = rec,
+                        ImeStudenta = (tutor?.Ime + " " + tutor?.Prezime) ?? "Tutor"
+                    });
+                }
             }
 
-            var brojCasova = await _context.Termin
-                .CountAsync(t => t.idStudenta == user.Id && t.status == StatusTermina.Odrzan);
+            var brojCasova = user.Uloga == Uloga.Tutor
+                ? await _context.Termin.CountAsync(t => t.idTutora == user.Id && t.status == StatusTermina.Odrzan)
+                : await _context.Termin.CountAsync(t => t.idStudenta == user.Id && t.status == StatusTermina.Odrzan);
 
             var model = new ProfilViewModel
             {

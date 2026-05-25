@@ -31,14 +31,24 @@ namespace Earn_Learn.Controllers
             int otvorenePrijave = await _context.Prijava
                 .CountAsync(p => p.Status != StatusPrijave.Rijeseno);
 
+            // Provizija SM-a = transakcije gdje je idTutora == SM-ov id (10% od svake isplate)
+            var smIds = await _context.Users
+                .Where(u => u.Uloga == Uloga.SystemManager)
+                .Select(u => u.Id)
+                .ToListAsync();
+
             var model = new AdminDashboardViewModel
             {
                 UkupnoKorisnika = await _context.Users.CountAsync(),
                 UkupnoTutora = await _context.Users.CountAsync(u => u.Uloga == Uloga.Tutor && u.VerifikovanTutor == true),
                 AktivnihSesija = await _context.Termin.CountAsync(t => t.datumIVrijeme >= DateTime.Now),
-                UkupanPromet = await _context.Transakcija.SumAsync(t => t.iznos),
+                UkupanPromet = await _context.Transakcija
+                    .Where(t => smIds.Contains(t.idTutora) && t.statusPlacanja == StatusPlacanja.Uspjesno)
+                    .SumAsync(t => t.iznos),
                 MjesecniPromet = await _context.Transakcija
-                    .Where(t => t.datumUplate.Month == DateTime.Now.Month &&
+                    .Where(t => smIds.Contains(t.idTutora) &&
+                                t.statusPlacanja == StatusPlacanja.Uspjesno &&
+                                t.datumUplate.Month == DateTime.Now.Month &&
                                 t.datumUplate.Year == DateTime.Now.Year)
                     .SumAsync(t => t.iznos),
                 ZahtjevaNCekanju = neverifikovaniTutori + otvorenePrijave

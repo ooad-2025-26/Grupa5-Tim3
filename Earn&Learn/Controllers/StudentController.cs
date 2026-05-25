@@ -132,6 +132,17 @@ namespace Earn_Learn.Controllers
                     await _userManager.UpdateAsync(user);
                 }
 
+                // Zapis otkazivanja u Transakcija (negativan iznos = povrat)
+                _context.Transakcija.Add(new Transakcija
+                {
+                    idStudenta = user.Id,
+                    idTutora = termin.idTutora,
+                    iznos = -termin.cijena,
+                    datumUplate = DateTime.UtcNow,
+                    nacinPlacanja = NacinPlacanja.Cash,
+                    statusPlacanja = StatusPlacanja.Vraceno
+                });
+
                 termin.idStudenta = string.Empty;
                 termin.idPredmeta = null;
                 termin.status = StatusTermina.Slobodan;
@@ -217,6 +228,18 @@ namespace Earn_Learn.Controllers
             user.StanjeRacuna += iznos;
             await _userManager.UpdateAsync(user);
 
+            // Zapis uplate u Transakcija
+            _context.Transakcija.Add(new Transakcija
+            {
+                idStudenta = user.Id,
+                idTutora = string.Empty,
+                iznos = iznos,
+                datumUplate = DateTime.UtcNow,
+                nacinPlacanja = NacinPlacanja.Kartica,
+                statusPlacanja = StatusPlacanja.Uspjesno
+            });
+            await _context.SaveChangesAsync();
+
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
                 return Json(new
                 {
@@ -252,12 +275,51 @@ namespace Earn_Learn.Controllers
             if (tutor == null)
                 return Json(new { success = false, poruka = "Tutor nije pronađen." });
 
+            // Pronađi system managera (prvi u bazi)
+            var systemManager = await _context.Users
+                .FirstOrDefaultAsync(u => u.Uloga == Uloga.SystemManager);
+
+            double provizija = Math.Round(termin.cijena * 0.10, 2);
+            double zaradaTutora = Math.Round(termin.cijena - provizija, 2);
+
+            // Prebaci novac
             user.StanjeRacuna -= termin.cijena;
-            tutor.StanjeRacuna += termin.cijena;
+            tutor.StanjeRacuna += zaradaTutora;
+            if (systemManager != null)
+                systemManager.StanjeRacuna += provizija;
+
             termin.status = StatusTermina.Odrzan;
+            tutor.BrojOdrzanihCasova = (tutor.BrojOdrzanihCasova ?? 0) + 1;
+
+            // Transakcija: student → tutor (90%)
+            _context.Transakcija.Add(new Transakcija
+            {
+                idStudenta = user.Id,
+                idTutora = tutor.Id,
+                iznos = zaradaTutora,
+                datumUplate = DateTime.UtcNow,
+                nacinPlacanja = NacinPlacanja.Cash,
+                statusPlacanja = StatusPlacanja.Uspjesno
+            });
+
+            // Transakcija: student → system manager (10% provizija)
+            if (systemManager != null)
+            {
+                _context.Transakcija.Add(new Transakcija
+                {
+                    idStudenta = user.Id,
+                    idTutora = systemManager.Id,
+                    iznos = provizija,
+                    datumUplate = DateTime.UtcNow,
+                    nacinPlacanja = NacinPlacanja.Cash,
+                    statusPlacanja = StatusPlacanja.Uspjesno
+                });
+            }
 
             await _userManager.UpdateAsync(user);
             await _userManager.UpdateAsync(tutor);
+            if (systemManager != null)
+                await _userManager.UpdateAsync(systemManager);
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, poruka = $"Prisustvo potvrđeno! Skinuto {termin.cijena:N2} KM s računa." });
