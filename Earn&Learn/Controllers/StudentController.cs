@@ -291,10 +291,21 @@ namespace Earn_Learn.Controllers
             termin.status = StatusTermina.Odrzan;
             tutor.BrojOdrzanihCasova = (tutor.BrojOdrzanihCasova ?? 0) + 1;
 
-            // Transakcija: student → tutor (90%)
+            // Transakcija: studentova perspektiva (puno plaćanje = negativno)
             _context.Transakcija.Add(new Transakcija
             {
                 idStudenta = user.Id,
+                idTutora = tutor.Id,
+                iznos = -termin.cijena,
+                datumUplate = DateTime.UtcNow,
+                nacinPlacanja = NacinPlacanja.Cash,
+                statusPlacanja = StatusPlacanja.Uspjesno
+            });
+
+            // Transakcija: tutorova perspektiva (90% zarade = pozitivno)
+            _context.Transakcija.Add(new Transakcija
+            {
+                idStudenta = string.Empty,
                 idTutora = tutor.Id,
                 iznos = zaradaTutora,
                 datumUplate = DateTime.UtcNow,
@@ -302,12 +313,12 @@ namespace Earn_Learn.Controllers
                 statusPlacanja = StatusPlacanja.Uspjesno
             });
 
-            // Transakcija: student → system manager (10% provizija)
+            // Transakcija: system manager provizija (10%)
             if (systemManager != null)
             {
                 _context.Transakcija.Add(new Transakcija
                 {
-                    idStudenta = user.Id,
+                    idStudenta = string.Empty,
                     idTutora = systemManager.Id,
                     iznos = provizija,
                     datumUplate = DateTime.UtcNow,
