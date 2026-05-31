@@ -1,0 +1,235 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="65rlwvp-ZRBe_WxjBC2_" name="Page-1">
+    <mxGraphModel dx="1935" dy="1263" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="mKorisnik" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" value="&lt;&lt;component&gt;&gt;&#xa;KorisnikModel" vertex="1">
+          <mxGeometry height="50" width="150" x="300" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="mTermin" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" value="&lt;&lt;component&gt;&gt;&#xa;TerminModel" vertex="1">
+          <mxGeometry height="50" width="150" x="520" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="mTransakcija" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" value="&lt;&lt;component&gt;&gt;&#xa;TransakcijaModel" vertex="1">
+          <mxGeometry height="50" width="160" x="750" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="mRecenzija" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" value="&lt;&lt;component&gt;&gt;&#xa;RecenzijaModel" vertex="1">
+          <mxGeometry height="50" width="150" x="990" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="mObavjestenje" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" value="&lt;&lt;component&gt;&gt;&#xa;ObavjestenjeModel" vertex="1">
+          <mxGeometry height="50" width="170" x="1220" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="mPredmet" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" value="&lt;&lt;component&gt;&gt;&#xa;PredmetModel" vertex="1">
+          <mxGeometry height="50" width="150" x="1470" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="ef" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;" value="&lt;&lt;component&gt;&gt;&#xa;EntityFramework" vertex="1">
+          <mxGeometry height="60" width="200" x="860" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="efm1" edge="1" parent="1" source="ef" style="endArrow=open;endFill=0;dashed=1;strokeColor=#d6b656;entryX=1.017;entryY=-0.028;entryDx=0;entryDy=0;entryPerimeter=0;" target="mKorisnik">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="efm2" edge="1" parent="1" source="ef" style="endArrow=open;endFill=0;dashed=1;strokeColor=#d6b656;" target="mTermin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="efm3" edge="1" parent="1" source="ef" style="endArrow=open;endFill=0;dashed=1;strokeColor=#d6b656;" target="mTransakcija">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="efm4" edge="1" parent="1" source="ef" style="endArrow=open;endFill=0;dashed=1;strokeColor=#d6b656;" target="mRecenzija">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="efm5" edge="1" parent="1" source="ef" style="endArrow=open;endFill=0;dashed=1;strokeColor=#d6b656;" target="mObavjestenje">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="efm6" edge="1" parent="1" source="ef" style="endArrow=open;endFill=0;dashed=1;strokeColor=#d6b656;entryX=0.096;entryY=-0.013;entryDx=0;entryDy=0;entryPerimeter=0;" target="mPredmet">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cKorisnik" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="&lt;&lt;component&gt;&gt;&#xa;KorisnickiController" vertex="1">
+          <mxGeometry height="60" width="200" x="240" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="cTermin" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="&lt;&lt;component&gt;&gt;&#xa;TerminController" vertex="1">
+          <mxGeometry height="60" width="200" x="510" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="cPlacanje" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="&lt;&lt;component&gt;&gt;&#xa;PlacanjeController" vertex="1">
+          <mxGeometry height="60" width="200" x="780" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="cStatistika" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="&lt;&lt;component&gt;&gt;&#xa;StatistikaController" vertex="1">
+          <mxGeometry height="60" width="200" x="1000" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="cRecenzija" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="&lt;&lt;component&gt;&gt;&#xa;RecenzijaController" vertex="1">
+          <mxGeometry height="60" width="200" x="1230" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="cObavjestenje" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="&lt;&lt;component&gt;&gt;&#xa;ObavjestenjeController" vertex="1">
+          <mxGeometry height="60" width="220" x="1460" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="cm1" edge="1" parent="1" source="cKorisnik" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="mKorisnik">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cm1b" edge="1" parent="1" source="cKorisnik" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;exitX=1.004;exitY=-0.023;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.099;entryY=1.046;entryDx=0;entryDy=0;entryPerimeter=0;" target="mPredmet">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cm2" edge="1" parent="1" source="cTermin" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="mTermin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cm3" edge="1" parent="1" source="cPlacanje" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="mTransakcija">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cm4" edge="1" parent="1" source="cStatistika" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="mTransakcija">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cm5" edge="1" parent="1" source="cRecenzija" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="mRecenzija">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cm6" edge="1" parent="1" source="cObavjestenje" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="mObavjestenje">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vLogin" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;LoginView" vertex="1">
+          <mxGeometry height="50" width="100" x="20" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vRegister" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;RegisterView" vertex="1">
+          <mxGeometry height="50" width="110" x="280" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vProfil" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;ProfilView" vertex="1">
+          <mxGeometry height="50" width="100" x="150" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vNoviTermin" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;NoviTerminView" vertex="1">
+          <mxGeometry height="50" width="125" x="420" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vMojiTermini" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;MojiTerminiView" vertex="1">
+          <mxGeometry height="50" width="125" x="740" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vDetaljiTermin" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;DetaljiTerminaView" vertex="1">
+          <mxGeometry height="50" width="140" x="570" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vQR" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;QRKodView" vertex="1">
+          <mxGeometry height="50" width="110" x="890" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vRangiranje" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;RangiranjeTutoraView" vertex="1">
+          <mxGeometry height="50" width="150" x="1030" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vPlacanje" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;PlacanjeView" vertex="1">
+          <mxGeometry height="50" width="110" x="1210" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vStatistika" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;StatistikaView" vertex="1">
+          <mxGeometry height="50" width="110" x="1345" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vRecenzija" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;RecenzijaView" vertex="1">
+          <mxGeometry height="50" width="120" x="1480" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vSveRecenzije" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;SveRecenzijeView" vertex="1">
+          <mxGeometry height="50" width="130" x="1620" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="vObavjestenje" parent="1" style="shape=component;align=left;spacingLeft=36;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="&lt;&lt;component&gt;&gt;&#xa;ObavjestenjeView" vertex="1">
+          <mxGeometry height="50" width="130" x="1770" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="cv1" edge="1" parent="1" source="cKorisnik" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="vLogin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv2" edge="1" parent="1" source="cKorisnik" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="vRegister">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv3" edge="1" parent="1" source="cKorisnik" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="vProfil">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv4" edge="1" parent="1" source="cTermin" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="vNoviTermin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv5" edge="1" parent="1" source="cTermin" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="vMojiTermini">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv6" edge="1" parent="1" source="cTermin" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;" target="vDetaljiTermin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv6b" edge="1" parent="1" source="cTermin" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="vQR">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv6c" edge="1" parent="1" source="cTermin" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="vRangiranje">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv7" edge="1" parent="1" source="cPlacanje" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="vPlacanje">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv8" edge="1" parent="1" source="cStatistika" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="vStatistika">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv9" edge="1" parent="1" source="cRecenzija" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="vRecenzija">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv10" edge="1" parent="1" source="cRecenzija" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="vSveRecenzije">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cv11" edge="1" parent="1" source="cObavjestenje" style="endArrow=open;endFill=0;dashed=1;strokeColor=#6c8ebf;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="vObavjestenje">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="aGuest" parent="1" style="shape=umlActor;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;verticalLabelPosition=bottom;verticalAlign=top;" value="Guest" vertex="1">
+          <mxGeometry height="60" width="30" x="105" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="aStudent" parent="1" style="shape=umlActor;whiteSpace=wrap;html=1;fillColor=#E5CCFF;strokeColor=#9933FF;fontSize=12;verticalLabelPosition=bottom;verticalAlign=top;" value="Student" vertex="1">
+          <mxGeometry height="60" width="30" x="495" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="aTutor" parent="1" style="shape=umlActor;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;verticalLabelPosition=bottom;verticalAlign=top;" value="Tutor" vertex="1">
+          <mxGeometry height="60" width="30" x="905" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="aAdmin" parent="1" style="shape=umlActor;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;verticalLabelPosition=bottom;verticalAlign=top;" value="SystemManager" vertex="1">
+          <mxGeometry height="60" width="30" x="1385" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="av1" edge="1" parent="1" source="aGuest" style="endArrow=open;endFill=0;strokeColor=#666666;" target="vLogin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av2" edge="1" parent="1" source="aGuest" style="endArrow=open;endFill=0;strokeColor=#666666;" target="vRegister">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av3" edge="1" parent="1" source="aStudent" style="endArrow=open;endFill=0;strokeColor=#9933FF;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="vProfil">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av4" edge="1" parent="1" source="aStudent" style="endArrow=open;endFill=0;strokeColor=#B266FF;" target="vNoviTermin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av5" edge="1" parent="1" source="aStudent" style="endArrow=open;endFill=0;strokeColor=#9933FF;" target="vMojiTermini">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av5b" edge="1" parent="1" source="aStudent" style="endArrow=open;endFill=0;strokeColor=#9933FF;" target="vDetaljiTermin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av6" edge="1" parent="1" source="aStudent" style="endArrow=open;endFill=0;strokeColor=#9933FF;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="vPlacanje">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av6b" edge="1" parent="1" source="aStudent" style="endArrow=open;endFill=0;strokeColor=#9933FF;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="vRangiranje">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av7" edge="1" parent="1" source="aStudent" style="endArrow=open;endFill=0;strokeColor=#9933FF;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="vRecenzija">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av8" edge="1" parent="1" source="aTutor" style="endArrow=open;endFill=0;strokeColor=#82b366;" target="vDetaljiTermin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av8b" edge="1" parent="1" source="aTutor" style="endArrow=open;endFill=0;strokeColor=#82b366;" target="vNoviTermin">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av9" edge="1" parent="1" source="aTutor" style="endArrow=open;endFill=0;strokeColor=#82b366;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="vStatistika">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av10" edge="1" parent="1" source="aTutor" style="endArrow=open;endFill=0;strokeColor=#82b366;" target="vQR">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av10b" edge="1" parent="1" source="aTutor" style="endArrow=open;endFill=0;strokeColor=#82b366;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="vProfil">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av11" edge="1" parent="1" source="aTutor" style="endArrow=open;endFill=0;strokeColor=#82b366;entryX=0.25;entryY=1;entryDx=0;entryDy=0;" target="vObavjestenje">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av12" edge="1" parent="1" source="aAdmin" style="endArrow=open;endFill=0;strokeColor=#b85450;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" target="vProfil">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av13" edge="1" parent="1" source="aAdmin" style="endArrow=open;endFill=0;strokeColor=#b85450;" target="vSveRecenzije">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av14" edge="1" parent="1" source="aAdmin" style="endArrow=open;endFill=0;strokeColor=#b85450;" target="vStatistika">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="av15" edge="1" parent="1" source="aAdmin" style="endArrow=open;endFill=0;strokeColor=#b85450;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="vObavjestenje">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
