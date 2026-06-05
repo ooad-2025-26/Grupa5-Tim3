@@ -30,6 +30,10 @@ namespace Earn_Learn.Controllers
         {
             return View();
         }
+        public IActionResult PristupOdbijen()
+        {
+            return View();
+        }
 
         [HttpPost]
         public IActionResult Contact(string ime, string email, string poruka)

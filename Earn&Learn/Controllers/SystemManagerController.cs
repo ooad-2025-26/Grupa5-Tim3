@@ -5,9 +5,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Earn_Learn.Security;
+
 
 namespace Earn_Learn.Controllers
 {
+    [RoleOnly(Uloga.SystemManager)]
     public class SystemManagerController : Controller
     {
         private readonly UserManager<Korisnik> _userManager;

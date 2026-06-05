@@ -1,6 +1,7 @@
 ﻿using Earn_Learn.Data;
 using Earn_Learn.Enums;
 using Earn_Learn.Models;
+using Earn_Learn.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Earn_Learn.Controllers
 {
+    [RoleOnly(Uloga.Tutor)]
     public class TutorController : Controller
     {
         private readonly UserManager<Korisnik> _userManager;
