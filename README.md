@@ -27,7 +27,7 @@ Za potrebe testiranja funkcionalnosti sistema unutar same aplikacije, kreirani s
 
 | Uloga | Email | Lozinka  |
 | :--- | :--- | :--- |
-| **Administrator** | `megaribi1@etf.unsa.ba` | `MegaRibi1` |
+| **Administrator** | `megaribi1@etf.unsa.ba` | `MegaRibi123` |
 | **Student** | `student@etf.unsa.ba` | `Student123` |
 | **Tutor** | `tutor@etf.unsa.ba` | `Tutor123` |
 
