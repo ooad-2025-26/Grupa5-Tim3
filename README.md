@@ -25,7 +25,7 @@ Aplikacija je aktivna i može joj se pristupiti putem sljedećeg linka:
 
 Za potrebe testiranja funkcionalnosti sistema unutar same aplikacije, kreirani su sljedeći korisnički profili sa različitim ulogama (rolama):
 
-| Uloga (Role) | Korisničko ime (Email) | Lozinka (Password) |
+| Uloga | Email | Lozinka  |
 | :--- | :--- | :--- |
 | **Administrator** | `megaribi1@etf.unsa.ba` | `MegaRibi1` |
 | **Student** | `student@etf.unsa.ba` | `Student123` |
