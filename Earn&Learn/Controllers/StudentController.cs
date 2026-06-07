@@ -156,7 +156,7 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("MojiCasovi");
         }
 
-        [HttpGet]
+        [HttpGet] // bubble sort
         public async Task<IActionResult> PretraziTutore(string query)
         {
             if (string.IsNullOrWhiteSpace(query))
@@ -164,26 +164,58 @@ namespace Earn_Learn.Controllers
 
             var q = query.ToLower().Trim();
 
-            var rezultati = await _context.Users
+            // Dohvati tutore iz baze
+            var tutori = await _context.Users
                 .Where(u => u.Uloga == Uloga.Tutor)
                 .Where(u => u.Ime.ToLower().Contains(q) ||
                             u.Prezime.ToLower().Contains(q) ||
                             _context.KorisnikPredmet.Any(kp => kp.idKorisnika == u.Id &&
-                                _context.Predmet.Any(p => p.id == kp.idPredmeta && p.naziv.ToLower().Contains(q))))
-                .Select(u => new
+                                _context.Predmet.Any(p => p.id == kp.idPredmeta &&
+                                                           p.naziv.ToLower().Contains(q))))
+                .Select(u => new TutorSearchDto
                 {
-                    id = u.Id,
-                    ime = u.Ime,
-                    prezime = u.Prezime,
-                    prosjecnaOcjena = u.ProsjecnaOcjena ?? 0,
-                    cijenaPoSatu = u.CijenaPoSatu ?? 0,
-                    predmeti = _context.KorisnikPredmet
+                    Id = u.Id,
+                    Ime = u.Ime,
+                    Prezime = u.Prezime,
+                    ProsjecnaOcjena = u.ProsjecnaOcjena ?? 0,
+                    CijenaPoSatu = u.CijenaPoSatu ?? 0,
+                    BrojOdrzanihCasova = u.BrojOdrzanihCasova ?? 0,
+                    Predmeti = _context.KorisnikPredmet
                         .Where(kp => kp.idKorisnika == u.Id)
                         .Join(_context.Predmet, kp => kp.idPredmeta, p => p.id, (kp, p) => p.naziv)
                         .ToList()
                 })
-                .Take(5)
+                .Take(20)
                 .ToListAsync();
+
+            // Izračunaj rang za svakog tutora: kombinacija ocjene i broja casova
+            foreach (var t in tutori)
+                t.Rang = (t.ProsjecnaOcjena * 0.7) + (t.BrojOdrzanihCasova * 0.3);
+
+            // ── BUBBLE SORT po rangu (descending) ──
+            int n = tutori.Count;
+            for (int i = 0; i < n - 1; i++)
+            {
+                for (int j = 0; j < n - i - 1; j++)
+                {
+                    if (tutori[j].Rang < tutori[j + 1].Rang)
+                    {
+                        var temp = tutori[j];
+                        tutori[j] = tutori[j + 1];
+                        tutori[j + 1] = temp;
+                    }
+                }
+            }
+
+            var rezultati = tutori.Take(5).Select(t => new
+            {
+                id = t.Id,
+                ime = t.Ime,
+                prezime = t.Prezime,
+                prosjecnaOcjena = t.ProsjecnaOcjena,
+                cijenaPoSatu = t.CijenaPoSatu,
+                predmeti = t.Predmeti
+            });
 
             return Json(rezultati);
         }
@@ -566,5 +598,19 @@ namespace Earn_Learn.Controllers
             TempData["Uspjeh"] = "Prijava recenzije je poslana adminu.";
             return RedirectToAction("Recenzije", "Tutor", new { id = tutorId });
         }
+    }
+}
+namespace Earn_Learn.Controllers
+{
+    public class TutorSearchDto
+    {
+        public string Id { get; set; } = "";
+        public string Ime { get; set; } = "";
+        public string Prezime { get; set; } = "";
+        public double ProsjecnaOcjena { get; set; }
+        public double CijenaPoSatu { get; set; }
+        public int BrojOdrzanihCasova { get; set; }
+        public double Rang { get; set; }
+        public List<string> Predmeti { get; set; } = new();
     }
 }
