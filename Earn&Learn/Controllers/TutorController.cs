@@ -173,6 +173,7 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("Dashboard");
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> Profil(string id)
         {
             var tutor = await _userManager.FindByIdAsync(id);
@@ -472,6 +473,7 @@ namespace Earn_Learn.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> Recenzije(string id)
         {
             var tutor = await _userManager.FindByIdAsync(id);

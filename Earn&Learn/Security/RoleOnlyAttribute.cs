@@ -3,6 +3,7 @@ using Earn_Learn.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Earn_Learn.Security
 {
@@ -17,6 +18,17 @@ namespace Earn_Learn.Security
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
+            // Ako akcija ima [AllowAnonymous], preskoči provjeru
+            var allowAnonymous = context.ActionDescriptor.EndpointMetadata
+                .OfType<AllowAnonymousAttribute>()
+                .Any();
+
+            if (allowAnonymous)
+            {
+                base.OnActionExecuting(context);
+                return;
+            }
+
             var userManager = context.HttpContext.RequestServices
                 .GetRequiredService<UserManager<Korisnik>>();
 

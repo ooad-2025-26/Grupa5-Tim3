@@ -279,7 +279,9 @@
         <div class="search-wrapper-container">
             <div class="dash-search">
                 <i class="bi bi-search"></i>
-                <input type="text" id="studentSearchInput" placeholder="Pretraži tutore ili predmete npr. Tehnike programiranja" autocomplete="off" />
+                <input type="text" id="studentSearchInput"
+                       placeholder="Pretraži tutore ili predmete npr. Tehnike programiranja"
+                       autocomplete="off" />
                 <button type="button" id="btnSearchSubmit">
                     <i class="bi bi-arrow-right" style="color:#0d2d45;"></i>
                 </button>
@@ -301,9 +303,13 @@
                     @st.Termin.datumIVrijeme.ToString("dd.MM.yyyy. HH:mm")
                     @if (st.Predmet != null)
                     {
-                        <span style="color:#a0b8c8; font-weight:400; margin-left:8px;">| @st.Predmet.naziv</span>
+                        <span style="color:#a0b8c8; font-weight:400; margin-left:8px;">
+                            | @st.Predmet.naziv
+                        </span>
                     }
-                    <span style="color:#5bc400; font-weight:400; margin-left:8px;">| @st.Termin.cijena.ToString("0.00") KM</span>
+                    <span style="color:#5bc400; font-weight:400; margin-left:8px;">
+                        | @st.Termin.cijena.ToString("0.00") KM
+                    </span>
                 </div>
             }
         }
@@ -323,13 +329,15 @@
         <div class="tutor-grid">
             @foreach (var t in Model.TopTutori)
             {
-                <a asp-controller="Tutor" asp-action="Profil" asp-route-id="@t.Id" style="text-decoration:none;">
+                <a href="/Tutor/Profil?id=@t.Id" style="text-decoration:none;">
                     <div class="tutor-card">
                         <i class="bi bi-person-circle"></i>
                         <span class="tutor-name">@t.Ime @t.Prezime</span>
                         @if (t.ProsjecnaOcjena.HasValue && t.ProsjecnaOcjena > 0)
                         {
-                            <span class="tutor-ocjena">★ @t.ProsjecnaOcjena.Value.ToString("0.0")</span>
+                            <span class="tutor-ocjena">
+                                ★ @t.ProsjecnaOcjena.Value.ToString("0.0")
+                            </span>
                         }
                     </div>
                 </a>
@@ -375,24 +383,34 @@
                         } else {
                             $.each(data, function (index, tutor) {
                                 var predmetiLista = tutor.predmeti.join(', ');
-                                var ocjenaTekst = tutor.prosjecnaOcjena > 0 ? '★ ' + tutor.prosjecnaOcjena.toFixed(1) : '★ Nema ocjena';
-                                var cijenaTekst = tutor.cijenaPoSatu > 0 ? tutor.cijenaPoSatu.toFixed(2) + ' KM/h' : 'Cijena po dogovoru';
+                                var ocjenaTekst = tutor.prosjecnaOcjena > 0
+                                    ? '★ ' + tutor.prosjecnaOcjena.toFixed(1)
+                                    : '★ Nema ocjena';
+                                var cijenaTekst = tutor.cijenaPoSatu > 0
+                                    ? tutor.cijenaPoSatu.toFixed(2) + ' KM/h'
+                                    : 'Cijena po dogovoru';
 
                                 var cardHtml = `
-                                            <div class="search-tutor-card">
-                                                <div class="tutor-info-box">
-                                                    <h4>${tutor.ime} ${tutor.prezime}</h4>
-                                                    <p><strong>Predmeti:</strong> ${predmetiLista || 'Nema dodijeljenih predmeta'}</p>
-                                                    <div class="tutor-info-meta">
-                                                        <span class="search-rating">${ocjenaTekst}</span>
-                                                        <span class="search-price">${cijenaTekst}</span>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <a href="/Tutor/Profil?id=${tutor.id}" class="btn-zakazi-search">Zakaži</a>
-                                                </div>
+                                    <div class="search-tutor-card">
+                                        <div class="tutor-info-box">
+                                            <h4>
+                                                <a href="/Tutor/Profil?id=${tutor.id}"
+                                                   style="color:#0d2d45; text-decoration:none;">
+                                                    ${tutor.ime} ${tutor.prezime}
+                                                </a>
+                                            </h4>
+                                            <p><strong>Predmeti:</strong> ${predmetiLista || 'Nema dodijeljenih predmeta'}</p>
+                                            <div class="tutor-info-meta">
+                                                <span class="search-rating">${ocjenaTekst}</span>
+                                                <span class="search-price">${cijenaTekst}</span>
                                             </div>
-                                        `;
+                                        </div>
+                                        <div>
+                                            <a href="/Student/OdaberiTermin?tutorId=${tutor.id}"
+                                               class="btn-zakazi-search">Zakaži</a>
+                                        </div>
+                                    </div>
+                                `;
                                 resultsDropdown.append(cardHtml);
                             });
                         }

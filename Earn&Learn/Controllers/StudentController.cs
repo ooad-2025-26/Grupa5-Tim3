@@ -208,7 +208,92 @@ namespace Earn_Learn.Controllers
 
             return View(transakcije);
         }
+        // GET: Student/RezervisiTermin/5
+        [Authorize]
+        public async Task<IActionResult> RezervisiTermin(int id)
+        {
+            var student = await _userManager.GetUserAsync(User);
+            if (student == null || student.Uloga != Uloga.Student)
+                return View("PristupOdbijen");
 
+            var termin = await _context.Termin
+                .FirstOrDefaultAsync(t => t.id == id && t.status == StatusTermina.Slobodan);
+
+            if (termin == null)
+                return NotFound();
+
+            var tutor = await _context.Users.FindAsync(termin.idTutora);
+            var predmet = termin.idPredmeta.HasValue
+                ? await _context.Predmet.FindAsync(termin.idPredmeta.Value)
+                : null;
+
+            ViewBag.Tutor = tutor;
+            ViewBag.Predmet = predmet;
+            return View(termin);
+        }
+
+        // POST: Student/RezervisiTermin/5
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RezervisiTermin(int id, Earn_Learn.Enums.TipInstrukcija tipInstrukcija)
+        {
+            var student = await _userManager.GetUserAsync(User);
+            if (student == null || student.Uloga != Uloga.Student)
+                return View("PristupOdbijen");
+
+            var termin = await _context.Termin
+                .FirstOrDefaultAsync(t => t.id == id && t.status == StatusTermina.Slobodan);
+
+            if (termin == null)
+            {
+                TempData["Greska"] = "Termin nije dostupan.";
+                return RedirectToAction("Dashboard");
+            }
+
+            termin.idStudenta = student.Id;
+            termin.status = StatusTermina.Rezervisan;
+            termin.tipInstrukcija = tipInstrukcija;
+
+            _context.Update(termin);
+            await _context.SaveChangesAsync();
+
+            TempData["Uspjeh"] = "Termin uspješno rezervisan!";
+            return RedirectToAction("Dashboard");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> OdaberiTermin(string tutorId)
+        {
+            var student = await _userManager.GetUserAsync(User);
+            if (student == null || student.Uloga != Uloga.Student)
+                return View("PristupOdbijen");
+
+            var tutor = await _context.Users.FindAsync(tutorId);
+            if (tutor == null || tutor.Uloga != Uloga.Tutor)
+                return NotFound();
+
+            var termini = await _context.Termin
+                .Where(t => t.idTutora == tutorId
+                         && t.status == StatusTermina.Slobodan
+                         && t.datumIVrijeme >= DateTime.Now)
+                .OrderBy(t => t.datumIVrijeme)
+                .ToListAsync();
+
+            var terminPredmeti = new Dictionary<int, string>();
+            foreach (var t in termini)
+            {
+                if (t.idPredmeta.HasValue)
+                {
+                    var p = await _context.Predmet.FindAsync(t.idPredmeta.Value);
+                    terminPredmeti[t.id] = p?.naziv ?? "—";
+                }
+            }
+
+            ViewBag.Tutor = tutor;
+            ViewBag.TerminPredmeti = terminPredmeti;
+            return View(termini);
+        }
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -382,6 +467,54 @@ namespace Earn_Learn.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OstaviRecenziju(string tutorId, int ocjena, string komentar)
+        {
+            var student = await _userManager.GetUserAsync(User);
+            if (student == null || student.Uloga != Uloga.Student)
+                return View("PristupOdbijen");
+
+            // Provjeri je li student odrzao cas s ovim tutorom
+            var moze = await _context.Termin
+                .AnyAsync(t => t.idStudenta == student.Id
+                            && t.idTutora == tutorId
+                            && t.status == StatusTermina.Odrzan);
+
+            if (!moze)
+            {
+                TempData["Greska"] = "Možete ostaviti recenziju samo tutoru s kojim ste imali čas.";
+                return RedirectToAction("TutorProfil", new { id = tutorId });
+            }
+
+            var recenzija = new Recenzija
+            {
+                idStudenta = student.Id,
+                idTutora = tutorId,
+                ocjena = ocjena,
+                komentar = komentar ?? "",
+                datumRecenzije = DateTime.UtcNow
+            };
+
+            _context.Recenzija.Add(recenzija);
+
+            // Ažuriraj prosječnu ocjenu tutora
+            var tutor = await _context.Users.FindAsync(tutorId);
+            if (tutor != null)
+            {
+                var sveRecenzije = await _context.Recenzija
+                    .Where(r => r.idTutora == tutorId)
+                    .ToListAsync();
+                tutor.ProsjecnaOcjena = sveRecenzije.Average(r => r.ocjena);
+                await _userManager.UpdateAsync(tutor);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Uspjeh"] = "Recenzija uspješno poslana!";
+            return RedirectToAction("Profil", "Tutor", new { id = tutorId });
+        }
         // ── PRIJAVI TUTORA (student prijavljuje tutora adminu) ──
         [Authorize]
         [HttpPost]

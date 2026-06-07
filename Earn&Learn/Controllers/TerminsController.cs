@@ -76,6 +76,59 @@ namespace Earn_Learn.Controllers
             ViewBag.CijenaPoSatu = tutor.CijenaPoSatu ?? 0;
             return View();
         }
+        // GET: Termins/RezervisiTermin/5
+        [Authorize]
+        public async Task<IActionResult> RezervisiTermin(int id)
+        {
+            var student = await _userManager.GetUserAsync(User);
+            if (student == null || student.Uloga != Uloga.Student)
+                return View("PristupOdbijen");
+
+            var termin = await _context.Termin
+                .FirstOrDefaultAsync(t => t.id == id && t.status == StatusTermina.Slobodan);
+
+            if (termin == null)
+                return NotFound();
+
+            var tutor = await _context.Users.FindAsync(termin.idTutora);
+            var predmet = termin.idPredmeta.HasValue
+                ? await _context.Predmet.FindAsync(termin.idPredmeta.Value)
+                : null;
+
+            ViewBag.Tutor = tutor;
+            ViewBag.Predmet = predmet;
+            return View(termin);
+        }
+
+        // POST: Termins/RezervisiTermin/5
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RezervisiTermin(int id, TipInstrukcija tipInstrukcija)
+        {
+            var student = await _userManager.GetUserAsync(User);
+            if (student == null || student.Uloga != Uloga.Student)
+                return View("PristupOdbijen");
+
+            var termin = await _context.Termin
+                .FirstOrDefaultAsync(t => t.id == id && t.status == StatusTermina.Slobodan);
+
+            if (termin == null)
+            {
+                TempData["Greska"] = "Termin nije dostupan.";
+                return RedirectToAction("Index", "Student");
+            }
+
+            termin.idStudenta = student.Id;
+            termin.status = StatusTermina.Rezervisan;
+            termin.tipInstrukcija = tipInstrukcija;
+
+            _context.Update(termin);
+            await _context.SaveChangesAsync();
+
+            TempData["Uspjeh"] = "Termin uspješno rezervisan!";
+            return RedirectToAction("Dashboard", "Student");
+        }
 
         // POST: Termins/KreirajTermin
         [HttpPost]
