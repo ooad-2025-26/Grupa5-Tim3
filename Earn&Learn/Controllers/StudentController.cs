@@ -144,6 +144,17 @@ namespace Earn_Learn.Controllers
                     statusPlacanja = StatusPlacanja.Vraceno
                 });
 
+                // KREIRANJE OBAVJEŠTENJA ZA TUTORA O OTKAZIVANJU
+                var obavjestenjeOtkazivanje = new Obavjestenje
+                {
+                    idKorisnika = termin.idTutora,
+                    naslov = "Termin je otkazan ❌",
+                    sadrzaj = $"Student {user.Ime} {user.Prezime} je otkazao termin koji je bio zakazan za {termin.datumIVrijeme.ToString("dd.MM.yyyy. u HH:mm")}h. Novac je vraćen studentu.",
+                    datumSlanja = DateTime.UtcNow,
+                    procitano = false
+                };
+                _context.Obavjestenje.Add(obavjestenjeOtkazivanje);
+
                 termin.idStudenta = string.Empty;
                 termin.idPredmeta = null;
                 termin.status = StatusTermina.Slobodan;
@@ -155,7 +166,7 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("MojiCasovi");
         }
 
-        [HttpGet] // bubble sort + filtriranje po cijeni i rejtingu
+        [HttpGet]
         public async Task<IActionResult> PretraziTutore(
             string query,
             double? minCijena = null,
@@ -174,7 +185,6 @@ namespace Earn_Learn.Controllers
                             _context.KorisnikPredmet.Any(kp => kp.idKorisnika == u.Id &&
                                 _context.Predmet.Any(p => p.id == kp.idPredmeta &&
                                                            p.naziv.ToLower().Contains(q))))
-                // ── FILTERI PO CIJENI I REJTINGU ──
                 .Where(u => minCijena == null || (u.CijenaPoSatu != null && u.CijenaPoSatu >= minCijena))
                 .Where(u => maxCijena == null || (u.CijenaPoSatu != null && u.CijenaPoSatu <= maxCijena))
                 .Where(u => minRejting == null || (u.ProsjecnaOcjena != null && u.ProsjecnaOcjena >= minRejting))
@@ -194,11 +204,9 @@ namespace Earn_Learn.Controllers
                 .Take(20)
                 .ToListAsync();
 
-            // Izračunaj rang za svakog tutora
             foreach (var t in tutori)
                 t.Rang = (t.ProsjecnaOcjena * 0.7) + (t.BrojOdrzanihCasova * 0.3);
 
-            // ── BUBBLE SORT po rangu (descending) ──
             int n = tutori.Count;
             for (int i = 0; i < n - 1; i++)
             {
@@ -293,6 +301,18 @@ namespace Earn_Learn.Controllers
             termin.tipInstrukcija = tipInstrukcija;
 
             _context.Update(termin);
+
+            // KREIRANJE OBAVJEŠTENJA ZA TUTORA O REZERVACIJI
+            var obavjestenjeZaTutora = new Obavjestenje
+            {
+                idKorisnika = termin.idTutora,
+                naslov = "Nova rezervacija termina! 📅",
+                sadrzaj = $"Student {student.Ime} {student.Prezime} je rezervisao termin koji je zakazan za {termin.datumIVrijeme.ToString("dd.MM.yyyy. u HH:mm")}h.",
+                datumSlanja = DateTime.UtcNow,
+                procitano = false
+            };
+            _context.Obavjestenje.Add(obavjestenjeZaTutora);
+
             await _context.SaveChangesAsync();
 
             TempData["Uspjeh"] = "Termin uspješno rezervisan!";
@@ -446,6 +466,17 @@ namespace Earn_Learn.Controllers
                 });
             }
 
+            // KREIRANJE OBAVJEŠTENJA ZA TUTORA DA JE STUDENT POTVRDIO PRISUSTVO (ZARADA)
+            var obavjestenjeZarada = new Obavjestenje
+            {
+                idKorisnika = tutor.Id,
+                naslov = "Uspješno održan čas! 💰",
+                sadrzaj = $"Student {user.Ime} {user.Prezime} je potvrdio prisustvo za termin ({termin.datumIVrijeme.ToString("dd.MM.yyyy")}). Na Vaš račun je uplaćeno {zaradaTutora:N2} KM (nakon odbijene provizije).",
+                datumSlanja = DateTime.UtcNow,
+                procitano = false
+            };
+            _context.Obavjestenje.Add(obavjestenjeZarada);
+
             await _userManager.UpdateAsync(user);
             await _userManager.UpdateAsync(tutor);
             if (systemManager != null)
@@ -593,6 +624,102 @@ namespace Earn_Learn.Controllers
 
             TempData["Uspjeh"] = "Prijava recenzije je poslana adminu.";
             return RedirectToAction("Recenzije", "Tutor", new { id = tutorId });
+        }
+
+        // ── OBAVJESTENJA ──
+
+        [Authorize]
+        public async Task<IActionResult> Obavjestenja()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Student)
+                return RedirectToAction("Index", "Home");
+
+            var obavjestenja = await _context.Obavjestenje
+                .Where(o => o.idKorisnika == user.Id)
+                .OrderByDescending(o => o.datumSlanja)
+                .ToListAsync();
+
+            foreach (var o in obavjestenja.Where(o => !o.procitano))
+                o.procitano = true;
+            await _context.SaveChangesAsync();
+
+            return View(obavjestenja);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> DohvatiObavjestenja()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var obavjestenja = await _context.Obavjestenje
+                .Where(o => o.idKorisnika == user.Id)
+                .OrderByDescending(o => o.datumSlanja)
+                .Take(10)
+                .Select(o => new {
+                    o.id,
+                    o.naslov,
+                    o.sadrzaj,
+                    o.datumSlanja,
+                    o.procitano
+                })
+                .ToListAsync();
+
+            return Json(obavjestenja);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> BrojObavjestenja()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var broj = await _context.Obavjestenje
+                .CountAsync(o => o.idKorisnika == user.Id && !o.procitano);
+
+            return Json(new { broj });
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OznaciProcitanim(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var obavjestenje = await _context.Obavjestenje
+                .FirstOrDefaultAsync(o => o.id == id && o.idKorisnika == user.Id);
+
+            if (obavjestenje != null)
+            {
+                obavjestenje.procitano = true;
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OznaciSveProcitanim()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var neprocitana = await _context.Obavjestenje
+                .Where(o => o.idKorisnika == user.Id && !o.procitano)
+                .ToListAsync();
+
+            foreach (var o in neprocitana)
+                o.procitano = true;
+
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }

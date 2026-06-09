@@ -16,7 +16,7 @@
             * {
                 font-family: 'Nunito', sans-serif;
             }
-
+            
             .el-navbar {
                 background: #fff;
                 padding: 8px 40px;
@@ -158,6 +158,160 @@
                 padding: 0;
                 background: #fff;
             }
+
+            /* ── NOTIFIKACIJE ZVONIK ── */
+            .notif-wrapper {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .notif-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                position: relative;
+                padding: 6px 8px;
+                color: #333;
+                border-radius: 50%;
+                transition: background .2s;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .notif-btn:hover {
+                background: #f0f0f0;
+            }
+
+            .notif-badge {
+                display: none;
+                position: absolute;
+                top: 2px;
+                right: 2px;
+                background: #e53935;
+                color: white;
+                border-radius: 50%;
+                font-size: 10px;
+                font-weight: 700;
+                min-width: 17px;
+                height: 17px;
+                line-height: 17px;
+                text-align: center;
+                padding: 0 3px;
+                font-family: 'Nunito', sans-serif;
+                border: 2px solid #fff;
+            }
+
+            .notif-dropdown {
+                display: none;
+                position: absolute;
+                right: 0;
+                top: calc(100% + 8px);
+                width: 330px;
+                background: white;
+                border: 1px solid #e8e8e8;
+                border-radius: 12px;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+                z-index: 9999;
+                overflow: hidden;
+            }
+
+            .notif-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 13px 16px;
+                border-bottom: 1px solid #f0f0f0;
+                background: #fafafa;
+            }
+
+            .notif-header-title {
+                font-weight: 700;
+                font-size: 14px;
+                color: #0d2d45;
+            }
+
+            .notif-oznaci-sve {
+                background: none;
+                border: none;
+                cursor: pointer;
+                font-size: 12px;
+                color: #5bc400;
+                font-weight: 600;
+                font-family: 'Nunito', sans-serif;
+                padding: 0;
+                text-decoration: underline;
+            }
+
+            .notif-lista {
+                max-height: 330px;
+                overflow-y: auto;
+            }
+
+            .notif-item {
+                padding: 13px 16px;
+                cursor: pointer;
+                border-bottom: 1px solid #f8f8f8;
+                transition: background .15s;
+                border-left: 3px solid transparent;
+            }
+
+            .notif-item:hover {
+                background: #f9f9f9;
+            }
+
+            .notif-item.novo {
+                background: #f0fbe6;
+                border-left-color: #5bc400;
+            }
+
+            .notif-item-naslov {
+                font-size: 13px;
+                color: #222;
+                margin-bottom: 3px;
+            }
+
+            .notif-item-sadrzaj {
+                font-size: 12px;
+                color: #666;
+                line-height: 1.4;
+            }
+
+            .notif-item-datum {
+                font-size: 11px;
+                color: #bbb;
+                margin-top: 5px;
+            }
+
+            .notif-footer {
+                padding: 10px 16px;
+                border-top: 1px solid #f0f0f0;
+                text-align: center;
+                background: #fafafa;
+            }
+
+            .notif-footer a {
+                font-size: 12px;
+                color: #0d2d45;
+                text-decoration: none;
+                font-weight: 600;
+            }
+
+            .notif-footer a:hover {
+                color: #5bc400;
+            }
+
+            @@keyframes zvoniAnim {
+                0%, 100% { transform: rotate(0deg); }
+                10%, 30% { transform: rotate(-14deg); }
+                20%, 40% { transform: rotate(14deg); }
+                50% { transform: rotate(0deg); }
+            }
+
+            .zvoni {
+                animation: zvoniAnim 0.8s ease-in-out;
+            }
     </style>
 </head>
 <body>
@@ -176,6 +330,30 @@
                     <a class="nav-text" asp-controller="Student" asp-action="Dashboard">Dashboard</a>
                     <a class="nav-text" asp-controller="Student" asp-action="MojiCasovi">Moji Časovi</a>
                     <a class="nav-text" asp-controller="Student" asp-action="Novcanik">Novčanik</a>
+
+                    <div class="notif-wrapper" id="notifWrapper">
+                        <button class="notif-btn" id="notifBtn" onclick="toggleNotifDropdown()" title="Obavještenja">
+                            <i class="bi bi-bell-fill" id="notifBellIcon" style="font-size:20px;"></i>
+                            <span class="notif-badge" id="notifBadge">0</span>
+                        </button>
+
+                        <div class="notif-dropdown" id="notifDropdown">
+                            <div class="notif-header">
+                                <span class="notif-header-title">🔔 Obavještenja</span>
+                                <button class="notif-oznaci-sve" onclick="oznaciSveProcitanim()">
+                                    Označi sve pročitanim
+                                </button>
+                            </div>
+                            <div class="notif-lista" id="notifLista">
+                                <div style="text-align:center;padding:28px;color:#bbb;font-size:13px;">
+                                    Učitavanje...
+                                </div>
+                            </div>
+                            <div class="notif-footer">
+                                <a href="/Student/Obavjestenja">Pogledaj sva obavještenja →</a>
+                            </div>
+                        </div>
+                    </div>
                 }
                 else if (korisnik?.Uloga == Earn_Learn.Enums.Uloga.Tutor)
                 {
@@ -183,6 +361,34 @@
                     <a class="btn-student-dash" asp-controller="Tutor" asp-action="StudentDashboard">Student Dashboard</a>
                     <a class="nav-text" asp-controller="Tutor" asp-action="MojiCasovi">Moji Časovi</a>
                     <a class="nav-text" asp-controller="Tutor" asp-action="Novcanik">Novčanik</a>
+
+                    @* ── NOTIFIKACIJE ZVONIK (prikazuje se samo verifikovanim tutorima) ── *@
+                    @if (korisnik.VerifikovanTutor == true)
+                    {
+                        <div class="notif-wrapper" id="notifWrapper">
+                            <button class="notif-btn" id="notifBtn" onclick="toggleNotifDropdown()" title="Notifikacije">
+                                <i class="bi bi-bell-fill" id="notifBellIcon" style="font-size:20px;"></i>
+                                <span class="notif-badge" id="notifBadge">0</span>
+                            </button>
+
+                            <div class="notif-dropdown" id="notifDropdown">
+                                <div class="notif-header">
+                                    <span class="notif-header-title">🔔 Notifikacije</span>
+                                    <button class="notif-oznaci-sve" onclick="oznaciSveProcitanim()">
+                                        Označi sve pročitanim
+                                    </button>
+                                </div>
+                                <div class="notif-lista" id="notifLista">
+                                    <div style="text-align:center;padding:28px;color:#bbb;font-size:13px;">
+                                        Učitavanje...
+                                    </div>
+                                </div>
+                                <div class="notif-footer">
+                                    <a href="/Tutor/Obavjestenja">Pogledaj sva obavještenja →</a>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 }
                 else if (korisnik?.Uloga == Earn_Learn.Enums.Uloga.SystemManager)
                 {
@@ -232,5 +438,259 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    @* ── NOTIFIKACIJE JAVASCRIPT (aktivan samo kad je zvonik u DOM-u) ── *@
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        var k = await UserManager.GetUserAsync(User);
+        if (k?.Uloga == Earn_Learn.Enums.Uloga.Tutor && k.VerifikovanTutor == true)
+        {
+            <script>
+                let notifOtvoren = false;
+
+                document.addEventListener('click', function (e) {
+                    const wrapper = document.getElementById('notifWrapper');
+                    if (wrapper && !wrapper.contains(e.target)) {
+                        zatvoriNotif();
+                    }
+                });
+
+                function toggleNotifDropdown() {
+                    notifOtvoren ? zatvoriNotif() : otвориNotif();
+                }
+
+                function otвориNotif() {
+                    document.getElementById('notifDropdown').style.display = 'block';
+                    notifOtvoren = true;
+                    ucitajNotifikacije();
+                }
+
+                function zatvoriNotif() {
+                    document.getElementById('notifDropdown').style.display = 'none';
+                    notifOtvoren = false;
+                }
+
+                async function ucitajNotifikacije() {
+                    const lista = document.getElementById('notifLista');
+                    try {
+                        const res = await fetch('/Tutor/DohvatiNotifikacije', {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const data = await res.json();
+                        renderNotifikacije(data);
+                    } catch {
+                        lista.innerHTML = '<div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Greška pri učitavanju.</div>';
+                    }
+                }
+
+                function renderNotifikacije(lista) {
+                    const el = document.getElementById('notifLista');
+                    if (!lista || lista.length === 0) {
+                        el.innerHTML = '<div style="text-align:center;padding:32px;color:#bbb;font-size:13px;">📭 Nema obavještenja</div>';
+                        return;
+                    }
+                    el.innerHTML = lista.map(n => `
+                        <div class="notif-item ${!n.procitano ? 'novo' : ''}" onclick="oznaciProcitanim(${n.id})">
+                            <div class="notif-item-naslov" style="font-weight:${!n.procitano ? '700' : '400'}">
+                                ${escapeHtml(n.naslov)}
+                                ${!n.procitano ? '<span style="background:#5bc400;color:white;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:5px;vertical-align:middle;">NOVO</span>' : ''}
+                            </div>
+                            <div class="notif-item-sadrzaj">${escapeHtml(n.sadrzaj)}</div>
+                            <div class="notif-item-datum">${formatDatum(n.datumSlanja)}</div>
+                        </div>
+                    `).join('');
+                }
+
+                async function oznaciProcitanim(id) {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                    await fetch('/Tutor/OznaciProcitanim', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                        body: `id=${id}`
+                    }).catch(() => {});
+                    osvjeziNotifBadge();
+                    ucitajNotifikacije();
+                }
+
+                async function oznaciSveProcitanim() {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                    await fetch('/Tutor/OznaciSveProcitanim', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token }
+                    }).catch(() => {});
+                    osvjeziNotifBadge();
+                    ucitajNotifikacije();
+                }
+
+                async function osvjeziNotifBadge() {
+                    try {
+                        const res = await fetch('/Tutor/BrojNotifikacija', {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const data = await res.json();
+                        const badge = document.getElementById('notifBadge');
+                        const bell = document.getElementById('notifBellIcon');
+                        if (!badge) return;
+                        const prethodni = parseInt(badge.dataset.prethodni || '0');
+                        if (data.broj > 0) {
+                            badge.textContent = data.broj > 99 ? '99+' : data.broj;
+                            badge.style.display = 'inline-block';
+                            if (data.broj > prethodni) {
+                                bell?.classList.remove('zvoni');
+                                void bell?.offsetWidth;
+                                bell?.classList.add('zvoni');
+                            }
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                        badge.dataset.prethodni = data.broj;
+                    } catch {}
+                }
+
+                function formatDatum(iso) {
+                    if (!iso) return '';
+                    const d = new Date(iso);
+                    const diff = Math.floor((new Date() - d) / 60000);
+                    if (diff < 1) return 'Upravo sada';
+                    if (diff < 60) return `Prije ${diff} min`;
+                    if (diff < 1440) return `Prije ${Math.floor(diff / 60)}h`;
+                    if (diff < 10080) return `Prije ${Math.floor(diff / 1440)} dana`;
+                    return d.toLocaleDateString('bs-BA');
+                }
+
+                function escapeHtml(t) {
+                    if (!t) return '';
+                    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+                }
+
+                osvjeziNotifBadge();
+                setInterval(osvjeziNotifBadge, 30000);
+            </script>
+        }
+        else if (k?.Uloga == Earn_Learn.Enums.Uloga.Student)
+        {
+            <script>
+                let notifOtvoren = false;
+
+                document.addEventListener('click', function (e) {
+                    const wrapper = document.getElementById('notifWrapper');
+                    if (wrapper && !wrapper.contains(e.target)) {
+                        zatvoriNotif();
+                    }
+                });
+
+                function toggleNotifDropdown() {
+                    notifOtvoren ? zatvoriNotif() : otвориNotif();
+                }
+
+                function otвориNotif() {
+                    document.getElementById('notifDropdown').style.display = 'block';
+                    notifOtvoren = true;
+                    ucitajNotifikacije();
+                }
+
+                function zatvoriNotif() {
+                    document.getElementById('notifDropdown').style.display = 'none';
+                    notifOtvoren = false;
+                }
+
+                async function ucitajNotifikacije() {
+                    const lista = document.getElementById('notifLista');
+                    try {
+                        const res = await fetch('/Student/DohvatiObavjestenja', {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const data = await res.json();
+                        renderNotifikacije(data);
+                    } catch {
+                        lista.innerHTML = '<div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Greška pri učitavanju.</div>';
+                    }
+                }
+
+                function renderNotifikacije(lista) {
+                    const el = document.getElementById('notifLista');
+                    if (!lista || lista.length === 0) {
+                        el.innerHTML = '<div style="text-align:center;padding:32px;color:#bbb;font-size:13px;">📭 Nema obavještenja</div>';
+                        return;
+                    }
+                    el.innerHTML = lista.map(n => `
+                        <div class="notif-item ${!n.procitano ? 'novo' : ''}" onclick="oznaciProcitanim(${n.id})">
+                            <div class="notif-item-naslov" style="font-weight:${!n.procitano ? '700' : '400'}">
+                                ${escapeHtml(n.naslov)}
+                                ${!n.procitano ? '<span style="background:#5bc400;color:white;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:5px;vertical-align:middle;">NOVO</span>' : ''}
+                            </div>
+                            <div class="notif-item-sadrzaj">${escapeHtml(n.sadrzaj)}</div>
+                            <div class="notif-item-datum">${formatDatum(n.datumSlanja)}</div>
+                        </div>
+                    `).join('');
+                }
+
+                async function oznaciProcitanim(id) {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                    await fetch('/Student/OznaciProcitanim', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                        body: `id=${id}`
+                    }).catch(() => {});
+                    osvjeziNotifBadge();
+                    ucitajNotifikacije();
+                }
+
+                async function oznaciSveProcitanim() {
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                    await fetch('/Student/OznaciSveProcitanim', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token }
+                    }).catch(() => {});
+                    osvjeziNotifBadge();
+                    ucitajNotifikacije();
+                }
+
+                async function osvjeziNotifBadge() {
+                    try {
+                        const res = await fetch('/Student/BrojObavjestenja', {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        const data = await res.json();
+                        const badge = document.getElementById('notifBadge');
+                        const bell = document.getElementById('notifBellIcon');
+                        if (!badge) return;
+                        const prethodni = parseInt(badge.dataset.prethodni || '0');
+                        if (data.broj > 0) {
+                            badge.textContent = data.broj > 99 ? '99+' : data.broj;
+                            badge.style.display = 'inline-block';
+                            if (data.broj > prethodni) {
+                                bell?.classList.remove('zvoni');
+                                void bell?.offsetWidth;
+                                bell?.classList.add('zvoni');
+                            }
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                        badge.dataset.prethodni = data.broj;
+                    } catch {}
+                }
+
+                function formatDatum(iso) {
+                    if (!iso) return '';
+                    const d = new Date(iso);
+                    const diff = Math.floor((new Date() - d) / 60000);
+                    if (diff < 1) return 'Upravo sada';
+                    if (diff < 60) return `Prije ${diff} min`;
+                    if (diff < 1440) return `Prije ${Math.floor(diff / 60)}h`;
+                    if (diff < 10080) return `Prije ${Math.floor(diff / 1440)} dana`;
+                    return d.toLocaleDateString('bs-BA');
+                }
+
+                function escapeHtml(t) {
+                    if (!t) return '';
+                    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+                }
+
+                osvjeziNotifBadge();
+                setInterval(osvjeziNotifBadge, 30000);
+            </script>
+        }
+    }
 </body>
 </html>

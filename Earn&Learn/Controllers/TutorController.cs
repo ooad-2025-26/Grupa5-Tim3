@@ -164,6 +164,28 @@ namespace Earn_Learn.Controllers
             if (termin == null || termin.idTutora != user.Id)
                 return NotFound();
 
+            // Ako je termin rezervisan, vrati novac studentu i pošalji mu obavještenje
+            if (termin.status == StatusTermina.Rezervisan && !string.IsNullOrEmpty(termin.idStudenta))
+            {
+                var student = await _context.Users.FindAsync(termin.idStudenta);
+                if (student != null)
+                {
+                    // Vrati novac studentu
+                    student.StanjeRacuna += termin.cijena;
+                    await _userManager.UpdateAsync(student);
+
+                    // Obavijesti studenta
+                    _context.Obavjestenje.Add(new Obavjestenje
+                    {
+                        idKorisnika = student.Id,
+                        naslov = "Termin otkazan ❌",
+                        sadrzaj = $"Tutor {user.Ime} {user.Prezime} je otkazao vaš termin koji je bio zakazan za {termin.datumIVrijeme.ToString("dd.MM.yyyy. u HH:mm")}h. Novac od {termin.cijena:N2} KM je vraćen na vaš račun.",
+                        datumSlanja = DateTime.UtcNow,
+                        procitano = false
+                    });
+                }
+            }
+
             _context.Termin.Remove(termin);
             await _context.SaveChangesAsync();
 
@@ -667,6 +689,103 @@ namespace Earn_Learn.Controllers
                 .Sum(t => t.iznos);
 
             return View(transakcije);
+        }
+
+        // ── OBAVJESTENJA ──
+
+        [Authorize]
+        public async Task<IActionResult> Obavjestenja()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null || user.Uloga != Uloga.Tutor)
+                return RedirectToAction("Index", "Home");
+
+            var obavjestenja = await _context.Obavjestenje
+                .Where(o => o.idKorisnika == user.Id)
+                .OrderByDescending(o => o.datumSlanja)
+                .ToListAsync();
+
+            // Oznaci sva kao procitana po otvaranju stranice
+            foreach (var o in obavjestenja.Where(o => !o.procitano))
+                o.procitano = true;
+            await _context.SaveChangesAsync();
+
+            return View(obavjestenja);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> DohvatiNotifikacije()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var obavjestenja = await _context.Obavjestenje
+                .Where(o => o.idKorisnika == user.Id)
+                .OrderByDescending(o => o.datumSlanja)
+                .Take(10)
+                .Select(o => new {
+                    o.id,
+                    o.naslov,
+                    o.sadrzaj,
+                    o.datumSlanja,
+                    o.procitano
+                })
+                .ToListAsync();
+
+            return Json(obavjestenja);
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> BrojNotifikacija()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var broj = await _context.Obavjestenje
+                .CountAsync(o => o.idKorisnika == user.Id && !o.procitano);
+
+            return Json(new { broj });
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OznaciProcitanim(int id)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var obavjestenje = await _context.Obavjestenje
+                .FirstOrDefaultAsync(o => o.id == id && o.idKorisnika == user.Id);
+
+            if (obavjestenje != null)
+            {
+                obavjestenje.procitano = true;
+                await _context.SaveChangesAsync();
+            }
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OznaciSveProcitanim()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
+            var neprocitana = await _context.Obavjestenje
+                .Where(o => o.idKorisnika == user.Id && !o.procitano)
+                .ToListAsync();
+
+            foreach (var o in neprocitana)
+                o.procitano = true;
+
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }

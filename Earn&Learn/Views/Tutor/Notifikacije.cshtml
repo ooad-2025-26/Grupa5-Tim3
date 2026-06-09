@@ -1,20 +1,19 @@
-﻿@model IEnumerable<Earn_Learn.Models.Obavjestenje>
+@model List<Earn_Learn.Models.Obavjestenje>
 @{
     ViewData["Title"] = "Notifikacije";
-    var lista = Model.ToList();
 }
 
 <div style="max-width:700px; margin: 50px auto; padding: 0 20px;">
 
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
         <h2 style="font-weight:800; color:#0d2d45; margin:0;">🔔 Sve notifikacije</h2>
-        @if (lista.Any())
+        @if (Model.Any())
         {
-            <span style="font-size:13px; color:#888;">Ukupno: @lista.Count</span>
+            <span style="font-size:13px; color:#888;">Ukupno: @Model.Count</span>
         }
     </div>
 
-    @if (!lista.Any())
+    @if (!Model.Any())
     {
         <div style="text-align:center; padding:80px 20px; color:#bbb;">
             <div style="font-size:48px; margin-bottom:16px;">📭</div>
@@ -24,7 +23,7 @@
     else
     {
         <div style="display:flex; flex-direction:column; gap:12px;">
-            @foreach (var n in lista)
+            @foreach (var n in Model)
             {
                 <div style="background:@(n.procitano ? "#fff" : "#f0fbe6"); border:1px solid @(n.procitano ? "#eee" : "#c8f09a"); border-left:4px solid @(n.procitano ? "#ddd" : "#5bc400"); border-radius:10px; padding:16px 20px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
@@ -48,9 +47,9 @@
     }
 
     <div style="margin-top:30px;">
-        <a href="javascript:history.back()"
-               style="color:#0d2d45; font-weight:700; text-decoration:none; font-size:14px;">
-            ← Nazad
+        <a asp-controller="Tutor" asp-action="Dashboard"
+           style="color:#0d2d45; font-weight:700; text-decoration:none; font-size:14px;">
+            ← Nazad na Dashboard
         </a>
     </div>
 </div>
