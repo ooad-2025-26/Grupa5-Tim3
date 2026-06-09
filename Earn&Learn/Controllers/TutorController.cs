@@ -56,8 +56,6 @@ namespace Earn_Learn.Controllers
                 });
             }
 
-            // ── GRAFIKON: zarada po mjesecima za tekucu godinu ──
-            // iznos je pozitivan u Transakcija za tutora (90% od cijene časa)
             var godinaSada = DateTime.Now.Year;
             var transakcijeGodina = await _context.Transakcija
                 .Where(t => t.idTutora == user.Id
@@ -213,6 +211,18 @@ namespace Earn_Learn.Controllers
                 .OrderBy(t => t.datumIVrijeme)
                 .ToListAsync();
 
+            // ── DOHVATI NAZIV PREDMETA ZA SVAKI TERMIN ──
+            var terminPredmeti = new Dictionary<int, string>();
+            foreach (var t in dostupniTermini)
+            {
+                if (t.idPredmeta.HasValue)
+                {
+                    var p = await _context.Predmet.FindAsync(t.idPredmeta.Value);
+                    terminPredmeti[t.id] = p?.naziv ?? "—";
+                }
+            }
+            ViewBag.TerminPredmeti = terminPredmeti;
+
             var prosjecna = recenzijeRaw.Any() ? recenzijeRaw.Average(r => r.ocjena) : 0;
 
             var model = new TutorProfilViewModel
@@ -367,7 +377,7 @@ namespace Earn_Learn.Controllers
                 ProsjecnaOcjena = 0,
                 BrojOdrzanihCasova = 0,
                 DatumRegistracije = DateTime.UtcNow,
-                VerifikovanTutor = true // Admin-kreiran tutor je automatski verifikovan
+                VerifikovanTutor = true
             };
             var rezultat = await _userManager.CreateAsync(korisnik, lozinka);
             if (rezultat.Succeeded) return RedirectToAction(nameof(Index));
@@ -628,7 +638,6 @@ namespace Earn_Learn.Controllers
             if (termin == null || termin.idTutora != user.Id)
                 return NotFound();
 
-            // Samo mijenjaj status — novac se prenosi tek kad student potvrdi prisustvo
             termin.status = StatusTermina.Odrzan;
             _context.Update(termin);
             user.BrojOdrzanihCasova = (user.BrojOdrzanihCasova ?? 0) + 1;
@@ -653,7 +662,6 @@ namespace Earn_Learn.Controllers
                 .ToListAsync();
 
             ViewBag.StanjeRacuna = user.StanjeRacuna;
-            // iznos je sad pozitivan direktno (90% od cijene časa)
             ViewBag.UkupnoZaradeno = transakcije
                 .Where(t => t.statusPlacanja == StatusPlacanja.Uspjesno)
                 .Sum(t => t.iznos);

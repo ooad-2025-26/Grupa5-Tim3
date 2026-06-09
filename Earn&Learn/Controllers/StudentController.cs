@@ -134,7 +134,6 @@ namespace Earn_Learn.Controllers
                     await _userManager.UpdateAsync(user);
                 }
 
-                // Zapis otkazivanja u Transakcija (negativan iznos = povrat)
                 _context.Transakcija.Add(new Transakcija
                 {
                     idStudenta = user.Id,
@@ -156,15 +155,18 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("MojiCasovi");
         }
 
-        [HttpGet] // bubble sort
-        public async Task<IActionResult> PretraziTutore(string query)
+        [HttpGet] // bubble sort + filtriranje po cijeni i rejtingu
+        public async Task<IActionResult> PretraziTutore(
+            string query,
+            double? minCijena = null,
+            double? maxCijena = null,
+            double? minRejting = null)
         {
             if (string.IsNullOrWhiteSpace(query))
                 return Json(new List<object>());
 
             var q = query.ToLower().Trim();
 
-            // Dohvati tutore iz baze
             var tutori = await _context.Users
                 .Where(u => u.Uloga == Uloga.Tutor)
                 .Where(u => u.Ime.ToLower().Contains(q) ||
@@ -172,6 +174,10 @@ namespace Earn_Learn.Controllers
                             _context.KorisnikPredmet.Any(kp => kp.idKorisnika == u.Id &&
                                 _context.Predmet.Any(p => p.id == kp.idPredmeta &&
                                                            p.naziv.ToLower().Contains(q))))
+                // ── FILTERI PO CIJENI I REJTINGU ──
+                .Where(u => minCijena == null || (u.CijenaPoSatu != null && u.CijenaPoSatu >= minCijena))
+                .Where(u => maxCijena == null || (u.CijenaPoSatu != null && u.CijenaPoSatu <= maxCijena))
+                .Where(u => minRejting == null || (u.ProsjecnaOcjena != null && u.ProsjecnaOcjena >= minRejting))
                 .Select(u => new TutorSearchDto
                 {
                     Id = u.Id,
@@ -188,7 +194,7 @@ namespace Earn_Learn.Controllers
                 .Take(20)
                 .ToListAsync();
 
-            // Izračunaj rang za svakog tutora: kombinacija ocjene i broja casova
+            // Izračunaj rang za svakog tutora
             foreach (var t in tutori)
                 t.Rang = (t.ProsjecnaOcjena * 0.7) + (t.BrojOdrzanihCasova * 0.3);
 
@@ -240,7 +246,7 @@ namespace Earn_Learn.Controllers
 
             return View(transakcije);
         }
-        // GET: Student/RezervisiTermin/5
+
         [Authorize]
         public async Task<IActionResult> RezervisiTermin(int id)
         {
@@ -264,7 +270,6 @@ namespace Earn_Learn.Controllers
             return View(termin);
         }
 
-        // POST: Student/RezervisiTermin/5
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -326,6 +331,7 @@ namespace Earn_Learn.Controllers
             ViewBag.TerminPredmeti = terminPredmeti;
             return View(termini);
         }
+
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -347,7 +353,6 @@ namespace Earn_Learn.Controllers
             user.StanjeRacuna += iznos;
             await _userManager.UpdateAsync(user);
 
-            // Zapis uplate u Transakcija
             _context.Transakcija.Add(new Transakcija
             {
                 idStudenta = user.Id,
@@ -394,14 +399,12 @@ namespace Earn_Learn.Controllers
             if (tutor == null)
                 return Json(new { success = false, poruka = "Tutor nije pronađen." });
 
-            // Pronađi system managera (prvi u bazi)
             var systemManager = await _context.Users
                 .FirstOrDefaultAsync(u => u.Uloga == Uloga.SystemManager);
 
             double provizija = Math.Round(termin.cijena * 0.10, 2);
             double zaradaTutora = Math.Round(termin.cijena - provizija, 2);
 
-            // Prebaci novac
             user.StanjeRacuna -= termin.cijena;
             tutor.StanjeRacuna += zaradaTutora;
             if (systemManager != null)
@@ -410,7 +413,6 @@ namespace Earn_Learn.Controllers
             termin.status = StatusTermina.Odrzan;
             tutor.BrojOdrzanihCasova = (tutor.BrojOdrzanihCasova ?? 0) + 1;
 
-            // Transakcija: studentova perspektiva (puno plaćanje = negativno)
             _context.Transakcija.Add(new Transakcija
             {
                 idStudenta = user.Id,
@@ -421,7 +423,6 @@ namespace Earn_Learn.Controllers
                 statusPlacanja = StatusPlacanja.Uspjesno
             });
 
-            // Transakcija: tutorova perspektiva (90% zarade = pozitivno)
             _context.Transakcija.Add(new Transakcija
             {
                 idStudenta = string.Empty,
@@ -432,7 +433,6 @@ namespace Earn_Learn.Controllers
                 statusPlacanja = StatusPlacanja.Uspjesno
             });
 
-            // Transakcija: system manager provizija (10%)
             if (systemManager != null)
             {
                 _context.Transakcija.Add(new Transakcija
@@ -455,7 +455,6 @@ namespace Earn_Learn.Controllers
             return Json(new { success = true, poruka = $"Prisustvo potvrđeno! Skinuto {termin.cijena:N2} KM s računa." });
         }
 
-        // ── PROFIL STUDENTA (admin može pregledati) ──
         public async Task<IActionResult> Profil(string id)
         {
             var student = await _userManager.FindByIdAsync(id);
@@ -508,7 +507,6 @@ namespace Earn_Learn.Controllers
             if (student == null || student.Uloga != Uloga.Student)
                 return View("PristupOdbijen");
 
-            // Provjeri je li student odrzao cas s ovim tutorom
             var moze = await _context.Termin
                 .AnyAsync(t => t.idStudenta == student.Id
                             && t.idTutora == tutorId
@@ -531,7 +529,6 @@ namespace Earn_Learn.Controllers
 
             _context.Recenzija.Add(recenzija);
 
-            // Ažuriraj prosječnu ocjenu tutora
             var tutor = await _context.Users.FindAsync(tutorId);
             if (tutor != null)
             {
@@ -547,7 +544,7 @@ namespace Earn_Learn.Controllers
             TempData["Uspjeh"] = "Recenzija uspješno poslana!";
             return RedirectToAction("Profil", "Tutor", new { id = tutorId });
         }
-        // ── PRIJAVI TUTORA (student prijavljuje tutora adminu) ──
+
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -575,7 +572,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("Profil", "Tutor", new { id = tutorId });
         }
 
-        // ── PRIJAVI RECENZIJU (tutor prijavljuje recenziju adminu) ──
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -600,6 +596,7 @@ namespace Earn_Learn.Controllers
         }
     }
 }
+
 namespace Earn_Learn.Controllers
 {
     public class TutorSearchDto

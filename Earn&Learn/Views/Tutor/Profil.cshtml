@@ -125,7 +125,7 @@
     </div>
 }
 
-<!-- REZERVACIJA DUGME (samo ako nije admin) -->
+<!-- REZERVACIJA TERMINA (samo ako nije admin) -->
 @if (!jeAdmin)
 {
     <div style="background:#e8f5f0; padding:48px 0;">
@@ -140,33 +140,44 @@
             {
                 @foreach (var t in Model.DostupniTermini)
                 {
+                    // Pokušaj dohvatiti naziv predmeta iz ViewBag
                     var predmetNaziv = (ViewBag.TerminPredmeti as Dictionary<int, string>)
-                                        ?.GetValueOrDefault(t.id, "—") ?? "—";
+                                        ?.GetValueOrDefault(t.id, null);
+
                     <div style="background:#fff; border-radius:10px; padding:16px 20px;
                         margin-bottom:12px; display:flex; justify-content:space-between;
                         align-items:center; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                         <div style="text-align:left;">
-                            <strong>@t.datumIVrijeme.ToString("dd.MM.yyyy. HH:mm")</strong>
-                            <br /><small style="color:#666;">@predmetNaziv</small>
-                        </div>
-                        <a asp-controller="Student" asp-action="RezervisiTermin"
-                               asp-route-id="@t.id"
-                               style="background:#4caf8a; color:white; padding:10px 24px;
-                            border-radius:8px; font-weight:700; text-decoration:none;
-                            font-size:0.9rem;">
-                            Rezerviši
-                        </a>
-                    </div>
-                }
-            }
+                            <strong style="font-size:1rem; color:#0d2d45;">
+                                @t.datumIVrijeme.ToString("dd.MM.yyyy. HH:mm")
+                            </strong>
+                            @if (!string.IsNullOrEmpty(predmetNaziv))
+                            {
+                                <br /><span style="color:#444; font-size:0.9rem; font-weight:600;">
+                                @predmetNaziv
+                            </span>
+                        }
+                        <br /><span style="color:#2e7d00; font-size:0.85rem; font-weight:700;">
+                        @t.cijena.ToString("0.00") KM/h
+                    </span>
+                </div>
+                <a asp-controller="Student" asp-action="RezervisiTermin"
+                   asp-route-id="@t.id"
+                   style="background:#4caf8a; color:white; padding:10px 24px;
+                    border-radius:8px; font-weight:700; text-decoration:none;
+                    font-size:0.9rem; white-space:nowrap;">
+                    Rezerviši
+                </a>
+            </div>
+        }
+    }
             else
-            {
-                <p style="color:#888;">Nema dostupnih slobodnih termina.</p>
-            }
-        </div>
-    </div>
+    {
+        <p style="color:#888;">Nema dostupnih slobodnih termina.</p>
+    }
+</div>
+</div>
 }
-
 
 <!-- PRIJAVI TUTORA (samo za studente) -->
 @if (jeStudent)

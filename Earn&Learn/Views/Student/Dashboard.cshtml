@@ -64,6 +64,72 @@
             align-items: center;
         }
 
+    /* ── FILTER PANEL ── */
+    .filter-panel {
+        display: none;
+        background: #fff;
+        border-radius: 18px;
+        margin-top: 10px;
+        padding: 16px 22px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .filter-group label {
+            color: #0d2d45;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 110px;
+            border: 1.5px solid #dde;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.9rem;
+            outline: none;
+            color: #333;
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+
+            .filter-group input:focus,
+            .filter-group select:focus {
+                border-color: #0d2d45;
+            }
+
+    .btn-ocisti-filter {
+        background: transparent;
+        border: 1.5px solid #ccc;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 0.82rem;
+        color: #888;
+        cursor: pointer;
+        align-self: flex-end;
+        transition: border-color 0.2s, color 0.2s;
+    }
+
+        .btn-ocisti-filter:hover {
+            border-color: #999;
+            color: #555;
+        }
+
+    /* ── SEARCH RESULTS ── */
     .search-results-dropdown {
         position: absolute;
         top: 100%;
@@ -287,6 +353,30 @@
                 </button>
             </div>
 
+            <!-- ── FILTER PANEL ── -->
+            <div id="filterPanel" class="filter-panel">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>CIJENA OD (KM/h)</label>
+                        <input type="number" id="filterMinCijena" min="0" placeholder="npr. 10" />
+                    </div>
+                    <div class="filter-group">
+                        <label>CIJENA DO (KM/h)</label>
+                        <input type="number" id="filterMaxCijena" min="0" placeholder="npr. 50" />
+                    </div>
+                    <div class="filter-group">
+                        <label>MIN. REJTING ★</label>
+                        <select id="filterMinRejting">
+                            <option value="">Svi</option>
+                            <option value="3">3+</option>
+                            <option value="4">4+</option>
+                            <option value="4.5">4.5+</option>
+                        </select>
+                    </div>
+                    <button id="btnOcistiFilter" class="btn-ocisti-filter">Očisti</button>
+                </div>
+            </div>
+
             <div id="searchResultsDropdown" class="search-results-dropdown"></div>
         </div>
     </div>
@@ -363,18 +453,29 @@
                 });
             });
 
-            searchInput.on('input', function () {
-                var query = $(this).val().trim();
+            // ── GLAVNA FUNKCIJA ZA PRETRAGU (sa filterima) ──
+            function izvrsiPretragu() {
+                var query = searchInput.val().trim();
 
                 if (query.length === 0) {
                     resultsDropdown.hide().empty();
                     return;
                 }
 
+                var params = { query: query };
+
+                var minC = $('#filterMinCijena').val();
+                var maxC = $('#filterMaxCijena').val();
+                var minR = $('#filterMinRejting').val();
+
+                if (minC !== '') params.minCijena = minC;
+                if (maxC !== '') params.maxCijena = maxC;
+                if (minR !== '') params.minRejting = minR;
+
                 $.ajax({
                     url: '/Student/PretraziTutore',
                     type: 'GET',
-                    data: { query: query },
+                    data: params,
                     success: function (data) {
                         resultsDropdown.empty();
 
@@ -391,26 +492,26 @@
                                     : 'Cijena po dogovoru';
 
                                 var cardHtml = `
-                                    <div class="search-tutor-card">
-                                        <div class="tutor-info-box">
-                                            <h4>
-                                                <a href="/Tutor/Profil?id=${tutor.id}"
-                                                   style="color:#0d2d45; text-decoration:none;">
-                                                    ${tutor.ime} ${tutor.prezime}
-                                                </a>
-                                            </h4>
-                                            <p><strong>Predmeti:</strong> ${predmetiLista || 'Nema dodijeljenih predmeta'}</p>
-                                            <div class="tutor-info-meta">
-                                                <span class="search-rating">${ocjenaTekst}</span>
-                                                <span class="search-price">${cijenaTekst}</span>
+                                            <div class="search-tutor-card">
+                                                <div class="tutor-info-box">
+                                                    <h4>
+                                                        <a href="/Tutor/Profil?id=${tutor.id}"
+                                                           style="color:#0d2d45; text-decoration:none;">
+                                                            ${tutor.ime} ${tutor.prezime}
+                                                        </a>
+                                                    </h4>
+                                                    <p><strong>Predmeti:</strong> ${predmetiLista || 'Nema dodijeljenih predmeta'}</p>
+                                                    <div class="tutor-info-meta">
+                                                        <span class="search-rating">${ocjenaTekst}</span>
+                                                        <span class="search-price">${cijenaTekst}</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <a href="/Tutor/Profil?id=${tutor.id}"
+                                                       class="btn-zakazi-search">Zakaži</a>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <a href="/Student/OdaberiTermin?tutorId=${tutor.id}"
-                                               class="btn-zakazi-search">Zakaži</a>
-                                        </div>
-                                    </div>
-                                `;
+                                        `;
                                 resultsDropdown.append(cardHtml);
                             });
                         }
@@ -420,16 +521,38 @@
                         console.error("Greška prilikom izvršavanja pretrage.");
                     }
                 });
+            }
+
+            // Pokreni pretragu kad korisnik tipka
+            searchInput.on('input', function () {
+                $('#filterPanel').show();
+                izvrsiPretragu();
             });
 
+            // Filtri automatski osvježavaju rezultate
+            $('#filterMinCijena, #filterMaxCijena, #filterMinRejting').on('input change', function () {
+                izvrsiPretragu();
+            });
+
+            // Očisti filtere
+            $('#btnOcistiFilter').on('click', function () {
+                $('#filterMinCijena, #filterMaxCijena').val('');
+                $('#filterMinRejting').val('');
+                izvrsiPretragu();
+            });
+
+            // Zatvori dropdown klikom van search areala
             $(document).click(function (e) {
                 if (!$(e.target).closest('.search-wrapper-container').length) {
                     resultsDropdown.hide();
+                    $('#filterPanel').hide();
                 }
             });
 
+            // Ponovo prikaži dropdown ako ima upisanog teksta
             searchInput.click(function () {
                 if ($(this).val().trim().length > 0) {
+                    $('#filterPanel').show();
                     resultsDropdown.show();
                 }
             });
