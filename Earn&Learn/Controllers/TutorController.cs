@@ -215,6 +215,16 @@ namespace Earn_Learn.Controllers
                 .OrderByDescending(r => r.datumRecenzije)
                 .ToListAsync();
 
+            // Sinhronizuj ProsjecnaOcjena sa stvarnim recenzijama
+            var stvarnaProsjecna = recenzijeRaw.Any()
+                ? recenzijeRaw.Average(r => r.ocjena)
+                : 0;
+
+            if (tutor.ProsjecnaOcjena != stvarnaProsjecna)
+            {
+                tutor.ProsjecnaOcjena = stvarnaProsjecna;
+                await _userManager.UpdateAsync(tutor);
+            }
             var recenzijeViewModel = new List<RecenzijaViewModel>();
             foreach (var rec in recenzijeRaw)
             {

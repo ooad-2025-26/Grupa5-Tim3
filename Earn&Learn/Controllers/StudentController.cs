@@ -530,6 +530,7 @@ namespace Earn_Learn.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> OstaviRecenziju(string tutorId, int ocjena, string komentar)
@@ -566,7 +567,9 @@ namespace Earn_Learn.Controllers
                 var sveRecenzije = await _context.Recenzija
                     .Where(r => r.idTutora == tutorId)
                     .ToListAsync();
-                tutor.ProsjecnaOcjena = sveRecenzije.Average(r => r.ocjena);
+                tutor.ProsjecnaOcjena = sveRecenzije.Any()
+                  ? sveRecenzije.Average(r => r.ocjena)
+                 : 0;
                 await _userManager.UpdateAsync(tutor);
             }
 

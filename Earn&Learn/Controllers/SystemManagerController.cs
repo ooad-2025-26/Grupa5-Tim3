@@ -416,5 +416,6 @@ namespace Earn_Learn.Controllers
             }
             return RedirectToAction(nameof(UpravljajPredmetima));
         }
+
     }
 }
