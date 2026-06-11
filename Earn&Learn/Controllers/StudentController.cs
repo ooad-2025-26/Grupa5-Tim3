@@ -560,8 +560,8 @@ namespace Earn_Learn.Controllers
 
             if (!moze)
             {
-                TempData["Greska"] = "Možete ostaviti recenziju samo tutoru s kojim ste imali čas.";
-                return RedirectToAction("TutorProfil", new { id = tutorId });
+                TempData["ErrorPoruka"] = "Ne možete ostaviti recenziju tutoru s kojim niste imali čas.";
+                return RedirectToAction("Profil", "Tutor", new { id = tutorId });
             }
 
             var recenzija = new Recenzija
