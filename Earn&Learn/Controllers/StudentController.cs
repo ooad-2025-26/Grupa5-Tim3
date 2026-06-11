@@ -144,7 +144,6 @@ namespace Earn_Learn.Controllers
                     statusPlacanja = StatusPlacanja.Vraceno
                 });
 
-                // KREIRANJE OBAVJEŠTENJA ZA TUTORA O OTKAZIVANJU
                 var obavjestenjeOtkazivanje = new Obavjestenje
                 {
                     idKorisnika = termin.idTutora,
@@ -285,7 +284,6 @@ namespace Earn_Learn.Controllers
         
         public async Task<IActionResult> RezervisiTermin(int id, Earn_Learn.Enums.TipInstrukcija tipInstrukcija)
         {
-            // Čitaj svježe iz baze — UserManager cache može imati staro stanje računa
             var studentId = _userManager.GetUserId(User);
             var student = await _userManager.GetUserAsync(User);
             if (student == null || (student.Uloga != Uloga.Student && student.Uloga != Uloga.Tutor))
@@ -304,7 +302,6 @@ namespace Earn_Learn.Controllers
             var tutor = await _context.Users.FindAsync(termin.idTutora);
             double cijena = tutor?.CijenaPoSatu ?? termin.cijena;
 
-            // Provjera stanja novčanika
             if (student.StanjeRacuna < cijena)
             {
                 TempData["GreskaNovcenik"] = $"Nemate dovoljno sredstava na novčaniku! Potrebno: {cijena:N2} KM, dostupno: {student.StanjeRacuna:N2} KM.";
@@ -318,7 +315,6 @@ namespace Earn_Learn.Controllers
 
             _context.Update(termin);
 
-            // KREIRANJE OBAVJEŠTENJA ZA TUTORA O REZERVACIJI (sa idTermina za dugme "Unesi mjesto")
             var obavjestenjeZaTutora = new Obavjestenje
             {
                 idKorisnika = termin.idTutora,
@@ -483,7 +479,6 @@ namespace Earn_Learn.Controllers
                 });
             }
 
-            // KREIRANJE OBAVJEŠTENJA ZA TUTORA DA JE STUDENT POTVRDIO PRISUSTVO (ZARADA)
             var obavjestenjeZarada = new Obavjestenje
             {
                 idKorisnika = tutor.Id,
@@ -645,8 +640,6 @@ namespace Earn_Learn.Controllers
             TempData["Uspjeh"] = "Prijava recenzije je poslana adminu.";
             return RedirectToAction("Recenzije", "Tutor", new { id = tutorId });
         }
-
-        // ── OBAVJESTENJA ──
 
         [Authorize]
         public async Task<IActionResult> Obavjestenja()

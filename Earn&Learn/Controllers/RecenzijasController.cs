@@ -19,13 +19,11 @@ namespace Earn_Learn.Controllers
             _context = context;
         }
 
-        // GET: Recenzijas
         public async Task<IActionResult> Index()
         {
             return View(await _context.Recenzija.ToListAsync());
         }
 
-        // GET: Recenzijas/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -43,15 +41,11 @@ namespace Earn_Learn.Controllers
             return View(recenzija);
         }
 
-        // GET: Recenzijas/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Recenzijas/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("id,idStudenta,idTutora,ocjena,komentar")] Recenzija recenzija)
@@ -65,7 +59,6 @@ namespace Earn_Learn.Controllers
             return View(recenzija);
         }
 
-        // GET: Recenzijas/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,9 +74,6 @@ namespace Earn_Learn.Controllers
             return View(recenzija);
         }
 
-        // POST: Recenzijas/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("id,idStudenta,idTutora,ocjena,komentar")] Recenzija recenzija)
@@ -115,8 +105,6 @@ namespace Earn_Learn.Controllers
             }
             return View(recenzija);
         }
-
-        // GET: Recenzijas/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -134,7 +122,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("PristupOdbijen", "Home");
         }
 
-        // POST: Recenzijas/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

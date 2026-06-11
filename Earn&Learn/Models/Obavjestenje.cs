@@ -11,8 +11,6 @@ namespace Earn_Learn.Models
         public string sadrzaj { get; set; } = string.Empty;
         public DateTime datumSlanja { get; set; } = DateTime.UtcNow;
         public bool procitano { get; set; } = false;
-
-        // Ako je notifikacija vezana za termin — tutor može kliknuti i unijeti mjesto časa
         public int? idTermina { get; set; }
     }
 }

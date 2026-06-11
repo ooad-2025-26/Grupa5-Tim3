@@ -212,7 +212,6 @@ namespace Earn_Learn.Controllers
                 .OrderByDescending(r => r.datumRecenzije)
                 .ToListAsync();
 
-            // Sinhronizuj ProsjecnaOcjena sa stvarnim recenzijama
             var stvarnaProsjecna = recenzijeRaw.Any()
                 ? recenzijeRaw.Average(r => r.ocjena)
                 : 0;
@@ -276,7 +275,6 @@ namespace Earn_Learn.Controllers
             if (korisnik == null || (korisnik.Uloga != Uloga.Student && korisnik.Uloga != Uloga.Tutor))
                 return Unauthorized();
 
-            // Svježe stanje iz baze — UserManager cache može vratiti stare podatke
             var korisnikSvjez = await _context.Users.FindAsync(korisnik.Id);
             if (korisnikSvjez == null)
                 return Unauthorized();
@@ -299,7 +297,6 @@ namespace Earn_Learn.Controllers
 
             double cijena = tutor.CijenaPoSatu ?? 0;
 
-            // Provjera novčanika sa svježim stanjem
             if (korisnikSvjez.StanjeRacuna < cijena)
             {
                 TempData["GreskaNovcenik"] = $"Nemate dovoljno sredstava na novčaniku! Potrebno: {cijena:N2} KM, dostupno: {korisnikSvjez.StanjeRacuna:N2} KM.";
@@ -315,7 +312,6 @@ namespace Earn_Learn.Controllers
             termin.status = StatusTermina.Rezervisan;
             termin.cijena = cijena;
 
-            // Notifikacija tutoru s idTermina — bez ovoga dugme u Obavještenjima se ne prikazuje
             _context.Obavjestenje.Add(new Obavjestenje
             {
                 idKorisnika = tutor.Id,
@@ -644,8 +640,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("MojiCasovi");
         }
 
-        // ── UNESI MJESTO ČASA ──
-
         [Authorize]
         public async Task<IActionResult> UnesMjestoCasa(int terminId)
         {
@@ -681,7 +675,6 @@ namespace Earn_Learn.Controllers
             termin.mjestoCasa = mjestoCasa;
             _context.Update(termin);
 
-            // Obavijesti studenta o mjestu održavanja
             if (!string.IsNullOrEmpty(termin.idStudenta))
             {
                 var jeOnline = termin.tipInstrukcija == TipInstrukcija.Online;
@@ -703,8 +696,6 @@ namespace Earn_Learn.Controllers
             TempData["Uspjeh"] = "Mjesto časa sačuvano, student je obaviješten.";
             return RedirectToAction("MojiCasovi");
         }
-
-        // ── QR KOD ──
 
         [Authorize]
         public async Task<IActionResult> QrKod(int terminId)
@@ -784,8 +775,6 @@ namespace Earn_Learn.Controllers
             return View(transakcije);
         }
 
-        // ── OBAVJESTENJA ──
-
         [Authorize]
         public async Task<IActionResult> Obavjestenja()
         {
@@ -802,7 +791,6 @@ namespace Earn_Learn.Controllers
                 o.procitano = true;
             await _context.SaveChangesAsync();
 
-            // Provjeri za svako obavještenje je li mjesto časa već uneseno
             var model = new List<ObavjestenjeViewModel>();
             foreach (var o in obavjestenja)
             {
@@ -835,7 +823,6 @@ namespace Earn_Learn.Controllers
                 .Take(10)
                 .ToListAsync();
 
-            // Provjeri mjestoCasa za svaki termin
             var result = new List<object>();
             foreach (var o in obavjestenja)
             {

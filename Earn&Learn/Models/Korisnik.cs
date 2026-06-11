@@ -16,8 +16,6 @@ namespace Earn_Learn.Models
         public int? BrojOdrzanihCasova { get; set; }
         public double StanjeRacuna { get; set; } = 0.0;
         public string? PrilogOcjene { get; set; }
-
-        // Verifikacija tutora: null = nije tutor, false = na čekanju, true = verifikovan
         public bool? VerifikovanTutor { get; set; }
         public int? PredmetNaCekanjaId { get; set; }
         public string PredmetiNaCekanjuJson { get; set; } = "[]"; // ← FIX

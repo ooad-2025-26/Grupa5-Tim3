@@ -23,14 +23,11 @@ namespace Earn_Learn.Controllers
             _context = context;
             _userManager = userManager;
         }
-
-        // GET: Termins
         public async Task<IActionResult> Index()
         {
             return View(await _context.Termin.ToListAsync());
         }
 
-        // GET: Termins/MojiCasovi
         [Authorize]
         public async Task<IActionResult> MojiCasovi()
         {
@@ -56,7 +53,6 @@ namespace Earn_Learn.Controllers
             return View(termini);
         }
 
-        // GET: Termins/KreirajTermin
         [Authorize]
         public async Task<IActionResult> KreirajTermin()
         {
@@ -77,7 +73,6 @@ namespace Earn_Learn.Controllers
             return View();
         }
 
-        // GET: Termins/RezervisiTermin/5
         [Authorize]
         public async Task<IActionResult> RezervisiTermin(int id)
         {
@@ -101,7 +96,6 @@ namespace Earn_Learn.Controllers
             return View(termin);
         }
 
-        // POST: Termins/RezervisiTermin/5
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -120,7 +114,6 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Index", "Student");
             }
 
-            // Provjera novčanika
             if (student.StanjeRacuna < termin.cijena)
             {
                 TempData["GreskaNovcenik"] = $"Nemate dovoljno sredstava na novčaniku! Potrebno: {termin.cijena:N2} KM, dostupno: {student.StanjeRacuna:N2} KM.";
@@ -138,7 +131,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("Dashboard", "Student");
         }
 
-        // POST: Termins/KreirajTermin
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -168,8 +160,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("MojiCasovi");
         }
 
-        // GET: Termins/PotvrdPrisustvo?kod=EARNLEARN-5-ABCD1234
-        // Ovaj URL se enkodira u QR kod — student ga skenira i automatski potvrđuje prisustvo
         [Authorize]
         public async Task<IActionResult> PotvrdPrisustvo(string kod)
         {
@@ -223,7 +213,6 @@ namespace Earn_Learn.Controllers
             var systemManager = await _context.Users
                 .FirstOrDefaultAsync(u => u.Uloga == Uloga.SystemManager);
 
-            // Ista logika kao Student/PotvrdiPrisustvo — 10% provizija
             double provizija = Math.Round(termin.cijena * 0.10, 2);
             double zaradaTutora = Math.Round(termin.cijena - provizija, 2);
 
@@ -289,8 +278,6 @@ namespace Earn_Learn.Controllers
             TempData["Uspjeh"] = $"Prisustvo potvrđeno! Skinuto {termin.cijena:N2} KM s računa.";
             return RedirectToAction("Dashboard", "Student");
         }
-
-        // GET: Termins/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -301,13 +288,11 @@ namespace Earn_Learn.Controllers
             return View(termin);
         }
 
-        // GET: Termins/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Termins/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("id,idStudenta,idTutora,datumIVrijeme,tipInstrukcija,status,qrKod")] Termin termin)
@@ -321,7 +306,6 @@ namespace Earn_Learn.Controllers
             return View(termin);
         }
 
-        // GET: Termins/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -332,7 +316,6 @@ namespace Earn_Learn.Controllers
             return View(termin);
         }
 
-        // POST: Termins/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("id,idStudenta,idTutora,datumIVrijeme,tipInstrukcija,status,qrKod")] Termin termin)
@@ -356,7 +339,6 @@ namespace Earn_Learn.Controllers
             return View(termin);
         }
 
-        // GET: Termins/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -367,7 +349,6 @@ namespace Earn_Learn.Controllers
             return View(termin);
         }
 
-        // POST: Termins/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

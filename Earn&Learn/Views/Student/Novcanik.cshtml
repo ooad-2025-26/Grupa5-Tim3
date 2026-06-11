@@ -422,7 +422,6 @@
             btn.classList.add('aktivan');
         }
 
-        // IBAN formatting & validation
         const ibanInput = document.getElementById('iban-input');
         const ibanHint = document.getElementById('iban-hint');
 
@@ -435,7 +434,6 @@
         }
         function validateBaIban(raw) {
             const clean = normalizeIban(raw);
-            // BA IBAN: BA + 2 check digits + 16 digits = 20 chars total
             return /^BA\d{18}$/.test(clean);
         }
 
@@ -497,19 +495,15 @@
                 if (data.success) {
                     const novoStanje = parseFloat(data.novoStanje).toFixed(2) + ' KM';
 
-                    // Ažuriraj stanje na sva tri mjesta
                     document.getElementById('stat-stanje').textContent = novoStanje;
                     document.getElementById('card-stanje').textContent = novoStanje;
 
-                    // Ažuriraj ukupno uplaćeno
                     const trenutnoUkupno = parseFloat(document.getElementById('stat-ukupno').textContent) || 0;
                     document.getElementById('stat-ukupno').textContent = (trenutnoUkupno + iznos).toFixed(2) + ' KM';
 
-                    // Ukloni "nema transakcija" poruku ako postoji
                     const prazno = document.getElementById('nv-empty');
                     if (prazno) prazno.remove();
 
-                    // Dodaj novi red na vrh historije
                     const sectionTitle = document.querySelector('.nv-section-title');
                     const sad = new Date();
                     const datum = sad.toLocaleDateString('bs-BA', { day: '2-digit', month: '2-digit', year: 'numeric' })

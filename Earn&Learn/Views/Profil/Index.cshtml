@@ -56,7 +56,6 @@
             color: #555;
         }
 
-    /* Statistike */
     .stat-row {
         display: flex;
         gap: 20px;
@@ -87,7 +86,6 @@
             letter-spacing: 1px;
         }
 
-    /* Godina studija */
     .godina-box {
         display: flex;
         align-items: center;
@@ -121,7 +119,6 @@
         margin-top: 8px;
     }
 
-    /* Cijena */
     .cijena-box {
         background: #f7faf4;
         border: 2px solid #e0f0d0;
@@ -220,7 +217,6 @@
             background: #f5f5f5;
         }
 
-    /* Predmeti sa dugmadima */
     .predmet-row {
         display: flex;
         align-items: center;
@@ -277,7 +273,6 @@
             color: #fff;
         }
 
-    /* Modal dodaj predmet */
     .predmet-modal .modal-content {
         border-radius: 16px;
         border: none;
@@ -338,7 +333,6 @@
             background: #4aab00;
         }
 
-    /* Recenzije */
     .recenzije-sekcija {
         margin-top: 48px;
     }
@@ -398,7 +392,6 @@
         font-style: italic;
     }
 
-    /* Alerts */
     .alert-success-profil {
         padding: 12px 20px;
         background: #e8f5e0;
@@ -419,7 +412,6 @@
         margin-bottom: 24px;
     }
 
-    /* Postani tutor */
     .btn-postani-tutor {
         display: inline-flex;
         align-items: center;
@@ -577,7 +569,6 @@
     <div class="profil-ime">@Model.Ime @Model.Prezime</div>
     <div class="profil-uloga">@Model.Uloga.ToString()</div>
 
-    @* ── STATISTIKE (skriveno za SystemManager) ── *@
     @if (Model.Uloga != Earn_Learn.Enums.Uloga.SystemManager)
     {
         <div class="stat-row">
@@ -592,7 +583,6 @@
         </div>
     }
 
-    @* ── POSTANI TUTOR (netaknuto) ── *@
     @if (Model.Uloga == Earn_Learn.Enums.Uloga.Student)
     {
         <button type="button" class="btn-postani-tutor"
@@ -619,7 +609,6 @@
         <div class="profil-sekcija">
             <h4>Osnovni podaci</h4>
 
-            @* ── GODINA STUDIJA (skriveno za SystemManager) ── *@
             @if (Model.Uloga != Earn_Learn.Enums.Uloga.SystemManager)
             {
                 <div class="profil-row">
@@ -700,7 +689,6 @@
             }
         </div>
 
-        @* ── PREDMETI (skriveno za SystemManager) ── *@
         @if (Model.Uloga != Earn_Learn.Enums.Uloga.SystemManager)
         {
             <div class="profil-sekcija">
@@ -738,7 +726,6 @@
         }
     </div>
 
-    @* ── RECENZIJE (skriveno za SystemManager) ── *@
     @if (Model.Uloga != Earn_Learn.Enums.Uloga.SystemManager)
     {
         <div class="recenzije-sekcija">
@@ -782,7 +769,6 @@
     </div>
 </div>
 
-@* ── MODAL: Postani tutor (netaknuto) ── *@
 @if (Model.Uloga == Earn_Learn.Enums.Uloga.Student)
 {
     <div class="modal fade tutor-modal" id="postaniTutorModal" tabindex="-1"
@@ -826,7 +812,6 @@
     </div>
 }
 
-@* ── MODAL: Dodaj predmet (samo tutor) ── *@
 @if (Model.Uloga == Earn_Learn.Enums.Uloga.Tutor)
 {
     <div class="modal fade predmet-modal" id="dodajPredmetModal" tabindex="-1"

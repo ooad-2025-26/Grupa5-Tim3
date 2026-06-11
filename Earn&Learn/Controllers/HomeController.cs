@@ -18,7 +18,6 @@ namespace Earn_Learn.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Ako je korisnik već prijavljen (authenticated), odmah ga šaljemo na njegov Dashboard
             if (User.Identity != null && User.Identity.IsAuthenticated)
             {
                 return await RedirectDashboard();

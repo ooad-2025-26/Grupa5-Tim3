@@ -160,7 +160,6 @@
                 background: #fff;
             }
 
-            /* ── NOTIFIKACIJE ZVONIK ── */
             .notif-wrapper {
                 position: relative;
                 display: inline-flex;
@@ -319,7 +318,6 @@
                 animation: zvoniAnim 0.8s ease-in-out;
             }
 
-            /* ── MODAL ZA UNOS MJESTA ČASA ── */
             .mjesto-modal-overlay {
                 display: none;
                 position: fixed;
@@ -468,7 +466,6 @@ else
                     <a class="nav-text" asp-controller="Tutor" asp-action="MojiCasovi">Moji Časovi</a>
                     <a class="nav-text" asp-controller="Tutor" asp-action="Novcanik">Novčanik</a>
 
-                    @* ── NOTIFIKACIJE ZVONIK (prikazuje se samo verifikovanim tutorima) ── *@
                     @if (korisnik.VerifikovanTutor == true)
                     {
                         <div class="notif-wrapper" id="notifWrapper">
@@ -495,7 +492,6 @@ else
                             </div>
                         </div>
 
-                        <!-- MODAL ZA UNOS MJESTA ČASA -->
                         <div class="mjesto-modal-overlay" id="mjestoCasaModal">
                             <div class="mjesto-modal">
                                 <div style="font-size:36px; margin-bottom:10px;" id="mjestoCasaIcon">📍</div>
@@ -559,7 +555,6 @@ else
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
-    @* ── NOTIFIKACIJE JAVASCRIPT (aktivan samo kad je zvonik u DOM-u) ── *@
     @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         var k = await UserManager.GetUserAsync(User);

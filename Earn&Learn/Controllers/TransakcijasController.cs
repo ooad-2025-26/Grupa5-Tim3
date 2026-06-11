@@ -18,14 +18,11 @@ namespace Earn_Learn.Controllers
         {
             _context = context;
         }
-
-        // GET: Transakcijas
         public async Task<IActionResult> Index()
         {
             return View(await _context.Transakcija.ToListAsync());
         }
 
-        // GET: Transakcijas/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -43,15 +40,11 @@ namespace Earn_Learn.Controllers
             return View(transakcija);
         }
 
-        // GET: Transakcijas/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Transakcijas/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("id,idStudenta,idTutora,iznos,datumUplate,nacinPlacanja,statusPlacanja")] Transakcija transakcija)
@@ -65,7 +58,6 @@ namespace Earn_Learn.Controllers
             return View(transakcija);
         }
 
-        // GET: Transakcijas/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,9 +73,6 @@ namespace Earn_Learn.Controllers
             return View(transakcija);
         }
 
-        // POST: Transakcijas/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("id,idStudenta,idTutora,iznos,datumUplate,nacinPlacanja,statusPlacanja")] Transakcija transakcija)
@@ -116,7 +105,6 @@ namespace Earn_Learn.Controllers
             return View(transakcija);
         }
 
-        // GET: Transakcijas/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -134,7 +122,6 @@ namespace Earn_Learn.Controllers
             return View(transakcija);
         }
 
-        // POST: Transakcijas/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

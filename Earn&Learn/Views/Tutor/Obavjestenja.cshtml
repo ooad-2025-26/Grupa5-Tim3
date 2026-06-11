@@ -40,7 +40,6 @@
                     </div>
                 </div>
 
-                @* Dugme za unos mjesta časa — prikazuje se samo ako mjesto još nije uneseno *@
                 @if (o.idTermina.HasValue &&
                      o.naslov.Contains("rezervisan", StringComparison.OrdinalIgnoreCase) &&
                      !vm.MjestoCasaUneseno)

@@ -64,7 +64,6 @@
             align-items: center;
         }
 
-    /* ── FILTER PANEL ── */
     .filter-panel {
         display: none;
         background: #fff;
@@ -129,7 +128,6 @@
             color: #555;
         }
 
-    /* ── SEARCH RESULTS ── */
     .search-results-dropdown {
         position: absolute;
         top: 100%;
@@ -353,7 +351,6 @@
                 </button>
             </div>
 
-            <!-- ── FILTER PANEL ── -->
             <div id="filterPanel" class="filter-panel">
                 <div class="filter-row">
                     <div class="filter-group">
@@ -453,7 +450,6 @@
                 });
             });
 
-            // ── GLAVNA FUNKCIJA ZA PRETRAGU (sa filterima) ──
             function izvrsiPretragu() {
                 var query = searchInput.val().trim();
 
@@ -523,25 +519,21 @@
                 });
             }
 
-            // Pokreni pretragu kad korisnik tipka
             searchInput.on('input', function () {
                 $('#filterPanel').show();
                 izvrsiPretragu();
             });
 
-            // Filtri automatski osvježavaju rezultate
             $('#filterMinCijena, #filterMaxCijena, #filterMinRejting').on('input change', function () {
                 izvrsiPretragu();
             });
 
-            // Očisti filtere
             $('#btnOcistiFilter').on('click', function () {
                 $('#filterMinCijena, #filterMaxCijena').val('');
                 $('#filterMinRejting').val('');
                 izvrsiPretragu();
             });
 
-            // Zatvori dropdown klikom van search areala
             $(document).click(function (e) {
                 if (!$(e.target).closest('.search-wrapper-container').length) {
                     resultsDropdown.hide();
@@ -549,7 +541,6 @@
                 }
             });
 
-            // Ponovo prikaži dropdown ako ima upisanog teksta
             searchInput.click(function () {
                 if ($(this).val().trim().length > 0) {
                     $('#filterPanel').show();

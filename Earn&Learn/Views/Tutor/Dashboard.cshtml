@@ -57,7 +57,6 @@
             margin-top: 4px;
         }
 
-    /* ── GRAFIKON ── */
     .tdash-grafikon-wrapper {
         max-width: 960px;
         margin: 40px auto 0;
@@ -132,7 +131,6 @@
         padding: 16px 24px 24px;
     }
 
-    /* ── TERMINI ── */
     .tdash-termini {
         max-width: 960px;
         margin: 0 auto;
@@ -286,13 +284,11 @@
 
 <div class="tdash-wrapper">
 
-    <!-- HERO -->
     <div class="tdash-hero">
         <h1>Zdravo, @Model.Ime!</h1>
         <h2>Tvoja zarada ovog mjeseca: <span>@(((double)ViewBag.ZaradaOvajMjesec).ToString("0.00")) KM</span></h2>
     </div>
 
-    <!-- STATISTIKE -->
     <div class="tdash-stats">
         <div class="tdash-stat">
             <div class="broj">@Model.BrojCasova</div>
@@ -308,7 +304,6 @@
         </div>
     </div>
 
-    <!-- ALERTS -->
     @if (TempData["Uspjeh"] != null)
     {
         <div class="alert-success">✓ @TempData["Uspjeh"]</div>
@@ -318,7 +313,6 @@
         <div class="alert-error">✗ @TempData["Greska"]</div>
     }
 
-    <!-- GRAFIKON ZARADE -->
     <div class="tdash-grafikon-wrapper">
         <div class="tdash-grafikon-box">
             <div class="tdash-grafikon-header">
@@ -340,7 +334,6 @@
         </div>
     </div>
 
-    <!-- NADOLAZEĆI TERMINI -->
     <div class="tdash-termini" style="margin-top: 40px;">
         <div class="tdash-termini-header">Nadolazeći časovi</div>
 
@@ -395,7 +388,6 @@
 
 </div>
 
-<!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
     const zaradaPoMjesecima = @Html.Raw(ViewBag.ZaradaPoMjesecima);
@@ -403,9 +395,8 @@
     const zaradaOvaGodina   = @(((double)ViewBag.ZaradaOvaGodina).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture));
 
     const mjeseciLabels  = ["Jan","Feb","Mar","Apr","Maj","Jun","Jul","Aug","Sep","Okt","Nov","Dec"];
-    const trenutniMjesec = new Date().getMonth(); // 0-indexed
+    const trenutniMjesec = new Date().getMonth();
 
-    // Pocetni prikaz: samo tekuci mjesec, ostali su 0
     const podaciMjesec = zaradaPoMjesecima.map((v, i) => i === trenutniMjesec ? v : 0);
 
     const ctx = document.getElementById('zaradaChart').getContext('2d');
@@ -444,7 +435,6 @@
     },
     y: {
     beginAtZero: true,
-    // min 10 da y-osa ne ide 0-1 kad nema podataka
     max: Math.max(...podaciMjesec, 10),
     grid: { color: '#f0f0f0' },
     ticks: {

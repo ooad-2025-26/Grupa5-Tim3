@@ -17,8 +17,6 @@ namespace Earn_Learn.Models
         public List<Predmet> PredmetiObjekti { get; set; } = new();
 
         public List<RecenzijaViewModel> Recenzije { get; set; } = new();
-
-        // Za "Postani tutor" formu
         public List<Predmet> SviPredmeti { get; set; } = new();
         public List<int> OdabraniPredmeti { get; set; } = new();
         public IFormFile? PrilogOcjene { get; set; }

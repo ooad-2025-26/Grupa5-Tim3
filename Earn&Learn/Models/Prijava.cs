@@ -10,11 +10,7 @@ namespace Earn_Learn.Models
         public string? IdPrijavitelja { get; set; }
         public DateTime DatumPrijave { get; set; } = DateTime.UtcNow;
         public StatusPrijave Status { get; set; } = StatusPrijave.Prijavljeno;
-
-        // Ako je prijava na tutora, ovdje ide tutor ID
         public string? PrijavljeniTutorId { get; set; }
-
-        // Ako je prijava na recenziju, ovdje ide recenzija ID
         public int? RecenzijaId { get; set; }
     }
 }

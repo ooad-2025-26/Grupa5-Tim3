@@ -55,7 +55,6 @@ namespace Earn_Learn.Controllers
 
             if (user.Uloga == Uloga.Tutor)
             {
-                // Recenzije koje su studenti ostavili OVOM tutoru
                 recenzijeRaw = await _context.Recenzija
                     .Where(r => r.idTutora == user.Id)
                     .OrderByDescending(r => r.datumRecenzije)
@@ -73,7 +72,6 @@ namespace Earn_Learn.Controllers
             }
             else
             {
-                // Recenzije koje je ovaj student ostavio tutorima
                 recenzijeRaw = await _context.Recenzija
                     .Where(r => r.idStudenta == user.Id)
                     .OrderByDescending(r => r.datumRecenzije)
@@ -133,7 +131,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("Index");
         }
 
-        // ── POSTANI TUTOR ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PostaniTutor(
@@ -184,7 +181,6 @@ namespace Earn_Learn.Controllers
             if (prilogPath != null)
                 user.PrilogOcjene = prilogPath;
 
-            // Predmeti se NE dodaju odmah — čekaju adminovo odobrenje
             user.PredmetiNaCekanjuJson = System.Text.Json.JsonSerializer.Serialize(odabraniPredmeti);
 
             await _userManager.UpdateAsync(user);
@@ -215,7 +211,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("Index");
         }
 
-        // ── DODAJ PREDMET (tutor šalje zahtjev adminu) ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DodajPredmet(int predmetId, IFormFile? prilogPredmet)

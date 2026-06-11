@@ -29,7 +29,6 @@
 
         @if (jeHibridno)
         {
-            <!-- Tutor nudi i online i uživo — student bira -->
             <div class="mb-4">
                 <label class="form-label fw-semibold">Način izvođenja:</label>
                 <div class="d-flex gap-3">
@@ -50,7 +49,6 @@
         }
         else
         {
-            <!-- Tip je već fiksiran — samo ga proslijedi skrivenim poljem -->
             <input type="hidden" name="tipInstrukcija" value="@Model.tipInstrukcija" />
             <div class="mb-4">
                 <span class="fw-semibold">Način izvođenja: </span>

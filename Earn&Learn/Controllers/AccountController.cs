@@ -24,7 +24,6 @@ namespace Earn_Learn.Controllers
             _env = env;
         }
 
-        // ── LOGIN ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(
@@ -57,11 +56,9 @@ namespace Earn_Learn.Controllers
             return LocalRedirect("/Identity/Account/Login");
         }
 
-        // ── REGISTER GET ──
         [HttpGet]
         public IActionResult Register() => View();
 
-        // ── REGISTER POST ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(
@@ -135,7 +132,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("Register");
         }
 
-        // ── LOGOUT ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -144,7 +140,6 @@ namespace Earn_Learn.Controllers
             return LocalRedirect("/");
         }
 
-        // ── REGISTER IDENTITY (Identity forma) ──
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegisterIdentity(
@@ -200,7 +195,6 @@ namespace Earn_Learn.Controllers
 
             if (rezultat.Succeeded)
             {
-                // Predmeti se NE dodaju odmah — čekaju adminovo odobrenje
                 if (odabranaUloga == Uloga.Tutor && odabraniPredmeti != null && odabraniPredmeti.Any())
                 {
                     korisnik.PredmetiNaCekanjuJson = System.Text.Json.JsonSerializer.Serialize(odabraniPredmeti);

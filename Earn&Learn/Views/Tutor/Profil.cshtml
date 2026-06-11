@@ -8,9 +8,6 @@
     bool jeStudent = trenutniKorisnik?.Uloga == Earn_Learn.Enums.Uloga.Student;
 }
 
-@* ── DODAJ OVO NA VRH Tutor/Profil.cshtml (ispod @{ ... } bloka) ──
-   Popup se prikazuje kada student nema dovoljno novca pri rezervaciji s profila tutora *@
-
 @if (TempData["GreskaNovcenik"] != null)
 {
     <div id="popupNovcenik" style="
@@ -45,8 +42,6 @@
     </div>
 }
 
-
-<!-- HERO SEKCIJA -->
 <div style="background:#0d1b2a; color:white; padding: 48px 0 32px;">
     <div class="container" style="max-width:860px; margin:auto; padding:0 24px;">
 
@@ -97,7 +92,6 @@
             </script>
         }
 
-        <!-- IME I OCJENA -->
         <div style="display:flex; align-items:center; gap:16px; margin-bottom:8px;">
             <div style="width:72px;height:72px;border-radius:50%;background:#1e3a5f;display:flex;align-items:center;justify-content:center;">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="#7a9cc0">
@@ -119,7 +113,6 @@
             </div>
         </div>
 
-        <!-- PREDMETI -->
         <div style="margin-top:28px;">
             <h3 style="color:#4caf8a; letter-spacing:2px; font-size:0.85rem; text-transform:uppercase; margin-bottom:10px;">Predmeti</h3>
             @foreach (var predmet in Model.Predmeti.Take(3))
@@ -143,7 +136,6 @@
     </div>
 </div>
 
-<!-- ADMIN: OBRIŠI PROFIL BOX -->
 @if (jeAdmin)
 {
     <div style="background:#ddeeff; padding:32px 0;">
@@ -163,7 +155,6 @@
     </div>
 }
 
-<!-- REZERVACIJA TERMINA (samo ako nije admin) -->
 @if (!jeAdmin)
 {
     <div style="background:#e8f5f0; padding:48px 0;">
@@ -178,7 +169,6 @@
             {
                 @foreach (var t in Model.DostupniTermini)
                 {
-                    // Pokušaj dohvatiti naziv predmeta iz ViewBag
                     var predmetNaziv = (ViewBag.TerminPredmeti as Dictionary<int, string>)
                                         ?.GetValueOrDefault(t.id, null);
 
@@ -217,7 +207,6 @@
 </div>
 }
 
-<!-- PRIJAVI TUTORA (samo za studente) -->
 @if (jeStudent)
 {
     <div style="background:#fff8f0; padding:32px 0; border-top:1px solid #ffe0c0;">
@@ -250,7 +239,6 @@
     </div>
 }
 
-<!-- RECENZIJE -->
 <div style="background:#f5f5f5; padding:48px 0;">
     <div class="container" style="max-width:800px; margin:auto; padding:0 24px; text-align:center;">
 

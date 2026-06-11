@@ -69,7 +69,6 @@ namespace Earn_Learn.Controllers
 
             TempData["Uspjeh"] = "Termin uspješno rezervisan!";
 
-            // Redirect ovisno o ulozi
             if (student.Uloga == Uloga.Tutor)
                 return RedirectToAction("Dashboard", "Tutor");
 

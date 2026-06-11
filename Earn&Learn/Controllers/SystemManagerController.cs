@@ -34,7 +34,6 @@ namespace Earn_Learn.Controllers
             int otvorenePrijave = await _context.Prijava
                 .CountAsync(p => p.Status != StatusPrijave.Rijeseno);
 
-            // Provizija SM-a = transakcije gdje je idTutora == SM-ov id (10% od svake isplate)
             var smIds = await _context.Users
                 .Where(u => u.Uloga == Uloga.SystemManager)
                 .Select(u => u.Id)
@@ -117,7 +116,6 @@ namespace Earn_Learn.Controllers
             return RedirectToAction(nameof(Prijave));
         }
 
-        // ── VERIFIKACIJA TUTORA ──
         [Authorize]
         public async Task<IActionResult> ZahtjeviZaVerifikaciju()
         {

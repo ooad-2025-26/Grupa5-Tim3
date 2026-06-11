@@ -11,7 +11,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-// Ovdje su podešena stroga pravila za šifru: broj, malo i veliko slovo
 builder.Services.AddDefaultIdentity<Korisnik>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;

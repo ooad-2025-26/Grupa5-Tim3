@@ -18,7 +18,6 @@ namespace Earn_Learn.Security
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            // Provjeri [AllowAnonymous] na akciji ILI na controlleru
             var allowAnonymous = context.ActionDescriptor.EndpointMetadata
                 .OfType<AllowAnonymousAttribute>()
                 .Any();
