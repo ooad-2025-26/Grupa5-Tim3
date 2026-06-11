@@ -5,6 +5,34 @@
     ViewData["Title"] = $"Recenzije – {Model.Tutor.Ime} {Model.Tutor.Prezime}";
     var trenutniKorisnik = await UserManager.GetUserAsync(User);
     bool jeTutor = trenutniKorisnik?.Uloga == Earn_Learn.Enums.Uloga.Tutor && trenutniKorisnik?.Id == Model.Tutor.Id;
+    bool jeAdmin = trenutniKorisnik?.Uloga == Earn_Learn.Enums.Uloga.SystemManager;
+}
+
+@* ADMIN POPUP – blokira ostavljanje recenzije *@
+@if (jeAdmin)
+{
+    <div id="adminRecenzijaPopup" style="
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.55); z-index: 9999;
+        display: flex; align-items: center; justify-content: center;">
+        <div style="
+            background: #fff; border-radius: 16px; padding: 40px 36px;
+            max-width: 420px; width: 90%; text-align: center;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.22);">
+            <div style="font-size: 52px; margin-bottom: 14px;">🚫</div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #c00; margin-bottom: 10px;">
+                Zabranjeno ostavljanje recenzije
+            </div>
+            <div style="font-size: 0.95rem; color: #555; margin-bottom: 28px; line-height: 1.6;">
+                Administratori nemaju pravo ostavljati recenzije tutorima.
+            </div>
+            <a asp-controller="Tutor" asp-action="Profil" asp-route-id="@Model.Tutor.Id"
+               style="background: #0d2d45; color: #fff; padding: 11px 28px;
+                border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 0.95rem;">
+                ← Nazad na profil
+            </a>
+        </div>
+    </div>
 }
 
 <div style="background:white; min-height:100vh; padding:48px 0;">
@@ -100,35 +128,38 @@
             <p style="color:#999; margin-bottom:32px;">Još nema recenzija za ovog tutora.</p>
         }
 
-        <!-- FORMA ZA RECENZIJU -->
-        <div style="border-top:1px solid #eee; padding-top:40px; margin-top:16px;">
-            <h2 style="font-weight:700; font-size:1.6rem; margin-bottom:8px;">Ostavi recenziju</h2>
-            <p style="color:#777; margin-bottom:24px;">Podijeli svoje iskustvo s ovim tutorom...</p>
+        <!-- FORMA ZA RECENZIJU (sakrivena za admina) -->
+        @if (!jeAdmin)
+        {
+            <div style="border-top:1px solid #eee; padding-top:40px; margin-top:16px;">
+                <h2 style="font-weight:700; font-size:1.6rem; margin-bottom:8px;">Ostavi recenziju</h2>
+                <p style="color:#777; margin-bottom:24px;">Podijeli svoje iskustvo s ovim tutorom...</p>
 
-            <form asp-action="OstaviRecenziju" asp-controller="Student" method="post" style="max-width:480px; margin:auto;">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="tutorId" value="@Model.Tutor.Id" />
+                <form asp-action="OstaviRecenziju" asp-controller="Student" method="post" style="max-width:480px; margin:auto;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="tutorId" value="@Model.Tutor.Id" />
 
-                <div style="font-size:2.2rem; margin-bottom:16px;" id="zvjezdice">
-                    @for (int i = 1; i <= 5; i++)
-                    {
-                        <span class="zvijezda" data-val="@i" style="cursor:pointer; color:#ccc;">★</span>
-                    }
-                </div>
-                <input type="hidden" name="ocjena" id="ocjenaInput" value="0" />
+                    <div style="font-size:2.2rem; margin-bottom:16px;" id="zvjezdice">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <span class="zvijezda" data-val="@i" style="cursor:pointer; color:#ccc;">★</span>
+                        }
+                    </div>
+                    <input type="hidden" name="ocjena" id="ocjenaInput" value="0" />
 
-                <div style="margin-bottom:16px; text-align:left;">
-                    <label style="font-weight:600; display:block; margin-bottom:6px;">Komentar</label>
-                    <textarea name="komentar" rows="4" placeholder="Napiši komentar..."
-                              style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; background:#f0f0f0; resize:none; font-size:0.95rem;"></textarea>
-                </div>
+                    <div style="margin-bottom:16px; text-align:left;">
+                        <label style="font-weight:600; display:block; margin-bottom:6px;">Komentar</label>
+                        <textarea name="komentar" rows="4" placeholder="Napiši komentar..."
+                                  style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; background:#f0f0f0; resize:none; font-size:0.95rem;"></textarea>
+                    </div>
 
-                <button type="submit"
-                        style="background:white; color:#4caf8a; border:2px solid #4caf8a; padding:12px 40px; border-radius:20px; font-weight:700; cursor:pointer; font-size:1rem;">
-                    Objavi recenziju
-                </button>
-            </form>
-        </div>
+                    <button type="submit"
+                            style="background:white; color:#4caf8a; border:2px solid #4caf8a; padding:12px 40px; border-radius:20px; font-weight:700; cursor:pointer; font-size:1rem;">
+                        Objavi recenziju
+                    </button>
+                </form>
+            </div>
+        }
 
         <!-- Nazad na profil -->
         <div style="margin-top:40px;">
