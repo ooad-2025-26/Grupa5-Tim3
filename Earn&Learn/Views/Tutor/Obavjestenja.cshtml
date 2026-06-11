@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Earn_Learn.Models.Obavjestenje>
+﻿@model IEnumerable<Earn_Learn.Models.ObavjestenjeViewModel>
 @{
     ViewData["Title"] = "Obavještenja";
 }
@@ -15,8 +15,9 @@
     }
     else
     {
-        @foreach (var o in Model)
+        @foreach (var vm in Model)
         {
+            var o = vm.Obavjestenje;
             var bgColor = o.procitano ? "#f9f9f9" : "#fffbe6";
             var borderColor = o.procitano ? "#e8e8e8" : "#ffe58f";
 
@@ -33,24 +34,21 @@
                             }
                             <strong style="font-size:0.97rem;">@o.naslov</strong>
                         </div>
-                        <p style="font-size:0.88rem; color:#555; margin:0 0 8px 0; line-height:1.5;">
+                        <p style="font-size:0.88rem; color:#555; margin:0; line-height:1.5;">
                             @o.sadrzaj
                         </p>
-                        <span style="font-size:0.78rem; color:#aaa;">
-                            @o.datumSlanja.ToString("dd.MM.yyyy. u HH:mm")h
-                        </span>
                     </div>
                 </div>
 
-                @* Dugme za unos mjesta časa — prikazuje se samo ako notifikacija ima idTermina
-                   i naslov sadrži "rezervisan" što znači student je tek rezervisao termin *@
-                @if (o.idTermina.HasValue && o.naslov.Contains("rezervisan", StringComparison.OrdinalIgnoreCase))
+                @* Dugme za unos mjesta časa — prikazuje se samo ako mjesto još nije uneseno *@
+                @if (o.idTermina.HasValue &&
+                     o.naslov.Contains("rezervisan", StringComparison.OrdinalIgnoreCase) &&
+                     !vm.MjestoCasaUneseno)
                 {
                     <div style="margin-top:14px; padding-top:14px; border-top:1px solid @borderColor;">
                         <a asp-controller="Tutor"
                            asp-action="UnesMjestoCasa"
                            asp-route-terminId="@o.idTermina.Value"
-                           class="btn btn-sm"
                            style="background:#5bc400; color:#fff; font-weight:700;
                             border-radius:8px; padding:8px 18px; font-size:0.85rem;
                             text-decoration:none; display:inline-block;">

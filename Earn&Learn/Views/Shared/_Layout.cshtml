@@ -279,12 +279,6 @@
                 line-height: 1.4;
             }
 
-            .notif-item-datum {
-                font-size: 11px;
-                color: #bbb;
-                margin-top: 5px;
-            }
-
             .notif-footer {
                 padding: 10px 16px;
                 border-top: 1px solid #f0f0f0;
@@ -554,318 +548,292 @@
         if (k?.Uloga == Earn_Learn.Enums.Uloga.Tutor && k.VerifikovanTutor == true)
         {
             <script>
-                    let notifOtvoren = false;
-                    let aktivniTerminId = null;
+                let notifOtvoren = false;
+                let aktivniTerminId = null;
 
-                    document.addEventListener('click', function (e) {
-                    const wrapper = document.getElementById('notifWrapper');
-                    if (wrapper && !wrapper.contains(e.target)) {
-                    zatvoriNotif();
-                    }
-                    });
+                document.addEventListener('click', function (e) {
+                const wrapper = document.getElementById('notifWrapper');
+                if (wrapper && !wrapper.contains(e.target)) {
+                zatvoriNotif();
+                }
+                });
 
-                    function toggleNotifDropdown() {
-                    notifOtvoren ? zatvoriNotif() : otвориNotif();
-                    }
+                function toggleNotifDropdown() {
+                notifOtvoren ? zatvoriNotif() : otвориNotif();
+                }
 
-                    function otвориNotif() {
-                    document.getElementById('notifDropdown').style.display = 'block';
-                    notifOtvoren = true;
-                    ucitajNotifikacije();
-                    }
+                function otвориNotif() {
+                document.getElementById('notifDropdown').style.display = 'block';
+                notifOtvoren = true;
+                ucitajNotifikacije();
+                }
 
-                    function zatvoriNotif() {
-                    document.getElementById('notifDropdown').style.display = 'none';
-                    notifOtvoren = false;
-                    }
+                function zatvoriNotif() {
+                document.getElementById('notifDropdown').style.display = 'none';
+                notifOtvoren = false;
+                }
 
-                    async function ucitajNotifikacije() {
-                    const lista = document.getElementById('notifLista');
-                    try {
-                    const res = await fetch('/Tutor/DohvatiNotifikacije', {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    const data = await res.json();
-                    renderNotifikacije(data);
-                    } catch {
-                    lista.innerHTML = '<div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Greška pri učitavanju.</div>';
-                    }
-                    }
+                async function ucitajNotifikacije() {
+                const lista = document.getElementById('notifLista');
+                try {
+                const res = await fetch('/Tutor/DohvatiNotifikacije', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                renderNotifikacije(data);
+                } catch {
+                lista.innerHTML = '<div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Greška pri učitavanju.</div>';
+                }
+                }
 
-                    function renderNotifikacije(lista) {
-                    const el = document.getElementById('notifLista');
-                    if (!lista || lista.length === 0) {
-                    el.innerHTML = '<div style="text-align:center;padding:32px;color:#bbb;font-size:13px;">📭 Nema obavještenja</div>';
-                    return;
-                    }
-                    el.innerHTML = lista.map(n => {
-                    // Dugme za unos mjesta časa — prikazuje se samo kad notifikacija ima idTermina
-                    const dugmeMjesto = n.idTermina
-                    ? `<button onclick="otвориMjestoModal(${n.idTermina}, event)"
-                    style="margin-top:8px; background:#0d2d45; color:#fff; border:none;
-                    border-radius:6px; padding:5px 12px; font-size:11px; font-weight:700;
-                    cursor:pointer; font-family:'Nunito',sans-serif;">
-                    📍 Unesi mjesto časa
-                    </button>`
-                    : '';
+                function renderNotifikacije(lista) {
+                const el = document.getElementById('notifLista');
+                if (!lista || lista.length === 0) {
+                el.innerHTML = '<div style="text-align:center;padding:32px;color:#bbb;font-size:13px;">📭 Nema obavještenja</div>';
+                return;
+                }
+                el.innerHTML = lista.map(n => {
+                // Dugme se prikazuje samo ako termin postoji I mjesto JOŠ NIJE uneseno
+                const dugmeMjesto = (n.idTermina && !n.mjestoCasaUneseno)
+                ? `<button onclick="otвориMjestoModal(${n.idTermina}, event)"
+                style="margin-top:8px; background:#0d2d45; color:#fff; border:none;
+                border-radius:6px; padding:5px 12px; font-size:11px; font-weight:700;
+                cursor:pointer; font-family:'Nunito',sans-serif;">
+                📍 Unesi mjesto časa
+                </button>`
+                : '';
 
-                    return `
-                    <div class="notif-item ${!n.procitano ? 'novo' : ''}" onclick="oznaciProcitanim(${n.id})">
-                    <div class="notif-item-naslov" style="font-weight:${!n.procitano ? '700' : '400'}">
-                    ${escapeHtml(n.naslov)}
-                    ${!n.procitano ? '<span style="background:#5bc400;color:white;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:5px;vertical-align:middle;">NOVO</span>' : ''}
-                    </div>
-                    <div class="notif-item-sadrzaj">${escapeHtml(n.sadrzaj)}</div>
-                    <div class="notif-item-datum">${formatDatum(n.datumSlanja)}</div>
-                    ${dugmeMjesto}
-                    </div>`;
-                    }).join('');
-                    }
+                return `
+                <div class="notif-item ${!n.procitano ? 'novo' : ''}" onclick="oznaciProcitanim(${n.id})">
+                <div class="notif-item-naslov" style="font-weight:${!n.procitano ? '700' : '400'}">
+                ${escapeHtml(n.naslov)}
+                ${!n.procitano ? '<span style="background:#5bc400;color:white;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:5px;vertical-align:middle;">NOVO</span>' : ''}
+                </div>
+                <div class="notif-item-sadrzaj">${escapeHtml(n.sadrzaj)}</div>
+                ${dugmeMjesto}
+                </div>`;
+                }).join('');
+                }
 
-                    function otвориMjestoModal(terminId, event) {
-                    event.stopPropagation(); // spriječi zatvaranje dropdowna
-                    aktivniTerminId = terminId;
-                    document.getElementById('mjestoCasaModal').classList.add('aktivan');
-                    document.getElementById('mjestoCasaInput').value = '';
-                    document.getElementById('mjestoCasaInput').focus();
-                    }
+                function otвориMjestoModal(terminId, event) {
+                event.stopPropagation();
+                aktivniTerminId = terminId;
+                document.getElementById('mjestoCasaModal').classList.add('aktivan');
+                document.getElementById('mjestoCasaInput').value = '';
+                document.getElementById('mjestoCasaInput').focus();
+                }
 
-                    function zatvoriMjestoModal() {
-                    document.getElementById('mjestoCasaModal').classList.remove('aktivan');
-                    aktivniTerminId = null;
-                    }
+                function zatvoriMjestoModal() {
+                document.getElementById('mjestoCasaModal').classList.remove('aktivan');
+                aktivniTerminId = null;
+                }
 
-                    async function spremiMjestoCasa() {
-                    const mjesto = document.getElementById('mjestoCasaInput').value.trim();
-                    if (!mjesto) {
-                    alert('Molimo unesite mjesto časa.');
-                    return;
-                    }
-                    if (!aktivniTerminId) return;
+                async function spremiMjestoCasa() {
+                const mjesto = document.getElementById('mjestoCasaInput').value.trim();
+                if (!mjesto) {
+                alert('Molimo unesite mjesto časa.');
+                return;
+                }
+                if (!aktivniTerminId) return;
 
-                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
 
-                    try {
-                    const res = await fetch('/Tutor/UnesMjestoCasa', {
-                    method: 'POST',
-                    headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'RequestVerificationToken': token
-                    },
-                    body: `terminId=${aktivniTerminId}&mjestoCasa=${encodeURIComponent(mjesto)}`
-                    });
+                try {
+                const res = await fetch('/Tutor/UnesMjestoCasa', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': token
+                },
+                body: `terminId=${aktivniTerminId}&mjestoCasa=${encodeURIComponent(mjesto)}`
+                });
 
-                    if (res.ok || res.redirected) {
-                    zatvoriMjestoModal();
-                    zatvoriNotif();
-                    // Prikaži potvrdu
-                    const toast = document.createElement('div');
-                    toast.style.cssText = 'position:fixed;bottom:28px;right:28px;z-index:99999;background:#5bc400;color:#fff;border-radius:12px;padding:16px 22px;font-weight:700;font-size:.95rem;box-shadow:0 4px 20px rgba(0,0,0,.2);';
-                    toast.textContent = '✅ Mjesto časa sačuvano, student je obaviješten!';
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 4000);
-                    ucitajNotifikacije();
-                    } else {
-                    alert('Greška pri čuvanju. Pokušajte ponovo.');
-                    }
-                    } catch {
-                    alert('Greška pri slanju zahtjeva.');
-                    }
-                    }
+                if (res.ok || res.redirected) {
+                zatvoriMjestoModal();
+                zatvoriNotif();
+                const toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed;bottom:28px;right:28px;z-index:99999;background:#5bc400;color:#fff;border-radius:12px;padding:16px 22px;font-weight:700;font-size:.95rem;box-shadow:0 4px 20px rgba(0,0,0,.2);';
+                toast.textContent = '✅ Mjesto časa sačuvano, student je obaviješten!';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+                ucitajNotifikacije();
+                } else {
+                alert('Greška pri čuvanju. Pokušajte ponovo.');
+                }
+                } catch {
+                alert('Greška pri slanju zahtjeva.');
+                }
+                }
 
-                    // Zatvori modal klikom na overlay
-                    document.getElementById('mjestoCasaModal')?.addEventListener('click', function (e) {
-                    if (e.target === this) zatvoriMjestoModal();
-                    });
+                document.getElementById('mjestoCasaModal')?.addEventListener('click', function (e) {
+                if (e.target === this) zatvoriMjestoModal();
+                });
 
-                    async function oznaciProcitanim(id) {
-                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
-                    await fetch('/Tutor/OznaciProcitanim', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
-                    body: `id=${id}`
-                    }).catch(() => { });
-                    osvjeziNotifBadge();
-                    ucitajNotifikacije();
-                    }
+                async function oznaciProcitanim(id) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                await fetch('/Tutor/OznaciProcitanim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                body: `id=${id}`
+                }).catch(() => { });
+                osvjeziNotifBadge();
+                ucitajNotifikacije();
+                }
 
-                    async function oznaciSveProcitanim() {
-                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
-                    await fetch('/Tutor/OznaciSveProcitanim', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token }
-                    }).catch(() => { });
-                    osvjeziNotifBadge();
-                    ucitajNotifikacije();
-                    }
+                async function oznaciSveProcitanim() {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                await fetch('/Tutor/OznaciSveProcitanim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token }
+                }).catch(() => { });
+                osvjeziNotifBadge();
+                ucitajNotifikacije();
+                }
 
-                    async function osvjeziNotifBadge() {
-                    try {
-                    const res = await fetch('/Tutor/BrojNotifikacija', {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    const data = await res.json();
-                    const badge = document.getElementById('notifBadge');
-                    const bell = document.getElementById('notifBellIcon');
-                    if (!badge) return;
-                    const prethodni = parseInt(badge.dataset.prethodni || '0');
-                    if (data.broj > 0) {
-                    badge.textContent = data.broj > 99 ? '99+' : data.broj;
-                    badge.style.display = 'inline-block';
-                    if (data.broj > prethodni) {
-                    bell?.classList.remove('zvoni');
-                    void bell?.offsetWidth;
-                    bell?.classList.add('zvoni');
-                    }
-                    } else {
-                    badge.style.display = 'none';
-                    }
-                    badge.dataset.prethodni = data.broj;
-                    } catch { }
-                    }
+                async function osvjeziNotifBadge() {
+                try {
+                const res = await fetch('/Tutor/BrojNotifikacija', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                const badge = document.getElementById('notifBadge');
+                const bell = document.getElementById('notifBellIcon');
+                if (!badge) return;
+                const prethodni = parseInt(badge.dataset.prethodni || '0');
+                if (data.broj > 0) {
+                badge.textContent = data.broj > 99 ? '99+' : data.broj;
+                badge.style.display = 'inline-block';
+                if (data.broj > prethodni) {
+                bell?.classList.remove('zvoni');
+                void bell?.offsetWidth;
+                bell?.classList.add('zvoni');
+                }
+                } else {
+                badge.style.display = 'none';
+                }
+                badge.dataset.prethodni = data.broj;
+                } catch { }
+                }
 
-                    function formatDatum(iso) {
-                    if (!iso) return '';
-                    const d = new Date(iso);
-                    const diff = Math.floor((new Date() - d) / 60000);
-                    if (diff < 1) return 'Upravo sada';
-                    if (diff < 60) return `Prije ${diff} min`;
-                    if (diff < 1440) return `Prije ${Math.floor(diff / 60)}h`;
-                    if (diff < 10080) return `Prije ${Math.floor(diff / 1440)} dana`;
-                    return d.toLocaleDateString('bs-BA');
-                    }
+                function escapeHtml(t) {
+                if (!t) return '';
+                return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                }
 
-                    function escapeHtml(t) {
-                    if (!t) return '';
-                    return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                    }
-
-                    osvjeziNotifBadge();
-                    setInterval(osvjeziNotifBadge, 30000);
+                osvjeziNotifBadge();
+                setInterval(osvjeziNotifBadge, 30000);
             </script>
         }
         else if (k?.Uloga == Earn_Learn.Enums.Uloga.Student)
         {
             <script>
-                    let notifOtvoren = false;
+                let notifOtvoren = false;
 
-                    document.addEventListener('click', function (e) {
-                    const wrapper = document.getElementById('notifWrapper');
-                    if (wrapper && !wrapper.contains(e.target)) {
-                    zatvoriNotif();
-                    }
-                    });
+                document.addEventListener('click', function (e) {
+                const wrapper = document.getElementById('notifWrapper');
+                if (wrapper && !wrapper.contains(e.target)) {
+                zatvoriNotif();
+                }
+                });
 
-                    function toggleNotifDropdown() {
-                    notifOtvoren ? zatvoriNotif() : otвориNotif();
-                    }
+                function toggleNotifDropdown() {
+                notifOtvoren ? zatvoriNotif() : otвориNotif();
+                }
 
-                    function otвориNotif() {
-                    document.getElementById('notifDropdown').style.display = 'block';
-                    notifOtvoren = true;
-                    ucitajNotifikacije();
-                    }
+                function otвориNotif() {
+                document.getElementById('notifDropdown').style.display = 'block';
+                notifOtvoren = true;
+                ucitajNotifikacije();
+                }
 
-                    function zatvoriNotif() {
-                    document.getElementById('notifDropdown').style.display = 'none';
-                    notifOtvoren = false;
-                    }
+                function zatvoriNotif() {
+                document.getElementById('notifDropdown').style.display = 'none';
+                notifOtvoren = false;
+                }
 
-                    async function ucitajNotifikacije() {
-                    const lista = document.getElementById('notifLista');
-                    try {
-                    const res = await fetch('/Student/DohvatiObavjestenja', {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    const data = await res.json();
-                    renderNotifikacije(data);
-                    } catch {
-                    lista.innerHTML = '<div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Greška pri učitavanju.</div>';
-                    }
-                    }
+                async function ucitajNotifikacije() {
+                const lista = document.getElementById('notifLista');
+                try {
+                const res = await fetch('/Student/DohvatiObavjestenja', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                renderNotifikacije(data);
+                } catch {
+                lista.innerHTML = '<div style="text-align:center;padding:20px;color:#bbb;font-size:13px;">Greška pri učitavanju.</div>';
+                }
+                }
 
-                    function renderNotifikacije(lista) {
-                    const el = document.getElementById('notifLista');
-                    if (!lista || lista.length === 0) {
-                    el.innerHTML = '<div style="text-align:center;padding:32px;color:#bbb;font-size:13px;">📭 Nema obavještenja</div>';
-                    return;
-                    }
-                    el.innerHTML = lista.map(n => `
-                    <div class="notif-item ${!n.procitano ? 'novo' : ''}" onclick="oznaciProcitanim(${n.id})">
-                    <div class="notif-item-naslov" style="font-weight:${!n.procitano ? '700' : '400'}">
-                    ${escapeHtml(n.naslov)}
-                    ${!n.procitano ? '<span style="background:#5bc400;color:white;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:5px;vertical-align:middle;">NOVO</span>' : ''}
-                    </div>
-                    <div class="notif-item-sadrzaj">${escapeHtml(n.sadrzaj)}</div>
-                    <div class="notif-item-datum">${formatDatum(n.datumSlanja)}</div>
-                    </div>
-                    `).join('');
-                    }
+                function renderNotifikacije(lista) {
+                const el = document.getElementById('notifLista');
+                if (!lista || lista.length === 0) {
+                el.innerHTML = '<div style="text-align:center;padding:32px;color:#bbb;font-size:13px;">📭 Nema obavještenja</div>';
+                return;
+                }
+                el.innerHTML = lista.map(n => `
+                <div class="notif-item ${!n.procitano ? 'novo' : ''}" onclick="oznaciProcitanim(${n.id})">
+                <div class="notif-item-naslov" style="font-weight:${!n.procitano ? '700' : '400'}">
+                ${escapeHtml(n.naslov)}
+                ${!n.procitano ? '<span style="background:#5bc400;color:white;font-size:10px;padding:1px 6px;border-radius:8px;margin-left:5px;vertical-align:middle;">NOVO</span>' : ''}
+                </div>
+                <div class="notif-item-sadrzaj">${escapeHtml(n.sadrzaj)}</div>
+                </div>
+                `).join('');
+                }
 
-                    async function oznaciProcitanim(id) {
-                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
-                    await fetch('/Student/OznaciProcitanim', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
-                    body: `id=${id}`
-                    }).catch(() => { });
-                    osvjeziNotifBadge();
-                    ucitajNotifikacije();
-                    }
+                async function oznaciProcitanim(id) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                await fetch('/Student/OznaciProcitanim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                body: `id=${id}`
+                }).catch(() => { });
+                osvjeziNotifBadge();
+                ucitajNotifikacije();
+                }
 
-                    async function oznaciSveProcitanim() {
-                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
-                    await fetch('/Student/OznaciSveProcitanim', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token }
-                    }).catch(() => { });
-                    osvjeziNotifBadge();
-                    ucitajNotifikacije();
-                    }
+                async function oznaciSveProcitanim() {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                await fetch('/Student/OznaciSveProcitanim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token }
+                }).catch(() => { });
+                osvjeziNotifBadge();
+                ucitajNotifikacije();
+                }
 
-                    async function osvjeziNotifBadge() {
-                    try {
-                    const res = await fetch('/Student/BrojObavjestenja', {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    const data = await res.json();
-                    const badge = document.getElementById('notifBadge');
-                    const bell = document.getElementById('notifBellIcon');
-                    if (!badge) return;
-                    const prethodni = parseInt(badge.dataset.prethodni || '0');
-                    if (data.broj > 0) {
-                    badge.textContent = data.broj > 99 ? '99+' : data.broj;
-                    badge.style.display = 'inline-block';
-                    if (data.broj > prethodni) {
-                    bell?.classList.remove('zvoni');
-                    void bell?.offsetWidth;
-                    bell?.classList.add('zvoni');
-                    }
-                    } else {
-                    badge.style.display = 'none';
-                    }
-                    badge.dataset.prethodni = data.broj;
-                    } catch { }
-                    }
+                async function osvjeziNotifBadge() {
+                try {
+                const res = await fetch('/Student/BrojObavjestenja', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                const badge = document.getElementById('notifBadge');
+                const bell = document.getElementById('notifBellIcon');
+                if (!badge) return;
+                const prethodni = parseInt(badge.dataset.prethodni || '0');
+                if (data.broj > 0) {
+                badge.textContent = data.broj > 99 ? '99+' : data.broj;
+                badge.style.display = 'inline-block';
+                if (data.broj > prethodni) {
+                bell?.classList.remove('zvoni');
+                void bell?.offsetWidth;
+                bell?.classList.add('zvoni');
+                }
+                } else {
+                badge.style.display = 'none';
+                }
+                badge.dataset.prethodni = data.broj;
+                } catch { }
+                }
 
-                    function formatDatum(iso) {
-                    if (!iso) return '';
-                    const d = new Date(iso);
-                    const diff = Math.floor((new Date() - d) / 60000);
-                    if (diff < 1) return 'Upravo sada';
-                    if (diff < 60) return `Prije ${diff} min`;
-                    if (diff < 1440) return `Prije ${Math.floor(diff / 60)}h`;
-                    if (diff < 10080) return `Prije ${Math.floor(diff / 1440)} dana`;
-                    return d.toLocaleDateString('bs-BA');
-                    }
+                function escapeHtml(t) {
+                if (!t) return '';
+                return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                }
 
-                    function escapeHtml(t) {
-                    if (!t) return '';
-                    return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                    }
-
-                    osvjeziNotifBadge();
-                    setInterval(osvjeziNotifBadge, 30000);
+                osvjeziNotifBadge();
+                setInterval(osvjeziNotifBadge, 30000);
             </script>
         }
     }
