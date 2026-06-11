@@ -195,55 +195,98 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Dashboard", "Student");
             }
 
-            if (termin.prisustvoPotvrdjeno)
+            if (termin.status == StatusTermina.Odrzan)
             {
                 TempData["Info"] = "Prisustvo je već potvrđeno za ovaj čas.";
                 return RedirectToAction("Dashboard", "Student");
             }
 
-            // Potvrdi prisustvo i izvrši plaćanje
-            termin.prisustvoPotvrdjeno = true;
-            termin.status = StatusTermina.Odrzan;
-
-            // Skini novac sa studentovog računa
-            student.StanjeRacuna -= termin.cijena;
-            await _userManager.UpdateAsync(student);
-
-            // Uplati tutoru
-            var tutor = await _context.Users.FindAsync(termin.idTutora);
-            if (tutor != null)
+            if (termin.status != StatusTermina.Rezervisan)
             {
-                tutor.StanjeRacuna += termin.cijena;
-                tutor.BrojOdrzanihCasova = (tutor.BrojOdrzanihCasova ?? 0) + 1;
-                await _userManager.UpdateAsync(tutor);
+                TempData["Greska"] = "Termin nije u statusu rezervisan.";
+                return RedirectToAction("Dashboard", "Student");
             }
 
-            // Kreiraj transakciju
+            if (student.StanjeRacuna < termin.cijena)
+            {
+                TempData["Greska"] = $"Nemate dovoljno sredstava. Potrebno: {termin.cijena:N2} KM.";
+                return RedirectToAction("Dashboard", "Student");
+            }
+
+            var tutor = await _context.Users.FindAsync(termin.idTutora);
+            if (tutor == null)
+            {
+                TempData["Greska"] = "Tutor nije pronađen.";
+                return RedirectToAction("Dashboard", "Student");
+            }
+
+            var systemManager = await _context.Users
+                .FirstOrDefaultAsync(u => u.Uloga == Uloga.SystemManager);
+
+            // Ista logika kao Student/PotvrdiPrisustvo — 10% provizija
+            double provizija = Math.Round(termin.cijena * 0.10, 2);
+            double zaradaTutora = Math.Round(termin.cijena - provizija, 2);
+
+            student.StanjeRacuna -= termin.cijena;
+            tutor.StanjeRacuna += zaradaTutora;
+            tutor.BrojOdrzanihCasova = (tutor.BrojOdrzanihCasova ?? 0) + 1;
+            if (systemManager != null)
+                systemManager.StanjeRacuna += provizija;
+
+            termin.status = StatusTermina.Odrzan;
+            termin.prisustvoPotvrdjeno = true;
+
             _context.Transakcija.Add(new Transakcija
             {
                 idStudenta = student.Id,
-                idTutora = termin.idTutora,
-                iznos = termin.cijena,
+                idTutora = tutor.Id,
+                iznos = -termin.cijena,
                 datumUplate = DateTime.UtcNow,
-                nacinPlacanja = NacinPlacanja.Kartica,
+                nacinPlacanja = NacinPlacanja.Cash,
                 statusPlacanja = StatusPlacanja.Uspjesno
             });
 
-            // Obavijesti tutora da je prisustvo potvrđeno
+            _context.Transakcija.Add(new Transakcija
+            {
+                idStudenta = string.Empty,
+                idTutora = tutor.Id,
+                iznos = zaradaTutora,
+                datumUplate = DateTime.UtcNow,
+                nacinPlacanja = NacinPlacanja.Cash,
+                statusPlacanja = StatusPlacanja.Uspjesno
+            });
+
+            if (systemManager != null)
+            {
+                _context.Transakcija.Add(new Transakcija
+                {
+                    idStudenta = string.Empty,
+                    idTutora = systemManager.Id,
+                    iznos = provizija,
+                    datumUplate = DateTime.UtcNow,
+                    nacinPlacanja = NacinPlacanja.Cash,
+                    statusPlacanja = StatusPlacanja.Uspjesno
+                });
+            }
+
             _context.Obavjestenje.Add(new Obavjestenje
             {
-                idKorisnika = termin.idTutora,
-                naslov = "Prisustvo potvrđeno ✅",
-                sadrzaj = $"{student.Ime} {student.Prezime} je potvrdio prisustvo na času {termin.datumIVrijeme:dd.MM.yyyy. u HH:mm}h. Uplata od {termin.cijena:N2} KM je izvršena.",
+                idKorisnika = tutor.Id,
+                naslov = "Uspješno održan čas! 💰",
+                sadrzaj = $"Student {student.Ime} {student.Prezime} je potvrdio prisustvo za termin ({termin.datumIVrijeme:dd.MM.yyyy. u HH:mm}h). Na Vaš račun je uplaćeno {zaradaTutora:N2} KM (nakon odbijene provizije).",
                 datumSlanja = DateTime.UtcNow,
                 procitano = false,
                 idTermina = termin.id
             });
 
             _context.Update(termin);
+            await _userManager.UpdateAsync(student);
+            await _userManager.UpdateAsync(tutor);
+            if (systemManager != null)
+                await _userManager.UpdateAsync(systemManager);
             await _context.SaveChangesAsync();
 
-            TempData["Uspjeh"] = $"Prisustvo potvrđeno! Plaćanje od {termin.cijena:N2} KM je izvršeno.";
+            TempData["Uspjeh"] = $"Prisustvo potvrđeno! Skinuto {termin.cijena:N2} KM s računa.";
             return RedirectToAction("Dashboard", "Student");
         }
 

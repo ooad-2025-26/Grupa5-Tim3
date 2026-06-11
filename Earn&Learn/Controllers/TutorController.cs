@@ -728,9 +728,16 @@ namespace Earn_Learn.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            // Generiši puni apsolutni URL koji se enkodira u QR
+            // Student skenira → otvara /Termins/PotvrdPrisustvo?kod=EARNLEARN-5-XXXX
+            var qrUrl = Url.Action("PotvrdPrisustvo", "Termins",
+                new { kod = termin.qrKod },
+                Request.Scheme);
+
             ViewBag.Termin = termin;
             ViewBag.Predmet = predmet?.naziv ?? "Nepoznat predmet";
             ViewBag.QrKodString = termin.qrKod;
+            ViewBag.QrUrlZaSkeniranje = qrUrl;
 
             return View();
         }
