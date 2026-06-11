@@ -283,7 +283,9 @@ namespace Earn_Learn.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RezervisiTermin(int id, Earn_Learn.Enums.TipInstrukcija tipInstrukcija)
         {
-            var student = await _userManager.GetUserAsync(User);
+            // Čitaj svježe iz baze — UserManager cache može imati staro stanje računa
+            var studentId = _userManager.GetUserId(User);
+            var student = await _context.Users.FirstOrDefaultAsync(u => u.Id == studentId);
             if (student == null || student.Uloga != Uloga.Student)
                 return View("PristupOdbijen");
 
@@ -296,26 +298,38 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Dashboard");
             }
 
+            var tutor = await _context.Users.FindAsync(termin.idTutora);
+            double cijena = tutor?.CijenaPoSatu ?? termin.cijena;
+
+            // Provjera stanja novčanika
+            if (student.StanjeRacuna < cijena)
+            {
+                TempData["GreskaNovcenik"] = $"Nemate dovoljno sredstava na novčaniku! Potrebno: {cijena:N2} KM, dostupno: {student.StanjeRacuna:N2} KM.";
+                return RedirectToAction("Profil", "Tutor", new { id = termin.idTutora });
+            }
+
             termin.idStudenta = student.Id;
             termin.status = StatusTermina.Rezervisan;
             termin.tipInstrukcija = tipInstrukcija;
+            termin.cijena = cijena;
 
             _context.Update(termin);
 
-            // KREIRANJE OBAVJEŠTENJA ZA TUTORA O REZERVACIJI
+            // KREIRANJE OBAVJEŠTENJA ZA TUTORA O REZERVACIJI (sa idTermina za dugme "Unesi mjesto")
             var obavjestenjeZaTutora = new Obavjestenje
             {
                 idKorisnika = termin.idTutora,
-                naslov = "Nova rezervacija termina! 📅",
-                sadrzaj = $"Student {student.Ime} {student.Prezime} je rezervisao termin koji je zakazan za {termin.datumIVrijeme.ToString("dd.MM.yyyy. u HH:mm")}h.",
+                naslov = "Novi termin rezervisan 📅",
+                sadrzaj = $"{student.Ime} {student.Prezime} je rezervisao vaš termin {termin.datumIVrijeme:dd.MM.yyyy. u HH:mm}h ({tipInstrukcija}). Unesite mjesto održavanja.",
                 datumSlanja = DateTime.UtcNow,
-                procitano = false
+                procitano = false,
+                idTermina = termin.id
             };
             _context.Obavjestenje.Add(obavjestenjeZaTutora);
 
             await _context.SaveChangesAsync();
 
-            TempData["Uspjeh"] = "Termin uspješno rezervisan!";
+            TempData["Uspjeh"] = "Termin uspješno rezervisan! Novac će biti skinut kada potvrdite prisustvo.";
             return RedirectToAction("Dashboard");
         }
 

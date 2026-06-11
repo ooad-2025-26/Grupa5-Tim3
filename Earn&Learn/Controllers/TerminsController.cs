@@ -76,6 +76,7 @@ namespace Earn_Learn.Controllers
             ViewBag.CijenaPoSatu = tutor.CijenaPoSatu ?? 0;
             return View();
         }
+
         // GET: Termins/RezervisiTermin/5
         [Authorize]
         public async Task<IActionResult> RezervisiTermin(int id)
@@ -119,6 +120,13 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Index", "Student");
             }
 
+            // Provjera novčanika
+            if (student.StanjeRacuna < termin.cijena)
+            {
+                TempData["GreskaNovcenik"] = $"Nemate dovoljno sredstava na novčaniku! Potrebno: {termin.cijena:N2} KM, dostupno: {student.StanjeRacuna:N2} KM.";
+                return RedirectToAction("RezervisiTermin", new { id });
+            }
+
             termin.idStudenta = student.Id;
             termin.status = StatusTermina.Rezervisan;
             termin.tipInstrukcija = tipInstrukcija;
@@ -158,6 +166,85 @@ namespace Earn_Learn.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction("MojiCasovi");
+        }
+
+        // GET: Termins/PotvrdPrisustvo?kod=EARNLEARN-5-ABCD1234
+        // Ovaj URL se enkodira u QR kod — student ga skenira i automatski potvrđuje prisustvo
+        [Authorize]
+        public async Task<IActionResult> PotvrdPrisustvo(string kod)
+        {
+            if (string.IsNullOrEmpty(kod))
+                return BadRequest("Neispravan QR kod.");
+
+            var student = await _userManager.GetUserAsync(User);
+            if (student == null || student.Uloga != Uloga.Student)
+                return View("PristupOdbijen");
+
+            var termin = await _context.Termin
+                .FirstOrDefaultAsync(t => t.qrKod == kod);
+
+            if (termin == null)
+            {
+                TempData["Greska"] = "QR kod nije validan ili termin ne postoji.";
+                return RedirectToAction("Dashboard", "Student");
+            }
+
+            if (termin.idStudenta != student.Id)
+            {
+                TempData["Greska"] = "Ovaj QR kod nije za vaš termin.";
+                return RedirectToAction("Dashboard", "Student");
+            }
+
+            if (termin.prisustvoPotvrdjeno)
+            {
+                TempData["Info"] = "Prisustvo je već potvrđeno za ovaj čas.";
+                return RedirectToAction("Dashboard", "Student");
+            }
+
+            // Potvrdi prisustvo i izvrši plaćanje
+            termin.prisustvoPotvrdjeno = true;
+            termin.status = StatusTermina.Odrzan;
+
+            // Skini novac sa studentovog računa
+            student.StanjeRacuna -= termin.cijena;
+            await _userManager.UpdateAsync(student);
+
+            // Uplati tutoru
+            var tutor = await _context.Users.FindAsync(termin.idTutora);
+            if (tutor != null)
+            {
+                tutor.StanjeRacuna += termin.cijena;
+                tutor.BrojOdrzanihCasova = (tutor.BrojOdrzanihCasova ?? 0) + 1;
+                await _userManager.UpdateAsync(tutor);
+            }
+
+            // Kreiraj transakciju
+            _context.Transakcija.Add(new Transakcija
+            {
+                idStudenta = student.Id,
+                idTutora = termin.idTutora,
+                iznos = termin.cijena,
+                datumUplate = DateTime.UtcNow,
+                nacinPlacanja = NacinPlacanja.Kartica,
+                statusPlacanja = StatusPlacanja.Uspjesno
+            });
+
+            // Obavijesti tutora da je prisustvo potvrđeno
+            _context.Obavjestenje.Add(new Obavjestenje
+            {
+                idKorisnika = termin.idTutora,
+                naslov = "Prisustvo potvrđeno ✅",
+                sadrzaj = $"{student.Ime} {student.Prezime} je potvrdio prisustvo na času {termin.datumIVrijeme:dd.MM.yyyy. u HH:mm}h. Uplata od {termin.cijena:N2} KM je izvršena.",
+                datumSlanja = DateTime.UtcNow,
+                procitano = false,
+                idTermina = termin.id
+            });
+
+            _context.Update(termin);
+            await _context.SaveChangesAsync();
+
+            TempData["Uspjeh"] = $"Prisustvo potvrđeno! Plaćanje od {termin.cijena:N2} KM je izvršeno.";
+            return RedirectToAction("Dashboard", "Student");
         }
 
         // GET: Termins/Details/5

@@ -1,55 +1,67 @@
-﻿@model List<Earn_Learn.Models.Obavjestenje>
+﻿@model IEnumerable<Earn_Learn.Models.Obavjestenje>
 @{
     ViewData["Title"] = "Obavještenja";
 }
 
-<div style="max-width:700px; margin: 50px auto; padding: 0 20px;">
-
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-        <h2 style="font-weight:800; color:#0d2d45; margin:0;">🔔 Sva obavještenja</h2>
-        @if (Model.Any())
-        {
-            <span style="font-size:13px; color:#888;">Ukupno: @Model.Count</span>
-        }
-    </div>
+<div class="container mt-5" style="max-width:680px;">
+    <h4 class="fw-bold mb-4">🔔 Obavještenja</h4>
 
     @if (!Model.Any())
     {
-        <div style="text-align:center; padding:80px 20px; color:#bbb;">
-            <div style="font-size:48px; margin-bottom:16px;">📭</div>
-            <div style="font-size:16px; font-weight:600;">Nemate obavještenja</div>
+        <div style="text-align:center; padding:60px 0; color:#aaa;">
+            <div style="font-size:3rem; margin-bottom:12px;">📭</div>
+            <p style="font-size:1rem;">Nemate novih obavještenja.</p>
         </div>
     }
     else
     {
-        <div style="display:flex; flex-direction:column; gap:12px;">
-            @foreach (var n in Model)
-            {
-                <div style="background:@(n.procitano ? "#fff" : "#f0fbe6"); border:1px solid @(n.procitano ? "#eee" : "#c8f09a"); border-left:4px solid @(n.procitano ? "#ddd" : "#5bc400"); border-radius:10px; padding:16px 20px;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
-                        <div>
-                            <div style="font-weight:@(n.procitano ? "600" : "800"); font-size:15px; color:#0d2d45; margin-bottom:6px;">
-                                @n.naslov
-                                @if (!n.procitano)
-                                {
-                                    <span style="background:#5bc400; color:white; font-size:10px; padding:2px 8px; border-radius:8px; margin-left:8px; vertical-align:middle; font-weight:700;">NOVO</span>
-                                }
-                            </div>
-                            <div style="font-size:14px; color:#555; line-height:1.5;">@n.sadrzaj</div>
+        @foreach (var o in Model)
+        {
+            var bgColor = o.procitano ? "#f9f9f9" : "#fffbe6";
+            var borderColor = o.procitano ? "#e8e8e8" : "#ffe58f";
+
+            <div style="background:@bgColor; border:1px solid @borderColor; border-radius:14px;
+                padding:18px 20px; margin-bottom:14px; transition:background 0.2s;">
+
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                    <div style="flex:1;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                            @if (!o.procitano)
+                            {
+                                <span style="width:8px; height:8px; border-radius:50%;
+                                background:#f5a623; display:inline-block; flex-shrink:0;"></span>
+                            }
+                            <strong style="font-size:0.97rem;">@o.naslov</strong>
                         </div>
-                    </div>
-                    <div style="font-size:12px; color:#bbb; margin-top:10px;">
-                        @n.datumSlanja.ToLocalTime().ToString("dd.MM.yyyy. u HH:mm")
+                        <p style="font-size:0.88rem; color:#555; margin:0 0 8px 0; line-height:1.5;">
+                            @o.sadrzaj
+                        </p>
+                        <span style="font-size:0.78rem; color:#aaa;">
+                            @o.datumSlanja.ToString("dd.MM.yyyy. u HH:mm")h
+                        </span>
                     </div>
                 </div>
-            }
-        </div>
-    }
 
-    <div style="margin-top:30px;">
-        <a asp-controller="Tutor" asp-action="Dashboard"
-               style="color:#0d2d45; font-weight:700; text-decoration:none; font-size:14px;">
-            ← Nazad na Dashboard
-        </a>
-    </div>
+                @* Dugme za unos mjesta časa — prikazuje se samo ako notifikacija ima idTermina
+                   i naslov sadrži "rezervisan" što znači student je tek rezervisao termin *@
+                @if (o.idTermina.HasValue && o.naslov.Contains("rezervisan", StringComparison.OrdinalIgnoreCase))
+                {
+                    <div style="margin-top:14px; padding-top:14px; border-top:1px solid @borderColor;">
+                        <a asp-controller="Tutor"
+                           asp-action="UnesMjestoCasa"
+                           asp-route-terminId="@o.idTermina.Value"
+                           class="btn btn-sm"
+                           style="background:#5bc400; color:#fff; font-weight:700;
+                            border-radius:8px; padding:8px 18px; font-size:0.85rem;
+                            text-decoration:none; display:inline-block;">
+                            📍 Unesi mjesto časa
+                        </a>
+                        <span style="font-size:0.78rem; color:#999; margin-left:10px;">
+                            Student čeka informaciju o lokaciji / linku.
+                        </span>
+                    </div>
+                }
+            </div>
+        }
+    }
 </div>

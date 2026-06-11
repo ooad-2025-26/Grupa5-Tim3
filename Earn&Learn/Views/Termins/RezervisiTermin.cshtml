@@ -6,6 +6,41 @@
     var predmet = ViewBag.Predmet as Earn_Learn.Models.Predmet;
 }
 
+@* POPUP: Nema dovoljno sredstava na novčaniku *@
+@if (TempData["GreskaNovcenik"] != null)
+{
+    <div id="popupNovcenik" style="
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 9999;
+        display: flex; align-items: center; justify-content: center;">
+        <div style="
+            background: #fff; border-radius: 14px; padding: 36px 32px;
+            max-width: 420px; width: 90%; text-align: center;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.18);">
+            <div style="font-size: 48px; margin-bottom: 12px;">💸</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #c00; margin-bottom: 10px;">
+                Nema dovoljno sredstava
+            </div>
+            <div style="font-size: 0.95rem; color: #555; margin-bottom: 24px; line-height: 1.5;">
+                @TempData["GreskaNovcenik"]
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <a asp-controller="Student" asp-action="Novcanik"
+                   style="background: #5bc400; color: #fff; padding: 10px 22px;
+                    border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 0.9rem;">
+                    💳 Uplati novac
+                </a>
+                <button onclick="document.getElementById('popupNovcenik').style.display='none'"
+                        style="background: #f0f0f0; color: #333; padding: 10px 22px;
+                    border-radius: 8px; font-weight: 700; border: none;
+                    cursor: pointer; font-size: 0.9rem;">
+                    Zatvori
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 <div class="container mt-5" style="max-width:600px;">
     <h4 class="fw-bold mb-4">Rezerviši termin</h4>
 

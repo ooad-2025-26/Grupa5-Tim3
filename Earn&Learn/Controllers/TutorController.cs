@@ -164,17 +164,14 @@ namespace Earn_Learn.Controllers
             if (termin == null || termin.idTutora != user.Id)
                 return NotFound();
 
-            // Ako je termin rezervisan, vrati novac studentu i pošalji mu obavještenje
             if (termin.status == StatusTermina.Rezervisan && !string.IsNullOrEmpty(termin.idStudenta))
             {
                 var student = await _context.Users.FindAsync(termin.idStudenta);
                 if (student != null)
                 {
-                    // Vrati novac studentu
                     student.StanjeRacuna += termin.cijena;
                     await _userManager.UpdateAsync(student);
 
-                    // Obavijesti studenta
                     _context.Obavjestenje.Add(new Obavjestenje
                     {
                         idKorisnika = student.Id,
@@ -225,6 +222,7 @@ namespace Earn_Learn.Controllers
                 tutor.ProsjecnaOcjena = stvarnaProsjecna;
                 await _userManager.UpdateAsync(tutor);
             }
+
             var recenzijeViewModel = new List<RecenzijaViewModel>();
             foreach (var rec in recenzijeRaw)
             {
@@ -243,7 +241,6 @@ namespace Earn_Learn.Controllers
                 .OrderBy(t => t.datumIVrijeme)
                 .ToListAsync();
 
-            // ── DOHVATI NAZIV PREDMETA ZA SVAKI TERMIN ──
             var terminPredmeti = new Dictionary<int, string>();
             foreach (var t in dostupniTermini)
             {
@@ -279,6 +276,11 @@ namespace Earn_Learn.Controllers
             if (korisnik == null || (korisnik.Uloga != Uloga.Student && korisnik.Uloga != Uloga.Tutor))
                 return Unauthorized();
 
+            // Svježe stanje iz baze — UserManager cache može vratiti stare podatke
+            var korisnikSvjez = await _context.Users.FindAsync(korisnik.Id);
+            if (korisnikSvjez == null)
+                return Unauthorized();
+
             var termin = await _context.Termin.FindAsync(terminId);
             if (termin == null || termin.status != StatusTermina.Slobodan || termin.datumIVrijeme < DateTime.Now)
             {
@@ -286,10 +288,10 @@ namespace Earn_Learn.Controllers
                 return RedirectToAction("Profil", new { id = termin?.idTutora });
             }
 
-            if (termin.idTutora == korisnik.Id)
+            if (termin.idTutora == korisnikSvjez.Id)
             {
                 TempData["Greska"] = "Ne možete rezervisati vlastiti termin.";
-                return RedirectToAction("Profil", new { id = korisnik.Id });
+                return RedirectToAction("Profil", new { id = korisnikSvjez.Id });
             }
 
             var tutor = await _userManager.FindByIdAsync(termin.idTutora);
@@ -297,27 +299,41 @@ namespace Earn_Learn.Controllers
 
             double cijena = tutor.CijenaPoSatu ?? 0;
 
-            if (korisnik.StanjeRacuna < cijena)
+            // Provjera novčanika sa svježim stanjem
+            if (korisnikSvjez.StanjeRacuna < cijena)
             {
-                TempData["Broke"] = $"broke 💀😂 Nemate dovoljno para! Trebate {cijena:N2} KM, a imate {korisnik.StanjeRacuna:N2} KM. Uplatite novac u novčaniku!";
+                TempData["GreskaNovcenik"] = $"Nemate dovoljno sredstava na novčaniku! Potrebno: {cijena:N2} KM, dostupno: {korisnikSvjez.StanjeRacuna:N2} KM.";
                 return RedirectToAction("Profil", new { id = tutor.Id });
             }
 
             var predmet = await _context.Predmet.FindAsync(predmetId);
 
-            termin.idStudenta = korisnik.Id;
+            termin.idStudenta = korisnikSvjez.Id;
             termin.idPredmeta = predmetId;
             if (termin.tipInstrukcija == TipInstrukcija.Hibridno)
                 termin.tipInstrukcija = tipInstrukcija;
             termin.status = StatusTermina.Rezervisan;
             termin.cijena = cijena;
 
+            // Notifikacija tutoru s idTermina — bez ovoga dugme u Obavještenjima se ne prikazuje
+            _context.Obavjestenje.Add(new Obavjestenje
+            {
+                idKorisnika = tutor.Id,
+                naslov = "Novi termin rezervisan 📅",
+                sadrzaj = $"{korisnikSvjez.Ime} {korisnikSvjez.Prezime} je rezervisao vaš termin " +
+                          $"{termin.datumIVrijeme:dd.MM.yyyy. u HH:mm}h " +
+                          $"({tipInstrukcija}). Unesite mjesto održavanja.",
+                datumSlanja = DateTime.UtcNow,
+                procitano = false,
+                idTermina = termin.id
+            });
+
             await _context.SaveChangesAsync();
-            await _userManager.UpdateAsync(korisnik);
+            await _userManager.UpdateAsync(korisnikSvjez);
 
             TempData["Uspjeh"] = "Termin uspješno rezervisan! Novac će biti skinut kada potvrdite prisustvo.";
 
-            if (korisnik.Uloga == Uloga.Tutor)
+            if (korisnikSvjez.Uloga == Uloga.Tutor)
                 return RedirectToAction("StudentDashboard");
             else
                 return RedirectToAction("Dashboard", "Student");
@@ -628,6 +644,68 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("MojiCasovi");
         }
 
+        // ── UNESI MJESTO ČASA ──
+
+        [Authorize]
+        public async Task<IActionResult> UnesMjestoCasa(int terminId)
+        {
+            var tutor = await _userManager.GetUserAsync(User);
+            if (tutor == null || tutor.Uloga != Uloga.Tutor)
+                return Forbid();
+
+            var termin = await _context.Termin.FindAsync(terminId);
+            if (termin == null || termin.idTutora != tutor.Id)
+                return NotFound();
+
+            var predmet = termin.idPredmeta.HasValue
+                ? await _context.Predmet.FindAsync(termin.idPredmeta.Value)
+                : null;
+
+            ViewBag.Predmet = predmet?.naziv ?? "—";
+            return View(termin);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnesMjestoCasa(int terminId, string mjestoCasa)
+        {
+            var tutor = await _userManager.GetUserAsync(User);
+            if (tutor == null || tutor.Uloga != Uloga.Tutor)
+                return Forbid();
+
+            var termin = await _context.Termin.FindAsync(terminId);
+            if (termin == null || termin.idTutora != tutor.Id)
+                return NotFound();
+
+            termin.mjestoCasa = mjestoCasa;
+            _context.Update(termin);
+
+            // Obavijesti studenta o mjestu održavanja
+            if (!string.IsNullOrEmpty(termin.idStudenta))
+            {
+                var jeOnline = termin.tipInstrukcija == TipInstrukcija.Online;
+                _context.Obavjestenje.Add(new Obavjestenje
+                {
+                    idKorisnika = termin.idStudenta,
+                    naslov = jeOnline ? "Link za online čas 🔗" : "Lokacija časa 📍",
+                    sadrzaj = jeOnline
+                        ? $"Tutor {tutor.Ime} {tutor.Prezime} je podijelio link za vaš online čas: {mjestoCasa} (termin: {termin.datumIVrijeme:dd.MM.yyyy. u HH:mm}h)."
+                        : $"Tutor {tutor.Ime} {tutor.Prezime} je unio lokaciju vašeg časa: {mjestoCasa} (termin: {termin.datumIVrijeme:dd.MM.yyyy. u HH:mm}h).",
+                    datumSlanja = DateTime.UtcNow,
+                    procitano = false,
+                    idTermina = termin.id
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Uspjeh"] = "Mjesto časa sačuvano, student je obaviješten.";
+            return RedirectToAction("MojiCasovi");
+        }
+
+        // ── QR KOD ──
+
         [Authorize]
         public async Task<IActionResult> QrKod(int terminId)
         {
@@ -715,7 +793,6 @@ namespace Earn_Learn.Controllers
                 .OrderByDescending(o => o.datumSlanja)
                 .ToListAsync();
 
-            // Oznaci sva kao procitana po otvaranju stranice
             foreach (var o in obavjestenja.Where(o => !o.procitano))
                 o.procitano = true;
             await _context.SaveChangesAsync();
@@ -739,7 +816,8 @@ namespace Earn_Learn.Controllers
                     o.naslov,
                     o.sadrzaj,
                     o.datumSlanja,
-                    o.procitano
+                    o.procitano,
+                    o.idTermina
                 })
                 .ToListAsync();
 
