@@ -167,6 +167,8 @@ namespace Earn_Learn.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
+
         public async Task<IActionResult> PretraziTutore(
             string query,
             double? minCijena = null,
@@ -255,11 +257,11 @@ namespace Earn_Learn.Controllers
             return View(transakcije);
         }
 
-        [Authorize]
+        [AllowAnonymous ]
         public async Task<IActionResult> RezervisiTermin(int id)
         {
             var student = await _userManager.GetUserAsync(User);
-            if (student == null || student.Uloga != Uloga.Student)
+            if (student == null || (student.Uloga != Uloga.Student && student.Uloga != Uloga.Tutor))
                 return View("PristupOdbijen");
 
             var termin = await _context.Termin
@@ -279,15 +281,16 @@ namespace Earn_Learn.Controllers
         }
 
         [HttpPost]
-        [Authorize]
-        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        
         public async Task<IActionResult> RezervisiTermin(int id, Earn_Learn.Enums.TipInstrukcija tipInstrukcija)
         {
             // Čitaj svježe iz baze — UserManager cache može imati staro stanje računa
             var studentId = _userManager.GetUserId(User);
-            var student = await _context.Users.FirstOrDefaultAsync(u => u.Id == studentId);
-            if (student == null || student.Uloga != Uloga.Student)
+            var student = await _userManager.GetUserAsync(User);
+            if (student == null || (student.Uloga != Uloga.Student && student.Uloga != Uloga.Tutor))
                 return View("PristupOdbijen");
+
 
             var termin = await _context.Termin
                 .FirstOrDefaultAsync(t => t.id == id && t.status == StatusTermina.Slobodan);
@@ -333,11 +336,11 @@ namespace Earn_Learn.Controllers
             return RedirectToAction("Dashboard");
         }
 
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> OdaberiTermin(string tutorId)
         {
             var student = await _userManager.GetUserAsync(User);
-            if (student == null || student.Uloga != Uloga.Student)
+            if (student == null || (student.Uloga != Uloga.Student && student.Uloga != Uloga.Tutor))
                 return View("PristupOdbijen");
 
             var tutor = await _context.Users.FindAsync(tutorId);

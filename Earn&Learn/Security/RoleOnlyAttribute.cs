@@ -18,7 +18,7 @@ namespace Earn_Learn.Security
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            // Ako akcija ima [AllowAnonymous], preskoči provjeru
+            // Provjeri [AllowAnonymous] na akciji ILI na controlleru
             var allowAnonymous = context.ActionDescriptor.EndpointMetadata
                 .OfType<AllowAnonymousAttribute>()
                 .Any();
@@ -36,10 +36,12 @@ namespace Earn_Learn.Security
 
             if (user == null || user.Uloga != _dozvoljenaUloga)
             {
-                context.Result = new RedirectToActionResult(
-                    "PristupOdbijen",
-                    "Home",
-                    null);
+                context.Result = new ViewResult
+                {
+                    ViewName = "PristupOdbijen",
+                    StatusCode = 403
+                };
+                return;
             }
 
             base.OnActionExecuting(context);

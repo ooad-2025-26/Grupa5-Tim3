@@ -23,7 +23,7 @@
         <p><strong>Cijena:</strong> @Model.cijena KM/h</p>
     </div>
 
-    <form asp-controller="Student" asp-action="RezervisiTermin"
+    <form asp-controller="Rezervacija" asp-action="Potvrdi"
           asp-route-id="@Model.id" method="post">
         @Html.AntiForgeryToken()
 

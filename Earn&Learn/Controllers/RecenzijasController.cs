@@ -131,7 +131,7 @@ namespace Earn_Learn.Controllers
                 return NotFound();
             }
 
-            return View(recenzija);
+            return RedirectToAction("PristupOdbijen", "Home");
         }
 
         // POST: Recenzijas/Delete/5
