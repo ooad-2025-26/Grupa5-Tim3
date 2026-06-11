@@ -728,8 +728,6 @@ namespace Earn_Learn.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Generiši puni apsolutni URL koji se enkodira u QR
-            // Student skenira → otvara /Termins/PotvrdPrisustvo?kod=EARNLEARN-5-XXXX
             var qrUrl = Url.Action("PotvrdPrisustvo", "Termins",
                 new { kod = termin.qrKod },
                 Request.Scheme);
@@ -804,7 +802,24 @@ namespace Earn_Learn.Controllers
                 o.procitano = true;
             await _context.SaveChangesAsync();
 
-            return View(obavjestenja);
+            // Provjeri za svako obavještenje je li mjesto časa već uneseno
+            var model = new List<ObavjestenjeViewModel>();
+            foreach (var o in obavjestenja)
+            {
+                bool mjestoCasaUneseno = false;
+                if (o.idTermina.HasValue)
+                {
+                    var termin = await _context.Termin.FindAsync(o.idTermina.Value);
+                    mjestoCasaUneseno = !string.IsNullOrEmpty(termin?.mjestoCasa);
+                }
+                model.Add(new ObavjestenjeViewModel
+                {
+                    Obavjestenje = o,
+                    MjestoCasaUneseno = mjestoCasaUneseno
+                });
+            }
+
+            return View(model);
         }
 
         [Authorize]
@@ -818,17 +833,31 @@ namespace Earn_Learn.Controllers
                 .Where(o => o.idKorisnika == user.Id)
                 .OrderByDescending(o => o.datumSlanja)
                 .Take(10)
-                .Select(o => new {
+                .ToListAsync();
+
+            // Provjeri mjestoCasa za svaki termin
+            var result = new List<object>();
+            foreach (var o in obavjestenja)
+            {
+                bool mjestoCasaUneseno = false;
+                if (o.idTermina.HasValue)
+                {
+                    var termin = await _context.Termin.FindAsync(o.idTermina.Value);
+                    mjestoCasaUneseno = !string.IsNullOrEmpty(termin?.mjestoCasa);
+                }
+                result.Add(new
+                {
                     o.id,
                     o.naslov,
                     o.sadrzaj,
                     o.datumSlanja,
                     o.procitano,
-                    o.idTermina
-                })
-                .ToListAsync();
+                    o.idTermina,
+                    mjestoCasaUneseno
+                });
+            }
 
-            return Json(obavjestenja);
+            return Json(result);
         }
 
         [Authorize]
